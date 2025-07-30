@@ -1,6 +1,19 @@
 package com.codeit.sb02mplteam2.domain.social.entity;
 
+import com.codeit.sb02mplteam2.domain.user.entity.User;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Table;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
+import java.time.LocalDateTime;
+import lombok.*;
+
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
 @Table(name="follows")
 public class Follow {
 
@@ -18,6 +31,6 @@ public class Follow {
   @JoinColumn(name = "to_user_id")
   private User toUser;
 
-  private LocalDateTime createdAt; // 팔로우한 시간 등 추가 정보 저장 가능
+  private LocalDateTime createdAt;
 
 }

@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # 개발 시에는 소스코드와 빌드 도구가 모두 포함된 'builder' 스테이지를 타겟으로 지정합니다.
+      target: builder
+    container_name: backend
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    ports:
+      - "8080:8080" # Spring Boot 애플리케이션 포트
+      - "5005:5005" # 원격 디버깅을 위한 포트 (선택 사항)
+    volumes:
+      # 로컬 소스 코드를 컨테이너의 작업 디렉토리(/app)와 동기화합니다.
+      - .:/app
+      # Gradle 캐시를 볼륨으로 관리하여 빌드 속도를 향상시킵니다.
+      - gradle_cache:/root/.gradle
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/mpl_db
+      - SPRING_DATASOURCE_USERNAME=mpl
+      - SPRING_DATASOURCE_PASSWORD=mpl!
+      # 원격 디버깅을 활성화하는 옵션 (선택 사항)
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+    # Dockerfile의 ENTRYPOINT를 오버라이드하여 Gradle로 직접 실행합니다.
+    # Spring Boot DevTools가 코드 변경을 감지하고 앱을 자동 재시작할 수 있습니다.
+    command: ./gradlew bootRun
+    networks:
+      - mpl-network
+
+  postgres-db:
+    image: postgres:17
+    container_name: mpl_db
+    environment:
+      POSTGRES_USER: mpl
+      POSTGRES_PASSWORD: mpl!
+      POSTGRES_DB: mpl_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_mpl_data:/var/lib/postgresql/data
+    networks:
+      - mpl-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mpl -d mpl_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db_mpl_data:
+  gradle_cache: # Gradle 캐시 볼륨 정의
+  binary-content-storage:
+  redis-data:
+
+networks:
+  mpl-network:
+    driver: bridge

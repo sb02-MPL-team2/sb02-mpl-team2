@@ -62,12 +62,10 @@ public interface UserApi {
   @Operation(summary = "User 삭제")
   @ApiResponses(value = {
       @ApiResponse(
-          responseCode = "204",
-          description = "User가 성공적으로 삭제됨"
+          responseCode = "204", description = "User가 성공적으로 삭제됨"
       ),
       @ApiResponse(
-          responseCode = "404",
-          description = "User를 찾을 수 없음",
+          responseCode = "404", description = "User를 찾을 수 없음",
           content = @Content(examples = @ExampleObject(value = "User with id {id} not found"))
       )
   })
@@ -83,4 +81,18 @@ public interface UserApi {
       )
   })
   ResponseEntity<List<UserDto>> findAll();
+
+  @Operation(summary = "특정 User 조회")
+  @ApiResponses(value = {
+      @ApiResponse(
+          responseCode = "200", description = "User 조회 성공",
+          content = @Content(schema = @Schema(implementation = UserDto.class))
+      ),
+      @ApiResponse(
+          responseCode = "404", description = "User를 찾을 수 없음",
+          content = @Content(examples = @ExampleObject(value = "User with id {userId} not found"))
+      )
+  })
+  ResponseEntity<UserDto> findById(@Parameter(description = "찾고 싶은 User ID",
+      required = true, example = "1") Long userId);
 }

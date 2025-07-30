@@ -1,0 +1,39 @@
+spring:
+  config:
+    activate:
+      on-profile: docker
+  # docker-compose.yml에서 환경 변수로 주입한 값을 사용합니다.
+  # 이 값들은 docker-compose.yml에 정의된 값이 없을 경우 사용될 기본값(fallback)입니다.
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/mpl_db}
+    username: ${SPRING_DATASOURCE_USERNAME:mpl}
+    password: ${SPRING_DATASOURCE_PASSWORD:mpl!}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 60000
+  jpa:
+    # docker-compose.yml에서 환경 변수로 주입한 값을 사용합니다.
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+    # PostgreSQL에 맞는 Dialect를 명시적으로 설정합니다.
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true # 개발 중에는 실행되는 쿼리를 확인하는 것이 유용합니다.
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false # 성능을 위해 false로 유지하는 것을 권장합니다.
+  sql:
+    init:
+      mode: always
+      continue-on-error: true
+
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: debug # show-sql: true와 함께 사용하면 파라미터 바인딩까지 보여줍니다.
+        orm.jdbc.bind: trace
+      springframework:
+        data: info

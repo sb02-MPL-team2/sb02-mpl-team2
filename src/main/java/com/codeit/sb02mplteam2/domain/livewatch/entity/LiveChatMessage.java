@@ -8,6 +8,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import com.codeit.sb02mplteam2.domain.user.entity.User;
+
 @Entity
 @Getter
 @Setter

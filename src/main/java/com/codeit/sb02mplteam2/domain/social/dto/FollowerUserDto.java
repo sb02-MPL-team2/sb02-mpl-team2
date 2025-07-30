@@ -1,7 +1,5 @@
 package com.codeit.sb02mplteam2.domain.social.dto;
 
-public record FollowRequest(
-    Long fromUserId
-) {
+public record FollowerUserDto() {
 
 }

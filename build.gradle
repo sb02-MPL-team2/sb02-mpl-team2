@@ -17,6 +17,7 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
+    developmentOnly
 }
 
 repositories {
@@ -26,8 +27,15 @@ repositories {
 dependencies {
     //캐시
     implementation 'org.springframework.boot:spring-boot-starter-cache'
+    //카페인
+    implementation 'com.github.ben-manes.caffeine:caffeine:3.1.8'
+    //카프카
     implementation 'org.springframework.kafka:spring-kafka'
+    //레디스
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    //파일 인풋 아웃풋 유틸 라이브러리
+    implementation 'commons-io:commons-io:2.16.1'
 
     //Swagger UI
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0'
@@ -58,6 +66,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     compileOnly 'org.projectlombok:lombok'
+    //파일 변경 감지하고 자동으로 애플리케이션 재시작
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
