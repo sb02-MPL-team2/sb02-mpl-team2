@@ -22,7 +22,6 @@ import org.springframework.web.multipart.MultipartFile;
 @Table(name = "binary_contents")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@NoArgsConstructor
 public class BinaryContent {
 
   @Id
