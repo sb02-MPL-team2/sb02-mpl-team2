@@ -1,6 +1,5 @@
 package com.codeit.sb02mplteam2.swagger.review;
 
-import com.codeit.sb02mplteam2.domain.playlist.dto.CursorPageResponsePlayListDto;
 import com.codeit.sb02mplteam2.domain.review.dto.ReviewDto;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
