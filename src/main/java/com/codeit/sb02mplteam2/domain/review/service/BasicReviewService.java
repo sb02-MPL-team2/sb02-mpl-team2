@@ -9,7 +9,11 @@ import com.codeit.sb02mplteam2.domain.review.entity.Review;
 import com.codeit.sb02mplteam2.domain.review.repository.ReviewRepository;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
+import com.codeit.sb02mplteam2.exception.ErrorCode;
 import com.codeit.sb02mplteam2.exception.MplException;
+import com.codeit.sb02mplteam2.exception.content.ContentException;
+import com.codeit.sb02mplteam2.exception.review.ReviewException;
+import com.codeit.sb02mplteam2.exception.user.UserException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,11 +30,10 @@ public class BasicReviewService implements ReviewService{
 
   @Override
   public ReviewDto create(ReviewCreateRequest request) {
-    User user = userRepository.findById(request.userId()).orElseThrow(() ->
-        new MplException("유저를 찾을 수 없습니다."));
+    User user = userRepository.findById(request.userId()).orElseThrow(
+        () -> new UserException(ErrorCode.USER_NOT_FOUND));
     Content content = contentRepository.findById(request.contentId()).orElseThrow(
-        () -> new MplException("Content를 찾을 수 없습니다.")
-    );
+        () -> new ContentException(ErrorCode.CONTENT_NOT_FOUND));
 
     Review review = new Review(user, content, request.rating(), request.comment());
     reviewRepository.save(review);
@@ -40,8 +43,7 @@ public class BasicReviewService implements ReviewService{
   @Override
   public ReviewDto findById(Long reviewId) {
     Review review = reviewRepository.findById(reviewId).orElseThrow(
-        () -> new MplException("리뷰가 존재하지 않습니다.")
-    );
+        () -> new ReviewException(ErrorCode.REVIEW_NOT_FOUND));
     return ReviewDto.from(review);
   }
 
@@ -60,16 +62,14 @@ public class BasicReviewService implements ReviewService{
   @Override
   public void delete(Long id) {
     Review review = reviewRepository.findById(id).orElseThrow(
-        () -> new MplException("리뷰가 존재하지 않습니다.")
-    );
+        () -> new ReviewException(ErrorCode.REVIEW_NOT_FOUND));
     reviewRepository.delete(review);
   }
 
   @Override
   public ReviewDto update(Long reviewId, ReviewUpdateRequest request) {
     Review review = reviewRepository.findById(reviewId).orElseThrow(
-        () -> new MplException("리뷰가 존재하지 않습니다.")
-    );
+        () -> new ReviewException(ErrorCode.REVIEW_NOT_FOUND));
     review.update(request.newRating(), request.newComment());
     reviewRepository.save(review);
 

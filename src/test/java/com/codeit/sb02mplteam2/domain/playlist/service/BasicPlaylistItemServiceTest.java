@@ -1,6 +1,7 @@
 package com.codeit.sb02mplteam2.domain.playlist.service;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.codeit.sb02mplteam2.domain.content.entity.Content;
@@ -80,7 +81,8 @@ class BasicPlaylistItemServiceTest {
   void insertContent() {
     //given
     when(playlistRepository.findById(1L)).thenReturn(Optional.of(playlist));
-    Content content1 = new Content();
+    Content content1 = mock(Content.class);
+    when(content1.getId()).thenReturn(1L);
     when(contentRepository.findById(1L)).thenReturn(Optional.of(content1));
     //1차적으로 값 주입
     PlaylistDto playlistDto1 = playlistItemService.addContent(1L, 1L);

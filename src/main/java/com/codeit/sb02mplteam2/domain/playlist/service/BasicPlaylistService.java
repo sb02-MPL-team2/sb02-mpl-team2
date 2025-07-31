@@ -9,7 +9,10 @@ import com.codeit.sb02mplteam2.domain.playlist.entity.Playlist;
 import com.codeit.sb02mplteam2.domain.playlist.repository.PlaylistRepository;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
+import com.codeit.sb02mplteam2.exception.ErrorCode;
 import com.codeit.sb02mplteam2.exception.MplException;
+import com.codeit.sb02mplteam2.exception.playlist.PlaylistException;
+import com.codeit.sb02mplteam2.exception.user.UserException;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,8 +31,8 @@ public class BasicPlaylistService implements PlaylistService{
   @Override
   public PlaylistDto create(PlaylistCreateRequest request) {
     Long userId = request.userId();
-    User user = userRepository.findById(userId).orElseThrow(() ->
-        new MplException("유저를 찾을 수 없습니다."));
+    User user = userRepository.findById(userId).orElseThrow(
+        () -> new UserException(ErrorCode.USER_NOT_FOUND));
     Playlist playlist = new Playlist(user, request.title(), request.description());
     playlistRepository.save(playlist);
 
@@ -39,8 +42,7 @@ public class BasicPlaylistService implements PlaylistService{
   @Override
   public PlaylistDto update(Long id, PlaylistUpdateRequest request) {
     Playlist playlist = playlistRepository.findById(id).orElseThrow(
-        () -> new MplException("PlayList를 찾을 수 없습니다.")
-    );
+        () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
     playlist.update(request.newTitle(), request.newDescription());
     playlistRepository.save(playlist);
     return PlaylistDto.from(playlist);
@@ -49,14 +51,14 @@ public class BasicPlaylistService implements PlaylistService{
   @Override
   public void delete(Long id) {
     Playlist playlist = playlistRepository.findById(id).orElseThrow(
-        () -> new MplException("PlayList를 찾을 수 없습니다."));
+        () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
     playlistRepository.delete(playlist);
   }
 
   @Override
   public PlaylistDto findById(Long id) {
     Playlist playlist = playlistRepository.findById(id).orElseThrow(
-        () -> new MplException("PlayList를 찾을 수 없습니다."));
+        () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
     return PlaylistDto.from(playlist);
   }
 

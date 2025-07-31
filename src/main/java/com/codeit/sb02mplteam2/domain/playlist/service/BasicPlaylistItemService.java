@@ -7,7 +7,10 @@ import com.codeit.sb02mplteam2.domain.playlist.entity.Playlist;
 import com.codeit.sb02mplteam2.domain.playlist.entity.PlaylistItem;
 import com.codeit.sb02mplteam2.domain.playlist.repository.PlaylistItemRepository;
 import com.codeit.sb02mplteam2.domain.playlist.repository.PlaylistRepository;
+import com.codeit.sb02mplteam2.exception.ErrorCode;
 import com.codeit.sb02mplteam2.exception.MplException;
+import com.codeit.sb02mplteam2.exception.content.ContentException;
+import com.codeit.sb02mplteam2.exception.playlist.PlaylistException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,20 +28,16 @@ public class BasicPlaylistItemService implements PlaylistItemService {
   private final ContentRepository contentRepository;
 
   /*
-  TODO 1. 이미 넣어진 Content는 넣지말아야함
-  TODO 2. Content 목록 정렬 기능 추가해야함
+  TODO. Content 목록 정렬 기능 추가해야함
    */
 
   @Override
   public PlaylistDto addContent(Long playlistId, Long contentId) {
     Playlist playlist = playlistRepository.findById(playlistId).orElseThrow(
-        () -> new MplException("PlayList를 찾을 수 없습니다.")
-    );
+        () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
     //중복 검사 로직
-//    boolean isExist = playlist.getItems().stream()
-//        .anyMatch(item -> item.getContent().getId().equals(contentId));
-    //TODO 현재 Content에 Get메서드 없어서 임시로 false 처리
-    boolean isExist = false;
+    boolean isExist = playlist.getItems().stream()
+        .anyMatch(item -> item.getContent().getId().equals(contentId));
 
     if (isExist) {
       log.warn("콘텐츠(id:{})는 이미 플레이리스트(id:{})에 존재합니다.", contentId, playlistId);
@@ -46,7 +45,7 @@ public class BasicPlaylistItemService implements PlaylistItemService {
     }
 
     Content content = contentRepository.findById(contentId).orElseThrow(
-        () -> new MplException("Content를 찾을 수 없습니다.")
+        () -> new ContentException(ErrorCode.CONTENT_NOT_FOUND)
     );
     int size = playlist.getItems().size();
 
@@ -63,8 +62,7 @@ public class BasicPlaylistItemService implements PlaylistItemService {
   @Override
   public PlaylistDto addContentList(Long playlistId, List<Long> contentIds) {
     Playlist playlist = playlistRepository.findById(playlistId).orElseThrow(
-        () -> new MplException("PlayList를 찾을 수 없습니다.")
-    );
+        () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
     List<Content> contentList = new ArrayList<>();
     for (Long contentId : contentIds) {
       contentRepository.findById(contentId).ifPresent(contentList::add);
@@ -89,8 +87,8 @@ public class BasicPlaylistItemService implements PlaylistItemService {
   @Override
   public void deleteAllByPlaylistId(Long playlistId) {
     Playlist playlist = playlistRepository.findById(playlistId).orElseThrow(
-        () -> new MplException("PlayList를 찾을 수 없습니다.")
-    );
+        () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
+
     playlistItemRepository.deleteAll(playlist.getItems());
     playlist.getItems().clear();
     playlistRepository.save(playlist);
@@ -100,15 +98,11 @@ public class BasicPlaylistItemService implements PlaylistItemService {
   @Override
   public void deleteByContentId(Long playlistId, Long contentId) {
     Playlist playlist = playlistRepository.findById(playlistId).orElseThrow(
-        () -> new MplException("PlayList를 찾을 수 없습니다.")
-    );
+        () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
 
-//    Optional<PlaylistItem> target = playlist.getItems().stream().filter(
-//        item -> item.getContent().getId().equals(contentId)
-//    ).findFirst();
-
-    //TODO 현재 Content에 Get메서드 없어서 임시로 empty 처리
-    Optional<PlaylistItem> target = Optional.empty();
+    Optional<PlaylistItem> target = playlist.getItems().stream().filter(
+        item -> item.getContent().getId().equals(contentId)
+    ).findFirst();
 
     if (target.isEmpty()) {
       log.warn("플레이리스트(id:{})에 존재하지 않는 콘텐츠(id:{})의 삭제가 요청되었습니다.", playlistId, contentId);
