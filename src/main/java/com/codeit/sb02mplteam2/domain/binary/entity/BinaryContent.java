@@ -32,10 +32,6 @@ public class BinaryContent {
   @Column(name="created_at")
   private LocalDateTime createdAt;
 
-  @UpdateTimestamp
-  @Column(name = "updated_at")
-  private LocalDateTime updatedAt;
-
   @Column(name = "file_name")
   private String fileName;
 

@@ -3,7 +3,10 @@ CREATE TABLE IF NOT EXISTS binary_contents (
         created_at TIMESTAMP WITH TIME ZONE,
         file_name VARCHAR(255),
         size BIGINT,
-        content_type VARCHAR(255)
+        content_type VARCHAR(255),
+        extension VARCHAR(255),
+        url VARCHAR(2048),
+        upload_status VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS contents (
@@ -71,6 +74,7 @@ CREATE TABLE IF NOT EXISTS users (
         email VARCHAR(255) UNIQUE,
         password VARCHAR(255),
         is_locked BOOLEAN,
+        is_deleted BOOLEAN,
         profile_id BIGINT,
         role VARCHAR(255),
         created_at TIMESTAMP WITH TIME ZONE,

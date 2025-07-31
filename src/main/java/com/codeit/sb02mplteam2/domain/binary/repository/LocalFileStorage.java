@@ -1,6 +1,7 @@
 package com.codeit.sb02mplteam2.domain.binary.repository;
 
 import com.codeit.sb02mplteam2.domain.binary.dto.BinaryContentDto;
+import com.codeit.sb02mplteam2.exception.ErrorCode;
 import com.codeit.sb02mplteam2.exception.MplException;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -79,7 +80,7 @@ public class LocalFileStorage implements BinaryContentStorage{
       return ResponseEntity.ok().headers(headers).body(resource);
     } catch (IOException e) {
       log.warn("파일 없음");
-      throw new MplException("서버 내부 오류");
+      throw new MplException(ErrorCode.INTERNAL_SERVER_ERROR);
     }
   }
 
