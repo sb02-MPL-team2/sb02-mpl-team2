@@ -98,10 +98,10 @@ public class User {
    }
  }
 
- public void updateRole(Role role) {
-   if(this.role != role) {
-     this.role = role;
-   }
- }
+  public void updateRole(Role role) {
+    if(this.role != role) {
+      this.role = role;
+    }
+  }
 
 }
