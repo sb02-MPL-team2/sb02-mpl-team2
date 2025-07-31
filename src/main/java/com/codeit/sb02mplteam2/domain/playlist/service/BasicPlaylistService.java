@@ -1,12 +1,101 @@
 package com.codeit.sb02mplteam2.domain.playlist.service;
 
+import com.codeit.sb02mplteam2.domain.content.entity.Content;
+import com.codeit.sb02mplteam2.domain.content.repository.ContentRepository;
+import com.codeit.sb02mplteam2.domain.playlist.dto.CursorPageResponsePlayListDto;
+import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistCreateRequest;
+import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistDto;
+import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistUpdateRequest;
+import com.codeit.sb02mplteam2.domain.playlist.entity.Playlist;
+import com.codeit.sb02mplteam2.domain.playlist.entity.PlaylistItem;
+import com.codeit.sb02mplteam2.domain.playlist.repository.PlaylistRepository;
+import com.codeit.sb02mplteam2.domain.user.entity.User;
+import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
+import com.codeit.sb02mplteam2.exception.MplException;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class BasicPlaylistService {
+public class BasicPlaylistService implements PlaylistService{
 
+  private final UserRepository userRepository;
+  private final PlaylistRepository playlistRepository;
+  private final ContentRepository contentRepository;
+
+  @Override
+  public PlaylistDto create(PlaylistCreateRequest request) {
+    Long userId = request.userId();
+    User user = userRepository.findById(userId).orElseThrow(() ->
+        new MplException("유저를 찾을 수 없습니다."));
+    Playlist playlist = new Playlist(user, request.title(), request.description());
+    playlistRepository.save(playlist);
+
+    return PlaylistDto.from(playlist);
+  }
+
+  @Override
+  public PlaylistDto addContent(Long playlistId, Long contentId) {
+    Playlist playlist = playlistRepository.findById(playlistId).orElseThrow(
+        () -> new MplException("PlayList를 찾을 수 없습니다.")
+    );
+    Content content = contentRepository.findById(contentId).orElseThrow(
+        () -> new MplException("Content를 찾을 수 없습니다.")
+    );
+    int size = playlist.getItems().size();
+    PlaylistItem playlistItem = new PlaylistItem(size, content);
+    playlist.addPlayList(playlistItem);
+    playlistRepository.save(playlist);
+    return PlaylistDto.from(playlist);
+  }
+
+  @Override
+  public PlaylistDto update(Long id, PlaylistUpdateRequest request) {
+    Playlist playlist = playlistRepository.findById(id).orElseThrow(
+        () -> new MplException("PlayList를 찾을 수 없습니다.")
+    );
+    playlist.update(request.newTitle(), request.newDescription());
+    playlistRepository.save(playlist);
+    return PlaylistDto.from(playlist);
+  }
+
+  @Override
+  public void delete(Long id) {
+    Playlist playlist = playlistRepository.findById(id).orElseThrow(
+        () -> new MplException("PlayList를 찾을 수 없습니다."));
+    playlistRepository.delete(playlist);
+  }
+
+  @Override
+  public PlaylistDto findById(Long id) {
+    Playlist playlist = playlistRepository.findById(id).orElseThrow(
+        () -> new MplException("PlayList를 찾을 수 없습니다."));
+    return PlaylistDto.from(playlist);
+  }
+
+  @Override
+  public CursorPageResponsePlayListDto findAllByContentId(Long contentId, LocalDateTime cursor,
+      Pageable pageable) {
+    return null;
+  }
+
+  @Override
+  public CursorPageResponsePlayListDto findAllByUserId(Long userId, LocalDateTime cursor,
+      Pageable pageable) {
+    Slice<Playlist> slice = playlistRepository.findAllByUserId(userId, cursor, pageable);
+
+    LocalDateTime nextCursor = null;
+    if (!slice.getContent().isEmpty()) {
+      nextCursor = slice.getContent().get(slice.getContent().size() - 1)
+          .getCreatedAt();
+    }
+
+    return CursorPageResponsePlayListDto.of(slice, nextCursor);
+  }
 }

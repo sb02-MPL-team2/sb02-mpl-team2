@@ -1,6 +1,7 @@
 package com.codeit.sb02mplteam2.swagger;
 
 import com.codeit.sb02mplteam2.domain.playlist.dto.CursorPageResponsePlayListDto;
+import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistAddItemRequest;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistCreateRequest;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistDto;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistUpdateRequest;
@@ -35,7 +36,25 @@ public interface PlayListApi {
       @Parameter(
           description = "PlayList 생성 정보",
           content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
-      ) PlaylistCreateRequest playListCreateRequest
+      ) PlaylistCreateRequest request
+  );
+
+  @Operation(summary = "PlayList 내 Content 추가")
+  @ApiResponses(value = {
+      @ApiResponse(
+          responseCode = "200", description = "Content가 성공적으로 추가됨",
+          content = @Content(schema = @Schema(implementation = PlaylistDto.class))
+      ),
+      @ApiResponse(
+          responseCode = "404", description = "Playlist 또는 Content를 찾을 수 없음",
+          content = @Content(examples = @ExampleObject(value = "Content | User with id {ContentId | UserId} not found"))
+      ),
+  })
+  ResponseEntity<PlaylistDto> addContent(
+      @Parameter(
+          description = "PlayList 내 Content 추가 정보",
+          content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
+      )PlaylistAddItemRequest request
   );
 
   @Operation(summary = "PlayList 삭제")
@@ -76,9 +95,8 @@ public interface PlayListApi {
       )
   })
   ResponseEntity<PlaylistDto> findById(
-      @Parameter(description = "조회할 Channel ID") Long playListId
+      @Parameter(description = "조회할 playlist ID") Long playListId
   );
-
 
   @Operation(summary = "PlayList 목록 조회")
   @ApiResponses(value = {
@@ -88,7 +106,7 @@ public interface PlayListApi {
       )
   })
   ResponseEntity<CursorPageResponsePlayListDto> findAllByUserId(
-      @Parameter(description = "조회할 Channel ID") Long userId,
+      @Parameter(description = "조회할 user ID") Long userId,
       @Parameter(description = "페이징 커서 정보") LocalDateTime cursor,
       @Parameter(description = "페이징 정보", example = "{\"size\": 20, \"sort\": \"createdAt,desc\"}") Pageable pageable
   );
@@ -101,7 +119,7 @@ public interface PlayListApi {
       )
   })
   ResponseEntity<CursorPageResponsePlayListDto> findAllByContentId(
-      @Parameter(description = "조회할 Channel ID") Long contentId,
+      @Parameter(description = "조회할 content ID") Long contentId,
       @Parameter(description = "페이징 커서 정보") LocalDateTime cursor,
       @Parameter(description = "페이징 정보", example = "{\"size\": 20, \"sort\": \"createdAt,desc\"}") Pageable pageable
   );

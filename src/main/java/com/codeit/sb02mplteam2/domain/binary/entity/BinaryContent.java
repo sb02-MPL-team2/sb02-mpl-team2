@@ -7,7 +7,9 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.io.FilenameUtils;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -18,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Entity
 @Table(name = "binary_contents")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class BinaryContent {
 
