@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Table(name = "binary_contents")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@NoArgsConstructor
 public class BinaryContent {
 
   @Id
@@ -47,6 +48,11 @@ public class BinaryContent {
 
   @Column(name = "extension")
   private String extension;
+
+  // TODO binaryService에서 setUrl() 설정해야함 / UserMapper에서 사용
+  @Column(name = "url", length = 2048) // URL 저장할 칼럼 추가
+  @Setter // service에서 URL 설정할 수 있도록 url 필드에만 Setter 추가
+  private String url;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "upload_status")

@@ -15,6 +15,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "User", description = "User API")
@@ -31,11 +38,16 @@ public interface UserApi {
           content = @Content(examples = @ExampleObject(value = "User with email already exists"))
       ),
   })
+  @PostMapping(value = "/api/users", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   ResponseEntity<UserDto> create(
       @Parameter(
           description = "User 생성 정보",
           content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
-      ) UserCreateRequest userCreateRequest
+      ) @RequestBody UserCreateRequest userCreateRequest,
+      @Parameter(
+          description = "User 프로필 이미지",
+          content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE)
+      ) @RequestPart(value = "profile", required = false) MultipartFile profile
   );
 
   @Operation(summary = "User 정보 수정")
@@ -53,10 +65,11 @@ public interface UserApi {
           content = @Content(examples = @ExampleObject("user with email {newEmail} already exists"))
       )
   })
+  @PutMapping(value ="/api/users/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   ResponseEntity<UserDto> update(
-      @Parameter(description = "수정할 User ID") Long userId,
-      @Parameter(description = "수정할 User 정보") UserUpdateRequest userUpdateRequest,
-      @Parameter(description = "수정할 User 프로필 이미지") MultipartFile profile
+      @Parameter(description = "수정할 User ID") @PathVariable Long userId,
+      @Parameter(description = "수정할 User 정보") @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
+      @Parameter(description = "수정할 User 프로필 이미지") @RequestPart(value = "profile", required = false) MultipartFile profile
   );
 
   @Operation(summary = "User 삭제")
@@ -69,20 +82,22 @@ public interface UserApi {
           content = @Content(examples = @ExampleObject(value = "User with id {id} not found"))
       )
   })
+  @DeleteMapping("/api/users/{userId}")
   ResponseEntity<Void> delete(
-      @Parameter(description = "삭제할 User ID") Long userId
+      @Parameter(description = "삭제할 User ID") @PathVariable Long userId
   );
 
-  @Operation(summary = "전체 User 목록 조회")
+  @Operation(summary = "전체 User 목록 조회 (관리자용)")
   @ApiResponses(value = {
       @ApiResponse(
           responseCode = "200", description = "User 목록 조회 성공",
           content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserDto.class)))
       )
   })
+  @GetMapping("/api/users")
   ResponseEntity<List<UserDto>> findAll();
 
-  @Operation(summary = "특정 User 조회")
+  @Operation(summary = "특정 User 조회 (관리자용)")
   @ApiResponses(value = {
       @ApiResponse(
           responseCode = "200", description = "User 조회 성공",
@@ -93,6 +108,23 @@ public interface UserApi {
           content = @Content(examples = @ExampleObject(value = "User with id {userId} not found"))
       )
   })
+  @GetMapping("/api/users/{userId}")
   ResponseEntity<UserDto> findById(@Parameter(description = "찾고 싶은 User ID",
-      required = true, example = "1") Long userId);
+      required = true, example = "1") @PathVariable Long userId);
+
+  @Operation(summary = "내 정보 조회")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "내 정보 조회 성공"),
+      @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+  })
+  @GetMapping("/api/users/me")
+  ResponseEntity<UserDto> getMyInfo();
+
+  @Operation(summary = "회원 탈퇴 (내 계정 삭제)")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "204", description = "회원 탈퇴 성공"),
+      @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+  })
+  @DeleteMapping("/api/users/me")
+  ResponseEntity<Void> deleteMyAccount();
 }
