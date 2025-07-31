@@ -92,7 +92,8 @@ public class PlaylistController implements PlayListApi {
           sort = "createdAt,desc"
       )
       Pageable pageable) {
-    return null;
+    CursorPageResponsePlayListDto response = playlistService.findAllByUserId(userId, cursor, pageable);
+    return ResponseEntity.ok(response);
   }
 
   @Override
