@@ -15,17 +15,15 @@ import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedDate;
 
 @Entity
 @Table(name = "playlists")
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+//TODO 나중에 제약조건 걸 때, Protected 걸어야 함
+@NoArgsConstructor
 @Getter
 public class Playlist {
 
@@ -46,6 +44,7 @@ public class Playlist {
   @JoinColumn(name = "user_id")
   private User user;
 
+  //TODO 구독자 수 관련해서 의논해야함
   @Column(name = "subscription_count")
   private int subscribeCount;
 
@@ -58,13 +57,13 @@ public class Playlist {
   @OneToMany(mappedBy = "playlist", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<PlaylistItem> items = new ArrayList<>();
 
-  public Playlist(User user, String description, String title) {
+  public Playlist(User user, String title, String description) {
     this.user = user;
     this.title = title;
     this.description = description;
   }
 
-  public void addPlayList(PlaylistItem playlistItem) {
+  public void addItem(PlaylistItem playlistItem) {
     items.add(playlistItem);
     playlistItem.setPlaylist(this);
   }

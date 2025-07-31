@@ -1,10 +1,12 @@
 package com.codeit.sb02mplteam2.domain.playlist.controller;
 
 import com.codeit.sb02mplteam2.domain.playlist.dto.CursorPageResponsePlayListDto;
-import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistAddItemRequest;
+import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistItemListRequest;
+import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistItemRequest;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistCreateRequest;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistDto;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistUpdateRequest;
+import com.codeit.sb02mplteam2.domain.playlist.service.PlaylistItemService;
 import com.codeit.sb02mplteam2.domain.playlist.service.PlaylistService;
 import com.codeit.sb02mplteam2.swagger.PlayListApi;
 import java.awt.print.Pageable;
@@ -29,18 +31,31 @@ import org.springframework.web.bind.annotation.RestController;
 public class PlaylistController implements PlayListApi {
 
   private final PlaylistService playlistService;
+  private final PlaylistItemService playlistItemService;
 
   @Override
   @PostMapping
   public ResponseEntity<PlaylistDto> create(@RequestBody PlaylistCreateRequest request) {
     PlaylistDto playlistDto = playlistService.create(request);
+
     return ResponseEntity.status(HttpStatus.CREATED).body(playlistDto);
   }
 
   @Override
-  public ResponseEntity<PlaylistDto> addContent(PlaylistAddItemRequest request) {
-    PlaylistDto playlistDto = playlistService.addContent(request.playListId(), request.contentId());
-    return ResponseEntity.ok(playlistDto);
+  @PostMapping("/add")
+  public ResponseEntity<PlaylistDto> addContent(@RequestBody PlaylistItemRequest request) {
+    PlaylistDto playlistDto = playlistItemService.addContent(request.playListId(), request.contentId());
+
+    return ResponseEntity.status(HttpStatus.CREATED).body(playlistDto);
+  }
+
+  @Override
+  @PostMapping("/add-list")
+  public ResponseEntity<PlaylistDto> addContentList(PlaylistItemListRequest request) {
+    PlaylistDto playlistDto = playlistItemService.addContentList(request.playListId(),
+        request.contentIds());
+
+    return ResponseEntity.status(HttpStatus.CREATED).body(playlistDto);
   }
 
   @Override

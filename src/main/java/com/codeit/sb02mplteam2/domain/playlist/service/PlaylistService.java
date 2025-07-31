@@ -11,8 +11,6 @@ public interface PlaylistService {
 
   PlaylistDto create(PlaylistCreateRequest request);
 
-  PlaylistDto addContent(Long playlistId, Long contentId);
-
   PlaylistDto update(Long id, PlaylistUpdateRequest request);
 
   PlaylistDto findById(Long id);
