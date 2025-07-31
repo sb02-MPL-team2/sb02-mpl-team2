@@ -68,7 +68,11 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     //파일 변경 감지하고 자동으로 애플리케이션 재시작
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    // MapStruct for DTO mapping
+    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
 
+    annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.batch:spring-batch-test'

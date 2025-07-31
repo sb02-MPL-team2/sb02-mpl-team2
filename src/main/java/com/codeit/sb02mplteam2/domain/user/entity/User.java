@@ -7,6 +7,7 @@ import com.codeit.sb02mplteam2.domain.binary.entity.BinaryContent;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
@@ -25,16 +26,19 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Table(name = "users")
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
+@EntityListeners(AuditingEntityListener.class) // @CreatedDate 사용하려면 작성해야함
 public class User {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(updatable = false, nullable = false)
   private Long id;
 
   @Column(nullable = false, length = 30)
@@ -43,11 +47,14 @@ public class User {
   @Column(nullable = false, unique = true, length = 50)
   private String email;
 
-  @Column(nullable = false, length = 50)
+  @Column(nullable = false, length = 100)
   private String password;
 
   @Column(nullable = false)
   private boolean isLocked = false;
+
+  @Column(nullable = false)
+  private boolean isDeleted = false;
 
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   private List<Playlist> playlists = new ArrayList<>();
@@ -90,4 +97,11 @@ public class User {
      this.profile = newProfile;
    }
  }
+
+ public void updateRole(Role role) {
+   if(this.role != role) {
+     this.role = role;
+   }
+ }
+
 }
