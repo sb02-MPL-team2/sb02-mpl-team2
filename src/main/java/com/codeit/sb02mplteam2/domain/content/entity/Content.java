@@ -13,9 +13,11 @@ import jakarta.persistence.OneToOne;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Getter;
 import org.springframework.data.annotation.CreatedDate;
 
 @Entity
+@Getter
 public class Content {
 
   @Id
