@@ -10,7 +10,6 @@ import com.codeit.sb02mplteam2.domain.review.repository.ReviewRepository;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
 import com.codeit.sb02mplteam2.exception.ErrorCode;
-import com.codeit.sb02mplteam2.exception.MplException;
 import com.codeit.sb02mplteam2.exception.content.ContentException;
 import com.codeit.sb02mplteam2.exception.review.ReviewException;
 import com.codeit.sb02mplteam2.exception.user.UserException;
