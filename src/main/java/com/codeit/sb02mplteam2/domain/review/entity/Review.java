@@ -64,8 +64,9 @@ public class Review {
     return target;
   }
 
+
   public void update(int newRating, String newComment) {
-    this.rating = updateField(this.rating, newRating);
+    this.rating = newRating;
     this.comment = updateField(this.comment, newComment);
   }
 
