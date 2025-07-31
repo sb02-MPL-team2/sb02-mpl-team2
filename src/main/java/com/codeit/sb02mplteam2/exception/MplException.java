@@ -12,6 +12,13 @@ public class MplException extends RuntimeException {
   private final ErrorCode errorCode;
   private final Map<String, Object> details;
 
+  public MplException(String message) {
+    super(message);
+    this.timestamp = LocalDateTime.now();
+    this.errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
+    this.details = new HashMap<>();
+  }
+
   public MplException(ErrorCode errorCode) {
     super(errorCode.getMessage());
     this.timestamp = LocalDateTime.now();
