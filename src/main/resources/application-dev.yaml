@@ -36,5 +36,10 @@ logging:
     org:
       hibernate: warn
       springframework:
-        web: warn # 스프링 웹 관련 로그를 줄입니다.
+        web: DEBUG # 스프링 웹 관련 로그를 줄입니다.
         data: warn
+mpl:
+  admin:
+    username: ${ADMIN_USERNAME:admin}
+    email: ${ADMIN_EMAIL:admin@mpl.com}
+    password: ${ADMIN_PASSWORD:admin123!}

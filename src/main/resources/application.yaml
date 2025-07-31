@@ -23,6 +23,8 @@ spring:
       enabled: false
     jdbc:
       initialize-schema: never
+  config:
+    import: optional:file:.env[.properties]
 
 logging:
   level:
