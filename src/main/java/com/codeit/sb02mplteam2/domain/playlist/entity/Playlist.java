@@ -15,11 +15,16 @@ import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedDate;
 
 @Entity
 @Table(name = "playlists")
+//TODO 나중에 제약조건 걸 때, Protected 걸어야 함
+@NoArgsConstructor
+@Getter
 public class Playlist {
 
   @Id
@@ -39,6 +44,7 @@ public class Playlist {
   @JoinColumn(name = "user_id")
   private User user;
 
+  //TODO 구독자 수 관련해서 의논해야함
   @Column(name = "subscription_count")
   private int subscribeCount;
 
@@ -51,13 +57,26 @@ public class Playlist {
   @OneToMany(mappedBy = "playlist", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<PlaylistItem> items = new ArrayList<>();
 
-  public void setUser(User user) {
-    // 기존 User와의 연관관계를 제거 (있을 경우)
-    if (this.user != null) {
-      this.user.getPlaylists().remove(this);
-    }
+  public Playlist(User user, String title, String description) {
     this.user = user;
-    // 새로운 User의 playlists에 현재 Playlist를 추가
-    user.getPlaylists().add(this);
+    this.title = title;
+    this.description = description;
+  }
+
+  public void addItem(PlaylistItem playlistItem) {
+    items.add(playlistItem);
+    playlistItem.setPlaylist(this);
+  }
+
+  private<T> T updateField (T target, T replace) {
+    if (replace != null && !target.equals(replace)) {
+      return replace;
+    }
+    return target;
+  }
+
+  public void update(String newTitle, String newDescription) {
+    this.title = updateField(this.title, newTitle);
+    this.description = updateField(this.description, newDescription);
   }
 }
