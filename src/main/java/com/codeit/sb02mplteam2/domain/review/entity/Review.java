@@ -20,7 +20,6 @@ import org.springframework.data.annotation.CreatedDate;
 
 @Entity
 @Table(name = "reviews")
-@RequiredArgsConstructor
 @NoArgsConstructor
 @Getter
 public class Review {
