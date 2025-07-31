@@ -8,7 +8,6 @@ import lombok.Builder;
 public record BinaryContentDto(
     Long id,
     LocalDateTime createdAt,
-    LocalDateTime updatedAt,
     String fileName,
     String extension,
     String contentType,
@@ -18,7 +17,6 @@ public record BinaryContentDto(
     return BinaryContentDto.builder()
         .id(binaryContent.getId())
         .createdAt(binaryContent.getCreatedAt())
-        .updatedAt(binaryContent.getUpdatedAt())
         .fileName(binaryContent.getFileName())
         .extension(binaryContent.getExtension())
         .contentType(binaryContent.getContentType())
