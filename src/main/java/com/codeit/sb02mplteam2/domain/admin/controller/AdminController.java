@@ -23,7 +23,7 @@ public class AdminController {
   private final AdminService adminService;
 
   @PreAuthorize("hasRole('ADMIN')")
-  @PutMapping("updateUserRole/{userId}")
+  @PutMapping("/users/{userId}/role")
   ResponseEntity<UserDto> updateUserRole(
       @PathVariable Long userId,
       @RequestBody RoleUpdateRequest request
