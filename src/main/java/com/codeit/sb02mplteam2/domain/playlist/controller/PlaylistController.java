@@ -9,7 +9,7 @@ import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistUpdateRequest;
 import com.codeit.sb02mplteam2.domain.playlist.service.PlaylistItemService;
 import com.codeit.sb02mplteam2.domain.playlist.service.PlaylistService;
 import com.codeit.sb02mplteam2.swagger.PlayListApi;
-import java.awt.print.Pageable;
+import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.web.PageableDefault;
