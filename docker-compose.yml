@@ -25,10 +25,11 @@ services:
       - SPRING_DATASOURCE_USERNAME=mpl
       - SPRING_DATASOURCE_PASSWORD=mpl!
       # 원격 디버깅을 활성화하는 옵션 (선택 사항)
-      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+#      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
     # Dockerfile의 ENTRYPOINT를 오버라이드하여 Gradle로 직접 실행합니다.
     # Spring Boot DevTools가 코드 변경을 감지하고 앱을 자동 재시작할 수 있습니다.
-    command: ./gradlew bootRun
+#    command: ./gradlew bootRun
+    command: ./gradlew bootRun -Dspring-boot.run.jvm-arguments="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
     networks:
       - mpl-network
 

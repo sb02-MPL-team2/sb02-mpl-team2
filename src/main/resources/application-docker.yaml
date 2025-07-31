@@ -37,3 +37,10 @@ logging:
         orm.jdbc.bind: trace
       springframework:
         data: info
+
+#TODO 임시로 넣어둠
+mpl:
+  admin:
+    username: ${ADMIN_USERNAME:admin}
+    email: ${ADMIN_EMAIL:admin@mpl.com}
+    password: ${ADMIN_PASSWORD:admin123!}
