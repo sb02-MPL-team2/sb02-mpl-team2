@@ -44,7 +44,7 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(toH2Console()).permitAll() // H2 콘솔은 누구나 접근 가능
             .requestMatchers("/api/auth/**", "/login").permitAll() // 로그인, 회원가입 관련 API 누구나 접근 가능
-            .anyRequest().authenticated() // 나머지 모든 요청은 인증된 사용자만 접근 가능
+            .anyRequest().permitAll() // 나머지 모든 요청은 인증된 사용자만 접근 가능
         )
 
 //        로그인 페이지를 못찾음 /login 페이지를 못찾음
