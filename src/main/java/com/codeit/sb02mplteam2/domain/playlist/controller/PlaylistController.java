@@ -7,6 +7,7 @@ import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistCreateRequest
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistDto;
 import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistUpdateRequest;
 import com.codeit.sb02mplteam2.domain.playlist.service.PlaylistItemService;
+import com.codeit.sb02mplteam2.domain.playlist.service.PlaylistSearchService;
 import com.codeit.sb02mplteam2.domain.playlist.service.PlaylistService;
 import com.codeit.sb02mplteam2.domain.playlist.dto.request.SubscribeRequest;
 import com.codeit.sb02mplteam2.swagger.PlayListApi;
@@ -33,6 +34,7 @@ public class PlaylistController implements PlayListApi {
 
   private final PlaylistService playlistService;
   private final PlaylistItemService playlistItemService;
+  private final PlaylistSearchService playlistSearchService;
 
   @Override
   @PostMapping
@@ -108,21 +110,7 @@ public class PlaylistController implements PlayListApi {
           sort = "createdAt,desc"
       )
       Pageable pageable) {
-    CursorPageResponsePlayListDto response = playlistService.findAllByUserId(userId, cursor, pageable);
+    CursorPageResponsePlayListDto response = playlistSearchService.findAllByUserId(userId, cursor, pageable);
     return ResponseEntity.ok(response);
-  }
-
-  @Override
-  @GetMapping("/content/{contentId}")
-  public ResponseEntity<CursorPageResponsePlayListDto> findAllByContentId(
-      @PathVariable Long contentId,
-      @RequestParam(value = "cursor", required = false) LocalDateTime cursor,
-      @PageableDefault(
-          size = 20,
-          page = 0,
-          sort = "createdAt,desc"
-      )
-      Pageable pageable) {
-    return null;
   }
 }

@@ -22,8 +22,4 @@ public interface PlaylistService {
 
   void delete(Long id);
 
-  CursorPageResponsePlayListDto findAllByContentId(Long contentId, LocalDateTime cursor, Pageable pageable);
-
-  CursorPageResponsePlayListDto findAllByUserId(Long userId, LocalDateTime cursor, Pageable pageable);
-
 }

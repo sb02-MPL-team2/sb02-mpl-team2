@@ -138,24 +138,4 @@ public class BasicPlaylistService implements PlaylistService{
     List<ContentResponseDto> responseDto = toResponseDto(playlist.getItems());
     return PlaylistDto.from(playlist, responseDto);
   }
-
-  @Override
-  public CursorPageResponsePlayListDto findAllByContentId(Long contentId, LocalDateTime cursor,
-      Pageable pageable) {
-    return null;
-  }
-
-  @Override
-  public CursorPageResponsePlayListDto findAllByUserId(Long userId, LocalDateTime cursor,
-      Pageable pageable) {
-    Slice<Playlist> slice = playlistRepository.findAllByUserId(userId, cursor, pageable);
-
-    LocalDateTime nextCursor = null;
-    if (!slice.getContent().isEmpty()) {
-      nextCursor = slice.getContent().get(slice.getContent().size() - 1)
-          .getCreatedAt();
-    }
-
-    return CursorPageResponsePlayListDto.of(slice, nextCursor);
-  }
 }
