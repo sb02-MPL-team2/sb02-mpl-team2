@@ -10,18 +10,17 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedDate;
 
 @Entity
 @Table(name = "reviews")
-@RequiredArgsConstructor
+@NoArgsConstructor
 @Getter
 public class Review {
 
@@ -51,22 +50,24 @@ public class Review {
   @Column(nullable = false)
   private int rating;
 
-  public Review(User user, Content content, String comment, int rating) {
+  public Review(User user, Content content, int rating, String comment) {
     this.user = user;
     this.content = content;
-    this.comment = comment;
     this.rating = rating;
+    this.comment = comment;
   }
 
-  @PrePersist
-  private void onCreated() {
-    this.createdAt = LocalDateTime.now();
-    this.updatedAt = LocalDateTime.now();
+  private<T> T updateField (T target, T replace) {
+    if (replace != null && !target.equals(replace)) {
+      return replace;
+    }
+    return target;
   }
 
-  @PreUpdate
-  private void onUpdated() {
-    this.updatedAt = LocalDateTime.now();
+
+  public void update(int newRating, String newComment) {
+    this.rating = newRating;
+    this.comment = updateField(this.comment, newComment);
   }
 
 }

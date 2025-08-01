@@ -13,6 +13,7 @@ import com.codeit.sb02mplteam2.swagger.playlist.PlaylistSuccessCreationResponse;
 import com.codeit.sb02mplteam2.swagger.playlist.PlaylistSuccessDeleteResponse;
 import com.codeit.sb02mplteam2.swagger.playlist.PlaylistSuccessRetrievalResponse;
 import com.codeit.sb02mplteam2.swagger.playlist.PlaylistSuccessSingleRetrievalResponse;
+import com.codeit.sb02mplteam2.swagger.playlist.PlaylistSuccessUpdateResponse;
 import com.codeit.sb02mplteam2.swagger.user.UserNotFoundResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -54,7 +55,7 @@ public interface PlayListApi {
       @RequestBody PlaylistItemRequest request
   );
 
-  @Operation(summary = "PlayList 내 Content 추가")
+  @Operation(summary = "PlayList 내 다수의 Content 추가")
   @ItemSuccessInsertResponse
   @PlaylistNotFoundResponse
   @ContentNotFoundResponse
@@ -75,10 +76,7 @@ public interface PlayListApi {
   );
 
   @Operation(summary = "Message 내용 수정")
-  @ApiResponse(
-      responseCode = "200", description = "PlayList가 성공적으로 수정됨",
-      content = @Content(schema = @Schema(implementation = PlaylistDto.class))
-  )
+  @PlaylistSuccessUpdateResponse
   @PlaylistNotFoundResponse
   ResponseEntity<PlaylistDto> update(
       @Parameter(description = "수정할 PlayList ID")
