@@ -11,9 +11,12 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @Slf4j
 @Configuration
@@ -53,8 +56,22 @@ public class SecurityConfig {
 //            .defaultSuccessUrl("/", true)
 //            .failureUrl("/login?error=true")
 //        );
-        .formLogin(Customizer.withDefaults());
+        .formLogin(Customizer.withDefaults())
+        .sessionManagement(session -> session
+            .maximumSessions(1) // 한 사용자 당 최대 1개의 세션만 허용 (동시 로그인 방지)
+            .sessionRegistry(sessionRegistry()) // 세션 정보를 관리할 레지스트리 등록
+        );
+
     return http.build();
   }
 
+  @Bean
+  public SessionRegistry sessionRegistry() {
+    return new SessionRegistryImpl();
+  }
+
+  @Bean
+  public HttpSessionEventPublisher httpSessionEventPublisher() {
+    return new HttpSessionEventPublisher();
+  }
 }
