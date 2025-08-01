@@ -1,5 +1,8 @@
 package com.codeit.sb02mplteam2.domain.playlist.service;
 
+import static com.codeit.sb02mplteam2.domain.playlist.service.PlaylistUtil.toResponseDto;
+
+import com.codeit.sb02mplteam2.domain.content.dto.ContentResponseDto;
 import com.codeit.sb02mplteam2.domain.playlist.dto.CursorPageResponsePlayListDto;
 import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistCreateRequest;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistDto;
@@ -15,6 +18,7 @@ import com.codeit.sb02mplteam2.exception.ErrorCode;
 import com.codeit.sb02mplteam2.exception.playlist.PlaylistException;
 import com.codeit.sb02mplteam2.exception.user.UserException;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -78,8 +82,8 @@ public class BasicPlaylistService implements PlaylistService{
           user.getUsername(), playlistId, playlist.getTitle());
     }
     playlistRepository.save(playlist);
-
-    return PlaylistDto.from(playlist);
+    List<ContentResponseDto> responseDto = toResponseDto(playlist.getItems());
+    return PlaylistDto.from(playlist, responseDto);
   }
 
   @Override
@@ -106,8 +110,8 @@ public class BasicPlaylistService implements PlaylistService{
       log.warn("구독 취소 실패 user id = {}, name = {}, playlist id = {}, playlist Title = {}", userId,
           user.getUsername(), playlistId, playlist.getTitle());
     }
-
-    return PlaylistDto.from(playlist);
+    List<ContentResponseDto> responseDto = toResponseDto(playlist.getItems());
+    return PlaylistDto.from(playlist, responseDto);
   }
 
   @Override
@@ -123,14 +127,16 @@ public class BasicPlaylistService implements PlaylistService{
         () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
     playlist.update(request.newTitle(), request.newDescription());
     playlistRepository.save(playlist);
-    return PlaylistDto.from(playlist);
+    List<ContentResponseDto> responseDto = toResponseDto(playlist.getItems());
+    return PlaylistDto.from(playlist, responseDto);
   }
 
   @Override
   public PlaylistDto findById(Long id) {
     Playlist playlist = playlistRepository.findById(id).orElseThrow(
         () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
-    return PlaylistDto.from(playlist);
+    List<ContentResponseDto> responseDto = toResponseDto(playlist.getItems());
+    return PlaylistDto.from(playlist, responseDto);
   }
 
   @Override
