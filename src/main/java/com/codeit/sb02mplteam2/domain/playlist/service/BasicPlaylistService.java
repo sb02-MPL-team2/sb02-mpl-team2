@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +36,7 @@ public class BasicPlaylistService implements PlaylistService{
   private final SubscribeRepository subscribeRepository;
 
   @Override
+  @Transactional
   public PlaylistDto create(PlaylistCreateRequest request) {
     Long userId = request.userId();
     User user = userRepository.findById(userId).orElseThrow(
@@ -59,6 +61,7 @@ public class BasicPlaylistService implements PlaylistService{
   }
 
   @Override
+  @Transactional
   public PlaylistDto subscribe(SubscribeRequest request) {
     Long userId = request.userId();
     User user = userRepository.findById(userId).orElseThrow(
@@ -87,6 +90,7 @@ public class BasicPlaylistService implements PlaylistService{
   }
 
   @Override
+  @Transactional
   public PlaylistDto unSubscribe(SubscribeRequest request) {
     Long userId = request.userId();
     User user = userRepository.findById(userId).orElseThrow(
@@ -115,6 +119,7 @@ public class BasicPlaylistService implements PlaylistService{
   }
 
   @Override
+  @Transactional
   public void delete(Long id) {
     Playlist playlist = playlistRepository.findById(id).orElseThrow(
         () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
@@ -122,6 +127,7 @@ public class BasicPlaylistService implements PlaylistService{
   }
 
   @Override
+  @Transactional
   public PlaylistDto update(Long id, PlaylistUpdateRequest request) {
     Playlist playlist = playlistRepository.findById(id).orElseThrow(
         () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
@@ -132,6 +138,7 @@ public class BasicPlaylistService implements PlaylistService{
   }
 
   @Override
+  @Transactional(readOnly = true)
   public PlaylistDto findById(Long id) {
     Playlist playlist = playlistRepository.findById(id).orElseThrow(
         () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));

@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +23,7 @@ public class BasicPlaylistSearchService implements PlaylistSearchService{
   private final PlaylistRepository playlistRepository;
 
   @Override
+  @Transactional(readOnly = true)
   public CursorPageResponsePlayListDto findAllByUserId(Long userId, LocalDateTime cursor,
       Pageable pageable) {
     Slice<Playlist> slice = playlistRepository.findAllByUserId(userId, cursor, pageable);

@@ -19,6 +19,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
@@ -34,6 +35,7 @@ public class BasicPlaylistItemService implements PlaylistItemService {
    */
 
   @Override
+  @Transactional
   public PlaylistDto addContent(Long playlistId, Long contentId) {
     Playlist playlist = playlistRepository.findById(playlistId).orElseThrow(
         () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
@@ -62,6 +64,7 @@ public class BasicPlaylistItemService implements PlaylistItemService {
   }
 
   @Override
+  @Transactional
   public PlaylistDto addContentList(Long playlistId, List<Long> contentIds) {
     Playlist playlist = playlistRepository.findById(playlistId).orElseThrow(
         () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
@@ -89,6 +92,7 @@ public class BasicPlaylistItemService implements PlaylistItemService {
   }
 
   @Override
+  @Transactional
   public void deleteAllByPlaylistId(Long playlistId) {
     Playlist playlist = playlistRepository.findById(playlistId).orElseThrow(
         () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
@@ -100,6 +104,7 @@ public class BasicPlaylistItemService implements PlaylistItemService {
 
   //개인 플레이리스트에서 콘텐츠 삭제
   @Override
+  @Transactional
   public void deleteByContentId(Long playlistId, Long contentId) {
     Playlist playlist = playlistRepository.findById(playlistId).orElseThrow(
         () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
