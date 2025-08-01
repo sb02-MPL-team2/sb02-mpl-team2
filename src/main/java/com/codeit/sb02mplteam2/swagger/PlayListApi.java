@@ -6,6 +6,7 @@ import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistDto;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistItemListRequest;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistItemRequest;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistUpdateRequest;
+import com.codeit.sb02mplteam2.domain.playlist.service.SubscribeRequest;
 import com.codeit.sb02mplteam2.swagger.content.ContentNotFoundResponse;
 import com.codeit.sb02mplteam2.swagger.playlist.ItemSuccessInsertResponse;
 import com.codeit.sb02mplteam2.swagger.playlist.PlaylistNotFoundResponse;
@@ -14,6 +15,7 @@ import com.codeit.sb02mplteam2.swagger.playlist.PlaylistSuccessDeleteResponse;
 import com.codeit.sb02mplteam2.swagger.playlist.PlaylistSuccessRetrievalResponse;
 import com.codeit.sb02mplteam2.swagger.playlist.PlaylistSuccessSingleRetrievalResponse;
 import com.codeit.sb02mplteam2.swagger.playlist.PlaylistSuccessUpdateResponse;
+import com.codeit.sb02mplteam2.swagger.playlist.SubscribeNotFoundResponse;
 import com.codeit.sb02mplteam2.swagger.user.UserNotFoundResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -41,6 +43,31 @@ public interface PlayListApi {
           content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
       )
       @RequestBody PlaylistCreateRequest request
+  );
+
+  @Operation(summary = "PlayList 구독하기")
+  @PlaylistSuccessUpdateResponse
+  @UserNotFoundResponse
+  @PlaylistNotFoundResponse
+  ResponseEntity<PlaylistDto> subscribe(
+      @Parameter(
+          description = "Subscribe 생성 정보",
+          content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
+      )
+      @RequestBody SubscribeRequest request
+  );
+
+  @Operation(summary = "PlayList 구독 취소하기")
+  @PlaylistSuccessUpdateResponse
+  @UserNotFoundResponse
+  @PlaylistNotFoundResponse
+  @SubscribeNotFoundResponse
+  ResponseEntity<PlaylistDto> unSubscribe(
+      @Parameter(
+          description = "Subscribe 취소 정보",
+          content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
+      )
+      @RequestBody SubscribeRequest request
   );
 
   @Operation(summary = "PlayList 내 Content 추가")

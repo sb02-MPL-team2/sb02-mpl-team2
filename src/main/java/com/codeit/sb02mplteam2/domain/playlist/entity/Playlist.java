@@ -14,7 +14,9 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -44,9 +46,8 @@ public class Playlist {
   @JoinColumn(name = "user_id")
   private User user;
 
-  //TODO 구독자 수 관련해서 의논해야함
-  @Column(name = "subscription_count")
-  private int subscribeCount;
+  @OneToMany(mappedBy = "playlist", cascade = CascadeType.ALL, orphanRemoval = true)
+  private Set<Subscribe> subscribes = new HashSet<>();
 
   @Column(name = "description")
   private String description;
@@ -57,10 +58,26 @@ public class Playlist {
   @OneToMany(mappedBy = "playlist", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<PlaylistItem> items = new ArrayList<>();
 
-  public Playlist(User user, String title, String description) {
+  public Playlist(User user,String title, String description) {
     this.user = user;
     this.title = title;
     this.description = description;
+  }
+
+  public boolean subscribe(Subscribe subscribe) {
+    return subscribes.add(subscribe);
+  }
+
+  public boolean unSubscribe(Subscribe subscribe) {
+    try {
+      if (subscribe.getUser().equals(this.user)) {
+        return false;
+      }
+      subscribes.remove(subscribe);
+      return true;
+    } catch (Exception e) {
+      return false;
+    }
   }
 
   public void addItem(PlaylistItem playlistItem) {

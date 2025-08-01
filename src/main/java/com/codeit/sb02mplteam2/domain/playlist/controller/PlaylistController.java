@@ -8,6 +8,7 @@ import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistDto;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistUpdateRequest;
 import com.codeit.sb02mplteam2.domain.playlist.service.PlaylistItemService;
 import com.codeit.sb02mplteam2.domain.playlist.service.PlaylistService;
+import com.codeit.sb02mplteam2.domain.playlist.service.SubscribeRequest;
 import com.codeit.sb02mplteam2.swagger.PlayListApi;
 import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
@@ -39,6 +40,21 @@ public class PlaylistController implements PlayListApi {
     PlaylistDto playlistDto = playlistService.create(request);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(playlistDto);
+  }
+
+  @Override
+  @PostMapping("/subscribe")
+  public ResponseEntity<PlaylistDto> subscribe(SubscribeRequest request) {
+    PlaylistDto playlistDto = playlistService.subscribe(request);
+    return ResponseEntity.ok(playlistDto);
+  }
+
+  @Override
+  @DeleteMapping("/unsubscribe")
+  public ResponseEntity<PlaylistDto> unSubscribe(SubscribeRequest request) {
+    PlaylistDto playlistDto = playlistService.unSubscribe(request);
+
+    return ResponseEntity.ok(playlistDto);
   }
 
   @Override

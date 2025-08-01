@@ -11,6 +11,10 @@ public interface PlaylistService {
 
   PlaylistDto create(PlaylistCreateRequest request);
 
+  PlaylistDto subscribe(SubscribeRequest request);
+
+  PlaylistDto unSubscribe(SubscribeRequest request);
+
   PlaylistDto update(Long id, PlaylistUpdateRequest request);
 
   PlaylistDto findById(Long id);
