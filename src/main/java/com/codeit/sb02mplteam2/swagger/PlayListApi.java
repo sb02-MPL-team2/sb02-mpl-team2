@@ -1,12 +1,12 @@
 package com.codeit.sb02mplteam2.swagger;
 
 import com.codeit.sb02mplteam2.domain.playlist.dto.CursorPageResponsePlayListDto;
-import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistCreateRequest;
+import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistCreateRequest;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistDto;
-import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistItemListRequest;
-import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistItemRequest;
-import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistUpdateRequest;
-import com.codeit.sb02mplteam2.domain.playlist.service.SubscribeRequest;
+import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistItemListRequest;
+import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistItemRequest;
+import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistUpdateRequest;
+import com.codeit.sb02mplteam2.domain.playlist.dto.request.SubscribeRequest;
 import com.codeit.sb02mplteam2.swagger.content.ContentNotFoundResponse;
 import com.codeit.sb02mplteam2.swagger.playlist.ItemSuccessInsertResponse;
 import com.codeit.sb02mplteam2.swagger.playlist.PlaylistNotFoundResponse;
@@ -20,9 +20,6 @@ import com.codeit.sb02mplteam2.swagger.user.UserNotFoundResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;

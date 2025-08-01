@@ -1,14 +1,14 @@
 package com.codeit.sb02mplteam2.domain.playlist.controller;
 
 import com.codeit.sb02mplteam2.domain.playlist.dto.CursorPageResponsePlayListDto;
-import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistItemListRequest;
-import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistItemRequest;
-import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistCreateRequest;
+import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistItemListRequest;
+import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistItemRequest;
+import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistCreateRequest;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistDto;
-import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistUpdateRequest;
+import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistUpdateRequest;
 import com.codeit.sb02mplteam2.domain.playlist.service.PlaylistItemService;
 import com.codeit.sb02mplteam2.domain.playlist.service.PlaylistService;
-import com.codeit.sb02mplteam2.domain.playlist.service.SubscribeRequest;
+import com.codeit.sb02mplteam2.domain.playlist.dto.request.SubscribeRequest;
 import com.codeit.sb02mplteam2.swagger.PlayListApi;
 import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
