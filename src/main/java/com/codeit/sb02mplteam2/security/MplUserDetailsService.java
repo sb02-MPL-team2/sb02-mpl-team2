@@ -20,7 +20,7 @@ public class MplUserDetailsService implements UserDetailsService {
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
     // 전달받은 username으로 데이터베이스에서 사용자를 찾습니다.
     User user = userRepository.findByUsername(username)
-        .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다." + username));
+        .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
     // UsernameNotFoundException -> Bad Credential
 
 //    TODO Custom Longin page 만들어지면 email로 인증, 지금은 default form login 이라 username 사용

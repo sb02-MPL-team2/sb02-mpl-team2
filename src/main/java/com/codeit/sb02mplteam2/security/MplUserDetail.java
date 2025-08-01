@@ -1,6 +1,5 @@
 package com.codeit.sb02mplteam2.security;
 
-import com.codeit.sb02mplteam2.domain.user.dto.UserDto;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import java.util.Collection;
 import java.util.Collections;

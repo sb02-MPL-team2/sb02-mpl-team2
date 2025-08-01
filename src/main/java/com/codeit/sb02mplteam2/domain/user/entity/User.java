@@ -104,12 +104,12 @@ public class User {
     }
   }
 
-  public void lock(){
-   this.isLocked = true;
+  public void lock() {
+    this.isLocked = true;
   }
 
-  public void unlock(){
-   this.isLocked = false;
+  public void unlock() {
+    this.isLocked = false;
   }
 
 }
