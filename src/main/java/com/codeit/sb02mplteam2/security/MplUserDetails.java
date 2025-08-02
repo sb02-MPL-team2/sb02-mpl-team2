@@ -11,12 +11,16 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 @Getter
 @RequiredArgsConstructor
-public class MplUserDetail implements UserDetails {
+public class MplUserDetails implements UserDetails {
 
   private final User user;
 
   public Collection<? extends GrantedAuthority> getAuthorities() {
     return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+  }
+
+  public Long getId() {
+    return user.getId();
   }
 
   @Override
@@ -26,8 +30,6 @@ public class MplUserDetail implements UserDetails {
 
   @Override
   public String getPassword() {
-    // Todo custom Login 사용하게 되면 교체
-//    return user.getEmail();
     return user.getPassword();
   }
 
