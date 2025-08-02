@@ -1,11 +1,12 @@
 package com.codeit.sb02mplteam2.swagger;
 
 import com.codeit.sb02mplteam2.domain.playlist.dto.CursorPageResponsePlayListDto;
-import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistCreateRequest;
+import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistCreateRequest;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistDto;
-import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistItemListRequest;
-import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistItemRequest;
-import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistUpdateRequest;
+import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistItemListRequest;
+import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistItemRequest;
+import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistUpdateRequest;
+import com.codeit.sb02mplteam2.domain.playlist.dto.request.SubscribeRequest;
 import com.codeit.sb02mplteam2.swagger.content.ContentNotFoundResponse;
 import com.codeit.sb02mplteam2.swagger.playlist.ItemSuccessInsertResponse;
 import com.codeit.sb02mplteam2.swagger.playlist.PlaylistNotFoundResponse;
@@ -14,13 +15,11 @@ import com.codeit.sb02mplteam2.swagger.playlist.PlaylistSuccessDeleteResponse;
 import com.codeit.sb02mplteam2.swagger.playlist.PlaylistSuccessRetrievalResponse;
 import com.codeit.sb02mplteam2.swagger.playlist.PlaylistSuccessSingleRetrievalResponse;
 import com.codeit.sb02mplteam2.swagger.playlist.PlaylistSuccessUpdateResponse;
+import com.codeit.sb02mplteam2.swagger.playlist.SubscribeNotFoundResponse;
 import com.codeit.sb02mplteam2.swagger.user.UserNotFoundResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
@@ -41,6 +40,31 @@ public interface PlayListApi {
           content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
       )
       @RequestBody PlaylistCreateRequest request
+  );
+
+  @Operation(summary = "PlayList 구독하기")
+  @PlaylistSuccessUpdateResponse
+  @UserNotFoundResponse
+  @PlaylistNotFoundResponse
+  ResponseEntity<PlaylistDto> subscribe(
+      @Parameter(
+          description = "Subscribe 생성 정보",
+          content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
+      )
+      @RequestBody SubscribeRequest request
+  );
+
+  @Operation(summary = "PlayList 구독 취소하기")
+  @PlaylistSuccessUpdateResponse
+  @UserNotFoundResponse
+  @PlaylistNotFoundResponse
+  @SubscribeNotFoundResponse
+  ResponseEntity<PlaylistDto> unSubscribe(
+      @Parameter(
+          description = "Subscribe 취소 정보",
+          content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
+      )
+      @RequestBody SubscribeRequest request
   );
 
   @Operation(summary = "PlayList 내 Content 추가")
@@ -99,19 +123,6 @@ public interface PlayListApi {
   ResponseEntity<CursorPageResponsePlayListDto> findAllByUserId(
       @Parameter(description = "조회할 user ID")
       Long userId,
-      @Parameter(description = "페이징 커서 정보")
-      LocalDateTime cursor,
-      @Parameter(description = "페이징 정보", example = "{\"size\": 20, \"sort\": \"createdAt,desc\"}")
-      Pageable pageable
-  );
-
-  @Operation(summary = "PlayList 목록 조회")
-  @PlaylistSuccessRetrievalResponse
-  @ContentNotFoundResponse
-  @PlaylistNotFoundResponse
-  ResponseEntity<CursorPageResponsePlayListDto> findAllByContentId(
-      @Parameter(description = "조회할 content ID")
-      Long contentId,
       @Parameter(description = "페이징 커서 정보")
       LocalDateTime cursor,
       @Parameter(description = "페이징 정보", example = "{\"size\": 20, \"sort\": \"createdAt,desc\"}")

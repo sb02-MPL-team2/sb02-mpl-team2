@@ -1,4 +1,4 @@
-package com.codeit.sb02mplteam2.domain.playlist.dto;
+package com.codeit.sb02mplteam2.domain.playlist.dto.request;
 
 import java.util.List;
 

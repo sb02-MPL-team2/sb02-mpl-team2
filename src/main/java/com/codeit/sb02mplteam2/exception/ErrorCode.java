@@ -21,6 +21,7 @@ public enum ErrorCode {
 
   //Playlist
   PLAYLIST_NOT_FOUND(HttpStatus.NOT_FOUND,"플레이리스트를 찾을 수 없습니다."),
+  SUBSCRIBE_NOT_FOUND(HttpStatus.NOT_FOUND,"구독 정보를 찾을 수 없습니다."),
 
   //Review
   REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND,"리뷰를 찾을 수 없습니다.");

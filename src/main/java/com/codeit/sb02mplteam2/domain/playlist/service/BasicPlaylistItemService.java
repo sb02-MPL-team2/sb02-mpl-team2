@@ -1,5 +1,8 @@
 package com.codeit.sb02mplteam2.domain.playlist.service;
 
+import static com.codeit.sb02mplteam2.domain.playlist.service.PlaylistUtil.toResponseDto;
+
+import com.codeit.sb02mplteam2.domain.content.dto.ContentResponseDto;
 import com.codeit.sb02mplteam2.domain.content.entity.Content;
 import com.codeit.sb02mplteam2.domain.content.repository.ContentRepository;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistDto;
@@ -8,7 +11,6 @@ import com.codeit.sb02mplteam2.domain.playlist.entity.PlaylistItem;
 import com.codeit.sb02mplteam2.domain.playlist.repository.PlaylistItemRepository;
 import com.codeit.sb02mplteam2.domain.playlist.repository.PlaylistRepository;
 import com.codeit.sb02mplteam2.exception.ErrorCode;
-import com.codeit.sb02mplteam2.exception.MplException;
 import com.codeit.sb02mplteam2.exception.content.ContentException;
 import com.codeit.sb02mplteam2.exception.playlist.PlaylistException;
 import java.util.ArrayList;
@@ -17,6 +19,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
@@ -32,6 +35,7 @@ public class BasicPlaylistItemService implements PlaylistItemService {
    */
 
   @Override
+  @Transactional
   public PlaylistDto addContent(Long playlistId, Long contentId) {
     Playlist playlist = playlistRepository.findById(playlistId).orElseThrow(
         () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
@@ -55,11 +59,12 @@ public class BasicPlaylistItemService implements PlaylistItemService {
     playlist.addItem(playlistItem);
     playlistRepository.save(playlist);
 
-
-    return PlaylistDto.from(playlist);
+    List<ContentResponseDto> responseDto = toResponseDto(playlist.getItems());
+    return PlaylistDto.from(playlist, responseDto);
   }
 
   @Override
+  @Transactional
   public PlaylistDto addContentList(Long playlistId, List<Long> contentIds) {
     Playlist playlist = playlistRepository.findById(playlistId).orElseThrow(
         () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
@@ -81,10 +86,13 @@ public class BasicPlaylistItemService implements PlaylistItemService {
 
     playlistItemRepository.saveAll(playlistItems);
     playlistRepository.save(playlist);
-    return PlaylistDto.from(playlist);
+
+    List<ContentResponseDto> responseDto = toResponseDto(playlist.getItems());
+    return PlaylistDto.from(playlist, responseDto);
   }
 
   @Override
+  @Transactional
   public void deleteAllByPlaylistId(Long playlistId) {
     Playlist playlist = playlistRepository.findById(playlistId).orElseThrow(
         () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
@@ -96,6 +104,7 @@ public class BasicPlaylistItemService implements PlaylistItemService {
 
   //개인 플레이리스트에서 콘텐츠 삭제
   @Override
+  @Transactional
   public void deleteByContentId(Long playlistId, Long contentId) {
     Playlist playlist = playlistRepository.findById(playlistId).orElseThrow(
         () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
