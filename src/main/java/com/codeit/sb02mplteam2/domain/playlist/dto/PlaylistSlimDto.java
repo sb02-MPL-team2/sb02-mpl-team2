@@ -19,6 +19,7 @@ public record PlaylistSlimDto(
         .updatedAt(playlist.getUpdatedAt())
         .subscribeCount(playlist.getSubscribes().size())
         .totalContent(playlist.getItems().size())
+        .summary(summary)
         .build();
 
   }
