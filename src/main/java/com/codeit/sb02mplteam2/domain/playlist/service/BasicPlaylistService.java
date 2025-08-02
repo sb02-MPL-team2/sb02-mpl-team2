@@ -72,7 +72,8 @@ public class BasicPlaylistService implements PlaylistService{
         () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
 
     // 구독 중복 체크
-    Subscribe existingSubscribe = subscribeRepository.findByUserAndPlaylist(user, playlist);
+    Subscribe existingSubscribe = subscribeRepository.findByUserAndPlaylist(user, playlist)
+        .orElse(null);
     if (existingSubscribe != null) {
       log.warn("이미 구독된 플레이리스트입니다. user id = {}, name = {}, playlist id = {}, playlist Title = {}", userId,
           user.getUsername(), playlistId, playlist.getTitle());
