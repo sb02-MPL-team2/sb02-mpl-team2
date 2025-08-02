@@ -33,7 +33,7 @@ public class BasicAdminService implements AdminService {
     int followerCount = followRepository.countByToUser(user);
     int followingCount = followRepository.countByFromUser(user);
 
-    return userMapper.toDto(user, followerCount, followingCount);
+    return userMapper.toDto(user);
   }
 
   @Transactional

@@ -15,7 +15,7 @@ import com.codeit.sb02mplteam2.domain.user.entity.User;
 import com.codeit.sb02mplteam2.domain.user.mapper.UserMapper;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
 import com.codeit.sb02mplteam2.exception.user.UserNotFoundException;
-import com.codeit.sb02mplteam2.security.MplUserDetail;
+import com.codeit.sb02mplteam2.security.MplUserDetails;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,9 +37,6 @@ public class BasicAdminServiceTest {
 
   @Mock
   private UserRepository userRepository;
-
-  @Mock
-  private FollowRepository followRepository;
 
   @Mock
   private UserMapper userMapper;
@@ -69,9 +66,7 @@ public class BasicAdminServiceTest {
 
     // Mock 객체 행동 정의
     given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
-    given(followRepository.countByToUser(mockUser)).willReturn(5);
-    given(followRepository.countByFromUser(mockUser)).willReturn(10);
-    given(userMapper.toDto(mockUser, 5, 10)).willReturn(expectedDto);
+    given(userMapper.toDto(mockUser)).willReturn(expectedDto);
 
     // when 테스트 실행
     UserDto actualDto = adminService.updateUserRole(userId, request);
@@ -103,7 +98,7 @@ public class BasicAdminServiceTest {
     // given
     assertThat(mockUser.isLocked()).isFalse(); // 초기 상태는 잠겨있지 않음
 
-    UserDetails userDetailsToLock = new MplUserDetail(mockUser);
+    UserDetails userDetailsToLock = new MplUserDetails(mockUser);
     SessionInformation mockSessionInfo = mock(SessionInformation.class);
 
     given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));

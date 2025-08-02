@@ -41,7 +41,7 @@ public class User {
   @Column(updatable = false, nullable = false)
   private Long id;
 
-  @Column(nullable = false, length = 30)
+  @Column(nullable = false, unique = true, length = 30)
   private String username;
 
   @Column(nullable = false, unique = true, length = 50)
@@ -55,6 +55,12 @@ public class User {
 
   @Column(nullable = false)
   private boolean isDeleted = false;
+
+  @Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+  private int followerCount = 0;
+
+  @Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+  private int followingCount = 0;
 
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   private List<Playlist> playlists = new ArrayList<>();
@@ -110,6 +116,30 @@ public class User {
 
   public void unlock() {
     this.isLocked = false;
+  }
+
+  public void softDelete() {
+   this.isDeleted = true;
+  }
+
+  public void restore() {
+   this.isDeleted = false;
+  }
+
+  public void increaseFollowerCount() {
+   this.followerCount++;
+  }
+
+  public void decreaseFollowerCount() {
+   this.followerCount--;
+  }
+
+  public void increaseFollowingCount() {
+   this.followingCount++;
+  }
+
+  public void decreaseFollowingCount() {
+   this.followingCount--;
   }
 
 }
