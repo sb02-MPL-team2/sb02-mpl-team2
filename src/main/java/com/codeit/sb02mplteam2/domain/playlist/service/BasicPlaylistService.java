@@ -71,18 +71,25 @@ public class BasicPlaylistService implements PlaylistService{
     Playlist playlist = playlistRepository.findById(playlistId).orElseThrow(
         () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
 
-    //구독 생성
-    Subscribe subscribe = new Subscribe(user, playlist);
-    subscribeRepository.save(subscribe);
-
-    //구독 추가
-    boolean success = playlist.subscribe(subscribe);
-    if (success) {
-      log.info("구독 성공 user id = {}, name = {}, playlist id = {}, playlist Title = {}", userId,
+    // 구독 중복 체크
+    Subscribe existingSubscribe = subscribeRepository.findByUserAndPlaylist(user, playlist);
+    if (existingSubscribe != null) {
+      log.warn("이미 구독된 플레이리스트입니다. user id = {}, name = {}, playlist id = {}, playlist Title = {}", userId,
           user.getUsername(), playlistId, playlist.getTitle());
     } else {
-      log.warn("구독 실패 user id = {}, name = {}, playlist id = {}, playlist Title = {}", userId,
-          user.getUsername(), playlistId, playlist.getTitle());
+      //구독 생성
+      Subscribe subscribe = new Subscribe(user, playlist);
+      subscribeRepository.save(subscribe);
+
+      //구독 추가
+      boolean success = playlist.subscribe(subscribe);
+      if (success) {
+        log.info("구독 성공 user id = {}, name = {}, playlist id = {}, playlist Title = {}", userId,
+            user.getUsername(), playlistId, playlist.getTitle());
+      } else {
+        log.warn("구독 실패 user id = {}, name = {}, playlist id = {}, playlist Title = {}", userId,
+            user.getUsername(), playlistId, playlist.getTitle());
+      }
     }
     playlistRepository.save(playlist);
     List<ContentResponseDto> responseDto = toResponseDto(playlist.getItems());
