@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE) // private 생성자로 인스턴스화 방지
 public final class PlaylistUtil {
-  private static final int MAX_LENGTH = 30;
+  private static final int MAX_LENGTH = 13;
   //Content DTO 변환 기능
   public static List<ContentResponseDto> toResponseDto(List<PlaylistItem> items) {
     return items.stream()
