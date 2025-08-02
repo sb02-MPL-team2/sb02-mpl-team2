@@ -21,6 +21,11 @@ public class BasicBinaryContentService implements BinaryContentService {
   private final BinaryContentStorage binaryContentStorage;
 
   @Override
+  public BinaryContent create(MultipartFile file) {
+    return null;
+  }
+
+  @Override
   public BinaryContentDto upload(MultipartFile file) throws IOException {
     BinaryContent binaryContent = BinaryContent.from(file);
     binaryContentRepository.save(binaryContent);
