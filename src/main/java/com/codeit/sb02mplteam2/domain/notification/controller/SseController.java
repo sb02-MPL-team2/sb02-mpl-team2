@@ -18,14 +18,15 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class SseController {
 
   private final ConnectionManager connectionManager;
-  // last Event ID = notification ID
   @GetMapping(value = "/sse/{userId}")
   public ResponseEntity<SseEmitter> sse(
-      @PathVariable Long userId,
-      @RequestHeader(value = "Last-Event-ID", required = false) String lastEventId
+      @PathVariable Long userId
+      // last Event ID = notification ID
+//      ,@RequestHeader(value = "Last-Event-ID", required = false) String lastEventId
   ) {
     log.info("SSE 연결 요청: userId={}", userId);
-    SseEmitter sseEmitter = connectionManager.subscribe(userId, lastEventId);
+//    SseEmitter sseEmitter = connectionManager.subscribe(userId, lastEventId);
+    SseEmitter sseEmitter = connectionManager.subscribe(userId);
     return ResponseEntity.ok(sseEmitter);
   }
 
