@@ -47,6 +47,9 @@ public class BasicFollowService implements FollowService {
 
     notificationService.create(followeeId, NEW_FOLLOWER, follow.getId(), followerId);
 
+    followee.increaseFollowerCount();
+    follower.increaseFollowingCount();
+
     return new FollowResponse(followeeId, followerId);
   }
 
@@ -66,6 +69,9 @@ public class BasicFollowService implements FollowService {
         .orElseThrow(() -> new FollowException(ErrorCode.FOLLOW_NOT_FOUND));
 
     followRepository.delete(follow);
+
+    followee.decreaseFollowerCount();
+    follower.decreaseFollowingCount();
 
     return new FollowResponse(followeeId, followerId);
   }
