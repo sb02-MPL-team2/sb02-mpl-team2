@@ -7,20 +7,10 @@ import org.springframework.data.domain.Slice;
 
 @Builder
 public record CursorPageResponsePlayListDto(
-    List<PlaylistDto> content,
+    List<PlaylistSlimDto> content,
     Object nextCursor,
     int size,
     boolean hasNext
 ) {
-
-  public static CursorPageResponsePlayListDto of(Slice<Playlist> slice, Object nextCursor) {
-    List<PlaylistDto> list = slice.getContent().stream().map(PlaylistDto::from).toList();
-    return CursorPageResponsePlayListDto.builder()
-        .content(list)
-        .nextCursor(nextCursor)
-        .size(slice.getSize())
-        .hasNext(slice.hasNext())
-        .build();
-  }
 
 }

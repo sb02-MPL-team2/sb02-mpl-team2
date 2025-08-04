@@ -1,13 +1,15 @@
 package com.codeit.sb02mplteam2.domain.playlist.controller;
 
 import com.codeit.sb02mplteam2.domain.playlist.dto.CursorPageResponsePlayListDto;
-import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistItemListRequest;
-import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistItemRequest;
-import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistCreateRequest;
+import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistItemListRequest;
+import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistItemRequest;
+import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistCreateRequest;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistDto;
-import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistUpdateRequest;
+import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistUpdateRequest;
 import com.codeit.sb02mplteam2.domain.playlist.service.PlaylistItemService;
+import com.codeit.sb02mplteam2.domain.playlist.service.PlaylistSearchService;
 import com.codeit.sb02mplteam2.domain.playlist.service.PlaylistService;
+import com.codeit.sb02mplteam2.domain.playlist.dto.request.SubscribeRequest;
 import com.codeit.sb02mplteam2.swagger.PlayListApi;
 import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
@@ -32,6 +34,7 @@ public class PlaylistController implements PlayListApi {
 
   private final PlaylistService playlistService;
   private final PlaylistItemService playlistItemService;
+  private final PlaylistSearchService playlistSearchService;
 
   @Override
   @PostMapping
@@ -39,6 +42,21 @@ public class PlaylistController implements PlayListApi {
     PlaylistDto playlistDto = playlistService.create(request);
 
     return ResponseEntity.status(HttpStatus.CREATED).body(playlistDto);
+  }
+
+  @Override
+  @PostMapping("/subscribe")
+  public ResponseEntity<PlaylistDto> subscribe(SubscribeRequest request) {
+    PlaylistDto playlistDto = playlistService.subscribe(request);
+    return ResponseEntity.ok(playlistDto);
+  }
+
+  @Override
+  @DeleteMapping("/unsubscribe")
+  public ResponseEntity<PlaylistDto> unSubscribe(SubscribeRequest request) {
+    PlaylistDto playlistDto = playlistService.unSubscribe(request);
+
+    return ResponseEntity.ok(playlistDto);
   }
 
   @Override
@@ -92,21 +110,7 @@ public class PlaylistController implements PlayListApi {
           sort = "createdAt,desc"
       )
       Pageable pageable) {
-    CursorPageResponsePlayListDto response = playlistService.findAllByUserId(userId, cursor, pageable);
+    CursorPageResponsePlayListDto response = playlistSearchService.findAllByUserId(userId, cursor, pageable);
     return ResponseEntity.ok(response);
-  }
-
-  @Override
-  @GetMapping("/content/{contentId}")
-  public ResponseEntity<CursorPageResponsePlayListDto> findAllByContentId(
-      @PathVariable Long contentId,
-      @RequestParam(value = "cursor", required = false) LocalDateTime cursor,
-      @PageableDefault(
-          size = 20,
-          page = 0,
-          sort = "createdAt,desc"
-      )
-      Pageable pageable) {
-    return null;
   }
 }

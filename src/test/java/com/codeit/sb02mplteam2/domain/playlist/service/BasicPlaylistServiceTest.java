@@ -3,22 +3,22 @@ package com.codeit.sb02mplteam2.domain.playlist.service;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.codeit.sb02mplteam2.domain.content.entity.Content;
-import com.codeit.sb02mplteam2.domain.content.repository.ContentRepository;
-import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistCreateRequest;
+import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistCreateRequest;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistDto;
-import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistUpdateRequest;
+import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistUpdateRequest;
+import com.codeit.sb02mplteam2.domain.playlist.dto.request.SubscribeRequest;
 import com.codeit.sb02mplteam2.domain.playlist.entity.Playlist;
+import com.codeit.sb02mplteam2.domain.playlist.entity.Subscribe;
 import com.codeit.sb02mplteam2.domain.playlist.repository.PlaylistRepository;
+import com.codeit.sb02mplteam2.domain.playlist.repository.SubscribeRepository;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
-import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -34,11 +34,15 @@ class BasicPlaylistServiceTest {
   @Mock
   private PlaylistRepository playlistRepository;
 
+  @Mock
+  private SubscribeRepository subscribeRepository;
+
   @InjectMocks
   private BasicPlaylistService playlistService;
 
   private User user;
   private Playlist playlist;
+  private Subscribe subscribe;
   private final String title = "title";
   private final String description = "description";
 
@@ -46,9 +50,12 @@ class BasicPlaylistServiceTest {
   void setUp() {
     user = new User();
     playlist = new Playlist(user, title, description);
+    subscribe = new Subscribe(user, playlist);
+    playlist.subscribe(subscribe);
   }
 
   @Test
+  @DisplayName("플레이리스트 생성 성공 테스트")
   void create() {
     //given
     Long mockUserId = 1L;
@@ -60,11 +67,13 @@ class BasicPlaylistServiceTest {
     //then
     assertAll(
         () -> assertEquals(title, playlistDto.title()),
-        () -> assertEquals(description, playlistDto.description())
+        () -> assertEquals(description, playlistDto.description()),
+        () -> assertEquals(1, playlistDto.subscriberCount())
     );
   }
 
   @Test
+  @DisplayName("설명 없이 플레이리스트 생성 성공 테스트")
   void createWithEmptyDescription() {
     //given
     when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -76,11 +85,75 @@ class BasicPlaylistServiceTest {
     //then
     assertAll(
         () -> assertEquals(title, playlistDto.title()),
-        () -> assertNull(playlistDto.description())
+        () -> assertNull(playlistDto.description()),
+        () -> assertEquals(1, playlistDto.subscriberCount())
     );
   }
 
   @Test
+  @DisplayName("구독 성공 테스트")
+  void subscribe() {
+    // given
+    User newUser = new User();
+    when(userRepository.findById(1L)).thenReturn(Optional.of(newUser));
+    when(playlistRepository.findById(1L)).thenReturn(Optional.of(playlist));
+    SubscribeRequest request = new SubscribeRequest(1L, 1L);
+    // when
+    PlaylistDto playlistDto = playlistService.subscribe(request);
+
+    // then
+    assertAll(
+        () -> assertEquals(title, playlistDto.title()),
+        () -> assertEquals(description, playlistDto.description()),
+        () -> assertEquals(2, playlistDto.subscriberCount())
+    );
+  }
+
+  @Test
+  @DisplayName("구독 취소 성공 테스트")
+  void unSubscribe() {
+    // given
+    User newUser = new User();
+    Subscribe newSubscribe = new Subscribe(newUser, playlist);
+    playlist.subscribe(newSubscribe);
+
+    when(userRepository.findById(1L)).thenReturn(Optional.of(newUser));
+    when(playlistRepository.findById(1L)).thenReturn(Optional.of(playlist));
+    when(subscribeRepository.findByUserAndPlaylist(newUser, playlist)).thenReturn(
+        Optional.of(newSubscribe));
+
+    SubscribeRequest request = new SubscribeRequest(1L, 1L);
+    // when
+    PlaylistDto playlistDto = playlistService.unSubscribe(request);
+    // then
+    assertAll(
+        () -> assertEquals(title, playlistDto.title()),
+        () -> assertEquals(description, playlistDto.description()),
+        () -> assertEquals(1, playlistDto.subscriberCount())
+    );
+  }
+
+  @Test
+  @DisplayName("자기 자신 구독 취소 실패 테스트")
+  void unSubscribeWithMeMustFailed() {
+    // given
+    when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+    when(playlistRepository.findById(1L)).thenReturn(Optional.of(playlist));
+    when(subscribeRepository.findByUserAndPlaylist(user, playlist)).thenReturn(
+        Optional.of(subscribe));
+    SubscribeRequest request = new SubscribeRequest(1L, 1L);
+    // when
+    PlaylistDto playlistDto = playlistService.unSubscribe(request);
+    // then
+    assertAll(
+        () -> assertEquals(title, playlistDto.title()),
+        () -> assertEquals(description, playlistDto.description()),
+        () -> assertEquals(1, playlistDto.subscriberCount())
+    );
+  }
+
+  @Test
+  @DisplayName("업데이트 성공 테스트")
   void update() {
     String newTitle = "newTitle";
     String newDescription = "newDescription";
@@ -96,6 +169,7 @@ class BasicPlaylistServiceTest {
   }
 
   @Test
+  @DisplayName("플레이리스트 단건 조회 테스트")
   void findById() {
     when(playlistRepository.findById(1L)).thenReturn(Optional.of(playlist));
     PlaylistDto playlistDto = playlistService.findById(1L);

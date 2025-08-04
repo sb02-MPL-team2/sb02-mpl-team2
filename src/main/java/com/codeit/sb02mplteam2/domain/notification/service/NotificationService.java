@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.Set;
 
 public interface NotificationService {
-  List<NotificationDto> findAllByReceiverId(Long receiverId);
+//  List<NotificationDto> findAllByReceiverId(Long receiverId);
   void delete(Long notificationId, Long receiverId);
   // targetId = 보내는 사람 혹은 채널 Id, 비동기 실패시 null
-  void create(Long receiverId, NotificationType notificationType, Long targetId, Long publisherId);
+  NotificationDto create(Long receiverId, NotificationType notificationType, Long targetId, Long publisherId);
   // 전체 알림 생성
-  void createAll(Set<Long> receiverIds, NotificationType notificationType, Long targetId, Long publisherId);
+  List<NotificationDto> createAll(Set<Long> receiverIds, NotificationType notificationType, Long targetId, Long publisherId);
 }
