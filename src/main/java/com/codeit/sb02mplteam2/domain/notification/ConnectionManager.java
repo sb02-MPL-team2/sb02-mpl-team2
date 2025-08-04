@@ -24,10 +24,10 @@ public class ConnectionManager {
   //열려져 있는 탭마다 Emitters 연결함
   private final Map<Long, ConnectionInfo> connections = new ConcurrentHashMap<>();// SSE 연결 메모리에 저장
 
-  public SseEmitter subscribe(Long userId) {
+  public Optional<SseEmitter> subscribe(Long userId) {
     if (connectionCount.get() >= MAX_CONNECTIONS) {
       log.warn("SSE 연결이 최대가 되었습니다.");
-      return null;
+      return Optional.empty();
     }
     SseEmitter sseEmitter = new SseEmitter(DEFAULT_TIMEOUT);
     ConnectionInfo connectionInfo = new ConnectionInfo(userId, sseEmitter);
