@@ -50,7 +50,7 @@ public class AlarmSetting {
     this.user = user;
   }
 
-  private boolean updatedField(Boolean newValue, Boolean oldValue) {
+  private Boolean updatedField(Boolean newValue, Boolean oldValue) {
     if (newValue != null && newValue != oldValue) {
       return newValue;
     }
