@@ -1,28 +1,27 @@
 package com.codeit.sb02mplteam2.domain.notification.service;
 
-import com.codeit.sb02mplteam2.domain.notification.EventProcessor;
+import com.codeit.sb02mplteam2.domain.notification.FilteringProcessor;
 import com.codeit.sb02mplteam2.domain.notification.dto.NotificationDto;
 import com.codeit.sb02mplteam2.domain.notification.entity.ConnectionInfo;
-import com.codeit.sb02mplteam2.domain.notification.event.BulkNotificationEvent;
 import com.codeit.sb02mplteam2.domain.notification.event.NotificationEvent;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class NotificationEventListener {
 
-  private final EventProcessor eventProcessor;
+  private final FilteringProcessor filteringProcessor;
   private final NotificationService notificationService;
   private final DeliveryService deliveryService;
 
   @Async
-  @EventListener
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void handleNotificationEvent(NotificationEvent event) {
     log.info("알림 이벤트 발생 type={}, 받는 이 ID={}, 발생된 장소 ID={}, 이벤트 발생시킨 이 ID={}",
         event.getNotificationType(), event.getReceiverId(), event.getTargetId(),
@@ -37,7 +36,7 @@ public class NotificationEventListener {
       return;
     }
 
-    ConnectionInfo connectionInfo = eventProcessor.filterTargetClient(event.getReceiverId());
+    ConnectionInfo connectionInfo = filteringProcessor.filterTargetClient(event.getReceiverId());
     deliveryService.deliverToClient(connectionInfo, notificationDto );
   }
 
