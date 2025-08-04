@@ -177,7 +177,7 @@ public class UserServiceTest {
   void update_Success() {
     // given
     UserUpdateRequest request = new UserUpdateRequest("updatedUser",
-        "udpated@example.com", "newPassword");
+        "updated@example.com", "newPassword");
     given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
     given(userRepository.existsByUsername(request.newUsername())).willReturn(false);
     given(userRepository.existsByEmail(request.newEmail())).willReturn(false);
