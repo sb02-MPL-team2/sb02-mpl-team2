@@ -4,6 +4,7 @@ import com.codeit.sb02mplteam2.domain.notification.entity.ConnectionInfo;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ public class ConnectionManager {
       log.warn("SSE 연결이 최대가 되었습니다.");
       return Optional.empty();
     }
+    //TODO 여러 스레드에서 동시에 실행할 경우, 최대 연결을 넘어설 수 있는 문제 존재함
     SseEmitter sseEmitter = new SseEmitter(DEFAULT_TIMEOUT);
     ConnectionInfo connectionInfo = new ConnectionInfo(userId, sseEmitter);
     connections.put(userId, connectionInfo);
@@ -39,7 +41,7 @@ public class ConnectionManager {
     sseEmitter.onTimeout(() -> removeConnection(userId, "onTimeout"));
     sseEmitter.onError(e -> removeConnection(userId, "onError: " + e.getMessage()));
 
-    return sseEmitter;
+    return Optional.of(sseEmitter);
   }
 
   public List<ConnectionInfo> getConnections() {

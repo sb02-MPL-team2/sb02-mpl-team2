@@ -26,8 +26,12 @@ public class SseController {
   ) {
     log.info("SSE 연결 요청: userId={}", userId);
 //    SseEmitter sseEmitter = connectionManager.subscribe(userId, lastEventId);
-    SseEmitter sseEmitter = connectionManager.subscribe(userId);
-    return ResponseEntity.ok(sseEmitter);
-  }
+    SseEmitter sseEmitter = connectionManager.subscribe(userId).orElse(null);
 
+    if (sseEmitter == null) {
+      return ResponseEntity.status(503).build();
+    } else {
+      return ResponseEntity.ok(sseEmitter);
+    }
+  }
 }
