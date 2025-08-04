@@ -44,6 +44,10 @@ public class ConnectionManager {
     return Optional.of(sseEmitter);
   }
 
+  public ConnectionInfo getConnection(Long userId) {
+    return connections.get(userId);
+  }
+
   public List<ConnectionInfo> getConnections() {
     return List.copyOf(connections.values());
   }

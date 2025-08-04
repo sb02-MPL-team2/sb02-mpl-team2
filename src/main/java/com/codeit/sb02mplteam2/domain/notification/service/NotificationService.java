@@ -7,7 +7,7 @@ import java.util.Set;
 
 public interface NotificationService {
 //  List<NotificationDto> findAllByReceiverId(Long receiverId);
-  void delete(Long notificationId, Long receiverId);
+  void delete(Long notificationId);
   // targetId = 보내는 사람 혹은 채널 Id, 비동기 실패시 null
   NotificationDto create(Long receiverId, NotificationType notificationType, Long targetId, Long publisherId);
   // 전체 알림 생성

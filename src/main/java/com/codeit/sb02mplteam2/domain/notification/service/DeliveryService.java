@@ -7,7 +7,6 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -15,8 +14,8 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RequiredArgsConstructor
 @Slf4j
 public class DeliveryService {
-  @Async
-  public void deliverNotification(NotificationDto notificationDto,
+
+  public void deliverNotifications(NotificationDto notificationDto,
       List<ConnectionInfo> targetClients) {
     if (targetClients.isEmpty()) {
       return;
@@ -27,7 +26,7 @@ public class DeliveryService {
     }
   }
 
-  private void deliverToClient(ConnectionInfo connectionInfo, NotificationDto notificationDto) {
+  public void deliverToClient(ConnectionInfo connectionInfo, NotificationDto notificationDto) {
     String eventId = notificationDto.id().toString();
     String eventName = notificationDto.type().name();
     try {
