@@ -8,6 +8,7 @@ import com.codeit.sb02mplteam2.domain.user.mapper.UserMapper;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
 import com.codeit.sb02mplteam2.exception.user.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -30,9 +31,6 @@ public class BasicAdminService implements AdminService {
 
     user.updateRole(request.role());
 
-    int followerCount = followRepository.countByToUser(user);
-    int followingCount = followRepository.countByFromUser(user);
-
     return userMapper.toDto(user);
   }
 
@@ -44,7 +42,6 @@ public class BasicAdminService implements AdminService {
 
     user.lock();
 
-    // Todo custom Login 적용 시 Username -> email로 바꾸기
     expireUserSessions(user.getUsername());
   }
 
@@ -65,7 +62,7 @@ public class BasicAdminService implements AdminService {
         .filter(userDetails -> userDetails.getUsername().equals(username))
         .forEach(userDetails ->
             sessionRegistry.getAllSessions(userDetails, false)
-                .forEach(sessionInformation -> sessionInformation.expireNow())
+                .forEach(SessionInformation::expireNow)
         );
   }
 }
