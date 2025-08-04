@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -20,10 +21,16 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @Component
 public class ConnectionManager {
 
-  private static final Long DEFAULT_TIMEOUT = 1000L * 60 * 30; //1000 밀리초 * 1 밀리초 = 1초 * 60 초 = 1분 * 30 = 30분 타임아웃
-  private static final int INACTIVE_TIMEOUT_MINUTES = 30;
+  private static final Long DEFAULT_TIME_UNIT = 1000L * 60; //1000 밀리초 * 1 밀리초 = 1초 * 60 초 = 1분 단위
+
+  @Value("${sse.inactive-timeout-minutes}")
+  private static int INACTIVE_TIMEOUT_MINUTES;
+  @Value("${sse.default-timeout}")
+  private static Long DEFAULT_TIMEOUT; //30분 타임아웃
+  @Value("${sse.max-connections}")
+  private static int MAX_CONNECTIONS; //최대 연결 수
+
   private final AtomicInteger connectionCount = new AtomicInteger(0); //현재 연결된 수
-  private static final int MAX_CONNECTIONS = 100; //최대 연결 수
   //열려져 있는 탭마다 Emitters 연결함
   private final Map<Long, ConnectionInfo> connections = new ConcurrentHashMap<>();// SSE 연결 메모리에 저장
 
@@ -33,7 +40,7 @@ public class ConnectionManager {
       return Optional.empty();
     }
     //TODO 여러 스레드에서 동시에 실행할 경우, 최대 연결을 넘어설 수 있는 문제 존재함
-    SseEmitter sseEmitter = new SseEmitter(DEFAULT_TIMEOUT);
+    SseEmitter sseEmitter = new SseEmitter(DEFAULT_TIME_UNIT * DEFAULT_TIMEOUT);
     ConnectionInfo connectionInfo = new ConnectionInfo(userId, sseEmitter);
     connections.put(userId, connectionInfo);
     connectionCount.incrementAndGet(); // 연결 카운트 증가
@@ -75,7 +82,8 @@ public class ConnectionManager {
     log.info("클라이언트 연결 해제: {} (총 {}개)", userId, connections.size());
   }
 
-  @Scheduled(cron = "0 0/5 * * * *")
+//  @Scheduled(cron = "0 0/5 * * * *") //5분마다 확인
+  @Scheduled(cron = "0/15 * * * * *")
   public void checkInactiveConnections() {
     LocalDateTime cutoff = LocalDateTime.now().minusMinutes(INACTIVE_TIMEOUT_MINUTES);
     connections.entrySet().removeIf(entry -> {
