@@ -20,7 +20,7 @@ public enum ErrorCode {
 
   // Binary
   BINARY_CONTENT_NOT_FOUND(HttpStatus.NOT_FOUND,"바이너리 콘텐츠를 찾을 수 없습니다."),
-  FILE_PROCESSING_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "파일 처리 중 오류가 발생헀습니다."),
+  FILE_PROCESSING_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "파일 처리 중 오류가 발생했습니다."),
   FILE_STORAGE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "파일 저장 중 오류가 발생했습니다."),
 
   //Playlist
