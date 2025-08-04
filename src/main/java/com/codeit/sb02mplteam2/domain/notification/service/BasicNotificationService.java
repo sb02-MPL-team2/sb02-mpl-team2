@@ -14,17 +14,23 @@ import com.codeit.sb02mplteam2.exception.ErrorCode;
 import com.codeit.sb02mplteam2.exception.MplException;
 import com.codeit.sb02mplteam2.exception.playlist.PlaylistException;
 import com.codeit.sb02mplteam2.exception.user.UserException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class BasicNotificationService implements NotificationService{
+
+  @Value("${mpl.notification.retention-period-in-days}")
+  private long notificationRetentionPeriodInDays;
 
   private final UserRepository userRepository;
   private final NotificationRepository notificationRepository;
@@ -39,6 +45,15 @@ public class BasicNotificationService implements NotificationService{
   @Override
   public void delete(Long notificationId) {
     notificationRepository.deleteById(notificationId);
+  }
+
+  @Scheduled(cron = "0 0 0 * * *")
+  private void deleteOldNotification() {
+    //현재보다 ?일 이전의 알람 싸그리 삭제함
+    LocalDateTime cutoffDateTime = LocalDateTime.now().minusDays(notificationRetentionPeriodInDays);
+    log.info("{}일 이전의 오래된 알림 데이터 삭제를 시작합니다. (기준 시각: {})", notificationRetentionPeriodInDays, cutoffDateTime);
+    notificationRepository.deleteByCreatedAtBefore(cutoffDateTime);
+    log.info("오래된 알림 데이터 삭제 완료.");
   }
 
   @Override
