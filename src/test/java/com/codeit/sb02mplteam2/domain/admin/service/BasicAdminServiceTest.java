@@ -81,7 +81,7 @@ public class BasicAdminServiceTest {
   }
 
   @Test
-  @DisplayName("실패 -사용자 역할 변경 - 사용자를 찾을 수 없는 경우")
+  @DisplayName("실패 - 사용자 역할 변경 - 사용자를 찾을 수 없는 경우")
   void updateUserRole_Fail_UserNotFound() {
     // given (테스트 준비)
     given(userRepository.findById(nonExistentUserId)).willReturn(Optional.empty());
