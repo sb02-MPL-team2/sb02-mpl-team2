@@ -124,7 +124,7 @@ public class BasicAdminServiceTest {
 
     // when & then
     assertThrows(UserNotFoundException.class, () -> {
-      adminService.updateUserRole(nonExistentUserId, new RoleUpdateRequest(Role.ADMIN));
+      adminService.lockUser(nonExistentUserId);
     });
   }
 
