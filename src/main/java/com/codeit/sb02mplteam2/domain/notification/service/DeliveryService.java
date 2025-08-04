@@ -17,10 +17,6 @@ public class DeliveryService {
 
   public void deliverNotifications(NotificationDto notificationDto,
       List<ConnectionInfo> targetClients) {
-    if (targetClients.isEmpty()) {
-      return;
-    }
-
     for (ConnectionInfo connectionInfo : targetClients) {
       deliverToClient(connectionInfo, notificationDto);
     }

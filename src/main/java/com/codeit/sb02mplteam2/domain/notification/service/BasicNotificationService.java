@@ -17,7 +17,9 @@ import com.codeit.sb02mplteam2.exception.user.UserException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -71,23 +73,40 @@ public class BasicNotificationService implements NotificationService{
   @Override
   public List<NotificationDto> createAll(Set<Long> receiverIds, NotificationType type, Long targetId,
       Long publisherId) {
-    List<Notification> notificationList = new ArrayList<>();
 
-    for (Long receiverId : receiverIds) {
-      Notification notification = of(receiverId, publisherId, type, targetId);
+    User publisher = userRepository.findById(publisherId)
+        .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+
+    List<User> receivers = userRepository.findAllById(receiverIds);
+
+    // Map<userId, AlarmSetting> 형태로 변환하여 O(1) 시간 복잡도로 조회를 가능하게 함
+    Map<Long, AlarmSetting> alarmSettingsMap = alarmSettingRepository.findAllByUserIn(receivers).stream()
+        .collect(Collectors.toMap(setting -> setting.getUser().getId(), setting -> setting));
+
+    List<Notification> notificationsToSave = new ArrayList<>();
+    String titleTemplate = type.getMessageTemplate();
+    String content = createContent(targetId, type);
+
+    for (User receiver : receivers) {
+      AlarmSetting alarmSetting = alarmSettingsMap.get(receiver.getId());
+
+      if (alarmSetting == null) {
+        continue;
+      }
+
+      String title = NotificationType.toTitle(publisher.getUsername(), titleTemplate);
+
+      Notification notification = Notification.of(receiver.getId(), publisherId, title, content, type, alarmSetting);
       if (notification != null) {
-        notificationList.add(notification);
+        notificationsToSave.add(notification);
       }
     }
 
-    notificationRepository.saveAll(notificationList);
+    List<Notification> savedNotifications = notificationRepository.saveAll(notificationsToSave);
 
-    List<NotificationDto> notificationDtoList = new ArrayList<>();
-    for (Notification notification : notificationList) {
-      notificationDtoList.add(NotificationDto.from(notification));
-    }
-
-    return notificationDtoList;
+    return savedNotifications.stream()
+        .map(NotificationDto::from)
+        .toList();
   }
 
   private Notification of(Long receiverId, Long publisherId, NotificationType type, Long targetId) {

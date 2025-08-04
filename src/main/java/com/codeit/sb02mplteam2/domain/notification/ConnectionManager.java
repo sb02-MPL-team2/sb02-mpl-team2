@@ -4,7 +4,9 @@ import com.codeit.sb02mplteam2.domain.notification.entity.ConnectionInfo;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +48,13 @@ public class ConnectionManager {
 
   public ConnectionInfo getConnection(Long userId) {
     return connections.get(userId);
+  }
+
+  public List<ConnectionInfo> getConnectionIn(Set<Long> userIds) {
+    return userIds.stream()
+        .map(connections::get)
+        .filter(Objects::nonNull)
+        .toList();
   }
 
   public List<ConnectionInfo> getConnections() {
