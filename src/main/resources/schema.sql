@@ -70,11 +70,13 @@ CREATE TABLE IF NOT EXISTS follows (
 
 CREATE TABLE IF NOT EXISTS users (
         id BIGSERIAL PRIMARY KEY,
-        username VARCHAR(255),
+        username VARCHAR(255) UNIQUE,
         email VARCHAR(255) UNIQUE,
         password VARCHAR(255),
         is_locked BOOLEAN,
         is_deleted BOOLEAN,
+        followerCount INTEGER,
+        followingCount INTEGER,
         profile_id BIGINT,
         role VARCHAR(255),
         created_at TIMESTAMP WITH TIME ZONE,

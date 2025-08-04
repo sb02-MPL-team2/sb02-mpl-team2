@@ -41,7 +41,7 @@ public class BasicAuthService implements AuthService {
     admin.updateRole(Role.ADMIN);
     userRepository.save(admin);
 
-    UserDto adminDto = userMapper.toDto(admin, 0, 0);
+    UserDto adminDto = userMapper.toDto(admin);
     log.info("어드민이 초기화되었습니다. {}", adminDto);
     return adminDto;
   }

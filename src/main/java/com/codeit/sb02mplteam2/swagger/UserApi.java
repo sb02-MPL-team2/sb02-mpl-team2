@@ -3,6 +3,7 @@ package com.codeit.sb02mplteam2.swagger;
 import com.codeit.sb02mplteam2.domain.user.dto.UserCreateRequest;
 import com.codeit.sb02mplteam2.domain.user.dto.UserDto;
 import com.codeit.sb02mplteam2.domain.user.dto.UserUpdateRequest;
+import com.codeit.sb02mplteam2.security.MplUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -118,7 +120,7 @@ public interface UserApi {
       @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
   })
   @GetMapping("/api/users/me")
-  ResponseEntity<UserDto> getMyInfo();
+  ResponseEntity<UserDto> getMyInfo(@AuthenticationPrincipal MplUserDetails userDetails);
 
   @Operation(summary = "회원 탈퇴 (내 계정 삭제)")
   @ApiResponses(value = {
@@ -126,5 +128,5 @@ public interface UserApi {
       @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
   })
   @DeleteMapping("/api/users/me")
-  ResponseEntity<Void> deleteMyAccount();
+  ResponseEntity<Void> deleteMyAccount(@AuthenticationPrincipal MplUserDetails userDetails);
 }

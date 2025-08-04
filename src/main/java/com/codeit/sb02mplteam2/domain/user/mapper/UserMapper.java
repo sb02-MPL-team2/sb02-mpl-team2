@@ -15,5 +15,5 @@ public interface UserMapper {
       target = "profileUrl",
       expression = "java(user.getProfile() != null ? user.getProfile().getUrl() : null)"
   )
-  UserDto toDto(User user, int followerCount, int followingCount);
+  UserDto toDto(User user);
 }
