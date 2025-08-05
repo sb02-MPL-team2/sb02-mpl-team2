@@ -1,6 +1,6 @@
 package com.codeit.sb02mplteam2.swagger;
 
-import com.codeit.sb02mplteam2.domain.content.dto.ContentResponseDto;
+import com.codeit.sb02mplteam2.domain.content.dto.content.ContentResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;

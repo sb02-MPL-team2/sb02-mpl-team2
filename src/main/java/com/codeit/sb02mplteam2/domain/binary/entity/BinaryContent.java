@@ -68,4 +68,9 @@ public class BinaryContent {
     String fileExtension = FilenameUtils.getExtension(originalFilename);
     return new BinaryContent(fileName, file.getSize(), file.getContentType(), fileExtension);
   }
+
+  public static BinaryContent of(String fileName, Long size, String contentType, String extension) {
+    return new BinaryContent(fileName, size, contentType, extension);
+  }
+
 }
