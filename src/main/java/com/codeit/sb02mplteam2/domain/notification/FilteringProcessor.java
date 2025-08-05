@@ -25,7 +25,7 @@ public class FilteringProcessor {
     return connectionManager.getConnectionIn(receiverIds);
   }
 
-  //TODO 브로드캐스트 : 알고리즘 개선 가능해보임
+  //TODO 브로드캐스트: broadcastClients에서 N+1 쿼리 문제 발생 가능. AlarmSetting을 미리 batch로 조회하여 성능을 개선할 수 있음. (See issue #123)
   public List<ConnectionInfo> broadcastClients() {
     return connectionManager.getConnections().stream()
         .filter(connectionInfo -> {
