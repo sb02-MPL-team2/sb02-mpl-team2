@@ -8,6 +8,8 @@ public interface DirectMessageChannelService {
 
   DirectMessageChannelResponse create(Long senderId, Long receiverId);
 
+  DirectMessageChannelResponse findByChannelId(Long channelId, Long userId);
+
   CursorPageResponseDirectMessageChannelDto findAll(Long userId, LocalDateTime cursor, int size);
 
 }

@@ -8,10 +8,12 @@ import com.codeit.sb02mplteam2.domain.user.dto.UserSlimDto;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
 import com.codeit.sb02mplteam2.exception.ErrorCode;
+import com.codeit.sb02mplteam2.exception.directmessage.DirectMessageChannelException;
 import com.codeit.sb02mplteam2.exception.user.UserException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -48,6 +50,30 @@ public class BasicDirectMessageChannelService implements DirectMessageChannelSer
         new UserSlimDto(receiverId, null, receiver.getUsername()), // TODO: 프로필 null 수정
         channel.getId(),
         senderId
+    );
+  }
+
+  @Transactional(readOnly = true)
+  @Override
+  public DirectMessageChannelResponse findByChannelId(Long channelId, Long userId) {
+    DirectMessageChannel channel = directMessageChannelRepository.findById(channelId)
+        .orElseThrow(
+            () -> new DirectMessageChannelException(ErrorCode.DIRECT_MESSAGE_CHANNEL_NOT_FOUND));
+
+    User otherUser;
+
+    if (Objects.equals(channel.getToUser().getId(), userId)) {
+      otherUser = channel.getFromUser();
+    } else if (Objects.equals(channel.getFromUser().getId(), userId)) {
+      otherUser = channel.getToUser();
+    } else {
+      throw new DirectMessageChannelException(ErrorCode.DIRECT_MESSAGE_CHANNEL_NOT_FOUND);
+    }
+
+    return new DirectMessageChannelResponse(
+        new UserSlimDto(otherUser.getId(), null, otherUser.getUsername()),
+        channelId, //TODO: 유저 프로필
+        userId
     );
   }
 

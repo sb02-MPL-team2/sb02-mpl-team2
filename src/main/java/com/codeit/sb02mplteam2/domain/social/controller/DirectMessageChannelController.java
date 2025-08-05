@@ -2,7 +2,6 @@ package com.codeit.sb02mplteam2.domain.social.controller;
 
 import com.codeit.sb02mplteam2.domain.social.dto.CursorPageResponseDirectMessageChannelDto;
 import com.codeit.sb02mplteam2.domain.social.dto.DirectMessageChannelResponse;
-import com.codeit.sb02mplteam2.domain.social.entity.DirectMessage;
 import com.codeit.sb02mplteam2.domain.social.service.DirectMessageChannelService;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +30,15 @@ public class DirectMessageChannelController {
   ) {
     DirectMessageChannelResponse response = directMessageChannelService.create(senderId,
         receiverId);
+    return ResponseEntity.ok(response);
+  }
+
+  @GetMapping("/{channelId}/channel")
+  public ResponseEntity<DirectMessageChannelResponse> findByChannelId(
+      @PathVariable Long channelId,
+      @RequestParam Long userId) {
+    DirectMessageChannelResponse response = directMessageChannelService.findByChannelId(channelId, userId);
+
     return ResponseEntity.ok(response);
   }
 
