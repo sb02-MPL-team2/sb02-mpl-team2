@@ -10,21 +10,33 @@ public record NotificationDto (
     Long id,
     Long receiverId,
     Long publisherId,
+    Long targetId,
     LocalDateTime createdAt,
     NotificationType type,
     String title,
     String content
 ) {
 
-  public static NotificationDto from(Notification notification) {
+  public static NotificationDto of(Notification notification, Long targetId) {
     return NotificationDto.builder()
         .id(notification.getId())
         .receiverId(notification.getReceiverId())
         .publisherId(notification.getPublisherId())
+        .targetId(targetId)
         .createdAt(notification.getCreatedAt())
         .type(notification.getType())
         .title(notification.getTitle())
         .content(notification.getContent())
+        .build();
+  }
+
+  public static NotificationDto of(Long targetId,NotificationType type,String title, String content, LocalDateTime createdAt) {
+    return NotificationDto.builder()
+        .targetId(targetId)
+        .createdAt(createdAt)
+        .type(type)
+        .title(title)
+        .content(content)
         .build();
   }
 }

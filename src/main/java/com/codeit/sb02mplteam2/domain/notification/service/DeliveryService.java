@@ -3,7 +3,6 @@ package com.codeit.sb02mplteam2.domain.notification.service;
 import com.codeit.sb02mplteam2.domain.notification.dto.NotificationDto;
 import com.codeit.sb02mplteam2.domain.notification.entity.ConnectionInfo;
 import java.io.IOException;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -14,13 +13,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RequiredArgsConstructor
 @Slf4j
 public class DeliveryService {
-
-  public void deliverNotifications(NotificationDto notificationDto,
-      List<ConnectionInfo> targetClients) {
-    for (ConnectionInfo connectionInfo : targetClients) {
-      deliverToClient(connectionInfo, notificationDto);
-    }
-  }
 
   public void deliverToClient(ConnectionInfo connectionInfo, NotificationDto notificationDto) {
     String eventId = notificationDto.id().toString();

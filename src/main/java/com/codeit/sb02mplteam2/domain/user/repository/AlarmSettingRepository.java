@@ -11,4 +11,6 @@ public interface AlarmSettingRepository extends JpaRepository<AlarmSetting, Long
   Optional<AlarmSetting> findByUser(User user);
 
   List<AlarmSetting> findAllByUserIn(List<User> users);
+
+
 }

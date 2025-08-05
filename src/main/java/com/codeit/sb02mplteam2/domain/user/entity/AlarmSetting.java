@@ -52,6 +52,10 @@ public class AlarmSetting {
   @Column(nullable = false)
   private Boolean dmAlarmEnabled = true;
 
+  @Setter
+  @Column(nullable = false)
+  private Boolean recommendPlaylistAlarmEnabled = true;
+
   public AlarmSetting(User user) {
     this.user = user;
   }
@@ -63,8 +67,12 @@ public class AlarmSetting {
     return oldValue;
   }
 
-  public void update(Boolean followAlarmEnabled, Boolean permissionChangeAlarmEnabled,
-      Boolean newPlaylistFromFollowingAlarmEnabled, Boolean dmAlarmEnabled, Boolean subscribePlaylistAlarmEnable) {
+  public void update(Boolean followAlarmEnabled,
+      Boolean permissionChangeAlarmEnabled,
+      Boolean newPlaylistFromFollowingAlarmEnabled,
+      Boolean dmAlarmEnabled,
+      Boolean subscribePlaylistAlarmEnable,
+      Boolean recommendPlaylistAlarmEnabled) {
     this.followAlarmEnabled =
         updatedField(followAlarmEnabled, this.followAlarmEnabled);
     this.permissionChangeAlarmEnabled =
@@ -75,5 +83,8 @@ public class AlarmSetting {
         updatedField(dmAlarmEnabled, this.dmAlarmEnabled);
     this.subscribePlaylistAlarmEnable =
         updatedField(subscribePlaylistAlarmEnable, this.subscribePlaylistAlarmEnable);
+    this.recommendPlaylistAlarmEnabled =
+        updatedField(recommendPlaylistAlarmEnabled, this.recommendPlaylistAlarmEnabled);
+
   }
 }

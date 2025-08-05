@@ -13,7 +13,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
@@ -32,7 +31,7 @@ public class Notification {
   @Column(name = "created_at", nullable = false, updatable = false)
   private LocalDateTime createdAt;
 
-  @Column(name = "receiver_id", columnDefinition = "BIGINT", nullable = false)
+  @Column(name = "receiver_id", columnDefinition = "BIGINT")
   private Long receiverId;
 
   @Column(name = "publisher_id", columnDefinition = "BIGINT")

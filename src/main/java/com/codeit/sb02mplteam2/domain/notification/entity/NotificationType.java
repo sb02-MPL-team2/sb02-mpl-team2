@@ -11,7 +11,9 @@ public enum NotificationType {
   PLAYLIST_SUBSCRIBED("재생목록 구독", "%s님이 회원님의 재생목록을 구독했습니다."),
   NEW_FOLLOWER("팔로워", "%s님이 회원님을 팔로우하기 시작했습니다."),
   ROLE_CHANGED("권한변경", "회원님의 계정 권한이 변경되었습니다."),
-  ASYNC_FAILED("비동기 작업 실패", "내부 작업 처리 중 오류가 발생했습니다.");
+  ASYNC_FAILED("비동기 작업 실패", "내부 작업 처리 중 오류가 발생했습니다."),
+
+  BROADCAST_TODAY_PLAYLIST("브로드캐스트1", "오늘의 추천 플레이리스트");
 
   private final String title;
   private final String messageTemplate;

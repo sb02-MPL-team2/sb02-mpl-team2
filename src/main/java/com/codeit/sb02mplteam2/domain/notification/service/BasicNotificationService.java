@@ -3,6 +3,7 @@ package com.codeit.sb02mplteam2.domain.notification.service;
 import com.codeit.sb02mplteam2.domain.notification.dto.NotificationDto;
 import com.codeit.sb02mplteam2.domain.notification.entity.Notification;
 import com.codeit.sb02mplteam2.domain.notification.entity.NotificationType;
+import com.codeit.sb02mplteam2.domain.notification.event.BroadcastEvent;
 import com.codeit.sb02mplteam2.domain.notification.repository.NotificationRepository;
 import com.codeit.sb02mplteam2.domain.playlist.entity.Playlist;
 import com.codeit.sb02mplteam2.domain.playlist.repository.PlaylistRepository;
@@ -29,7 +30,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class BasicNotificationService implements NotificationService{
+public class BasicNotificationService implements NotificationService {
 
   @Value("${mpl.notification.retention-period-in-days}")
   private long notificationRetentionPeriodInDays;
@@ -46,11 +47,17 @@ public class BasicNotificationService implements NotificationService{
 
   @Override
   public void delete(Long notificationId) {
+    if (notificationId == null) {
+      return;
+    }
     notificationRepository.deleteById(notificationId);
   }
 
   @Override
   public void deleteAllByUserId(Long userId) {
+    if (userId == null) {
+      return;
+    }
     notificationRepository.deleteAllByReceiverId(userId);
   }
 
@@ -58,13 +65,26 @@ public class BasicNotificationService implements NotificationService{
   private void deleteOldNotification() {
     //현재보다 ?일 이전의 알람 싸그리 삭제함
     LocalDateTime cutoffDateTime = LocalDateTime.now().minusDays(notificationRetentionPeriodInDays);
-    log.info("{}일 이전의 오래된 알림 데이터 삭제를 시작합니다. (기준 시각: {})", notificationRetentionPeriodInDays, cutoffDateTime);
+    log.info("{}일 이전의 오래된 알림 데이터 삭제를 시작합니다. (기준 시각: {})", notificationRetentionPeriodInDays,
+        cutoffDateTime);
     notificationRepository.deleteByCreatedAtBefore(cutoffDateTime);
     log.info("오래된 알림 데이터 삭제 완료.");
   }
 
   @Override
-  public NotificationDto create(Long receiverId, NotificationType type, Long targetId, Long publisherId) {
+  public NotificationDto broadcast(BroadcastEvent event) {
+    NotificationType notificationType = event.getNotificationType();
+    Long targetId = event.getTargetId();
+
+    String title = notificationType.getTitle();
+    String content = createContent(targetId, notificationType);
+
+    return NotificationDto.of(targetId, notificationType, title, content, event.getCreatedAt());
+  }
+
+  @Override
+  public NotificationDto create(Long receiverId, NotificationType type, Long targetId,
+      Long publisherId) {
     Notification notification = of(receiverId, publisherId, type, targetId);
 
     if (notification == null) {
@@ -72,11 +92,12 @@ public class BasicNotificationService implements NotificationService{
     }
 
     notificationRepository.save(notification);
-    return NotificationDto.from(notification);
+    return NotificationDto.of(notification, targetId);
   }
 
   @Override
-  public List<NotificationDto> createAll(Set<Long> receiverIds, NotificationType type, Long targetId,
+  public List<NotificationDto> createAll(Set<Long> receiverIds, NotificationType type,
+      Long targetId,
       Long publisherId) {
 
     User publisher = userRepository.findById(publisherId)
@@ -85,7 +106,8 @@ public class BasicNotificationService implements NotificationService{
     List<User> receivers = userRepository.findAllById(receiverIds);
 
     // Map<userId, AlarmSetting> 형태로 변환하여 O(1) 시간 복잡도로 조회를 가능하게 함
-    Map<Long, AlarmSetting> alarmSettingsMap = alarmSettingRepository.findAllByUserIn(receivers).stream()
+    Map<Long, AlarmSetting> alarmSettingsMap = alarmSettingRepository.findAllByUserIn(receivers)
+        .stream()
         .collect(Collectors.toMap(setting -> setting.getUser().getId(), setting -> setting));
 
     List<Notification> notificationsToSave = new ArrayList<>();
@@ -101,7 +123,8 @@ public class BasicNotificationService implements NotificationService{
 
       String title = NotificationType.toTitle(publisher.getUsername(), titleTemplate);
 
-      Notification notification = Notification.of(receiver.getId(), publisherId, title, content, type, alarmSetting);
+      Notification notification = Notification.of(receiver.getId(), publisherId, title, content,
+          type, alarmSetting);
       if (notification != null) {
         notificationsToSave.add(notification);
       }
@@ -110,7 +133,7 @@ public class BasicNotificationService implements NotificationService{
     List<Notification> savedNotifications = notificationRepository.saveAll(notificationsToSave);
 
     return savedNotifications.stream()
-        .map(NotificationDto::from)
+        .map(notification -> NotificationDto.of(notification, targetId))
         .toList();
   }
 
@@ -131,14 +154,14 @@ public class BasicNotificationService implements NotificationService{
     String title = NotificationType.toTitle(publisher.getUsername(), type.getMessageTemplate());
     String content = createContent(targetId, type);
 
-    return Notification.of(receiverId, publisherId,title, content ,type, alarmSetting);
+    return Notification.of(receiverId, publisherId, title, content, type, alarmSetting);
   }
 
   private String createContent(Long targetId, NotificationType type) {
     return switch (type) {
       case NEW_MESSAGE -> //TODO DM Repository 에서 targetId 찾을 예정
           "아직 DM Repository가 없기에 빈 String 파일을 던집니다.";
-      case NEW_PLAYLIST_BY_FOLLOWING, PLAYLIST_SUBSCRIBED -> {
+      case NEW_PLAYLIST_BY_FOLLOWING, PLAYLIST_SUBSCRIBED, BROADCAST_TODAY_PLAYLIST -> {
         Playlist playlist = playlistRepository.findById(targetId)
             .orElseThrow(() -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
         yield playlist.getTitle();
