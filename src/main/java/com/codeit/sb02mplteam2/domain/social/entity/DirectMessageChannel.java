@@ -39,4 +39,12 @@ public class DirectMessageChannel {
   @OneToMany(mappedBy = "directMessageChannel", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<DirectMessage> messages = new ArrayList<>();
 
+  private DirectMessageChannel(User fromUser, User toUser){
+    this.fromUser = fromUser;
+    this.toUser = toUser;
+  }
+
+  public static DirectMessageChannel of(User fromUser, User toUser) {
+    return new DirectMessageChannel(fromUser, toUser);
+  }
 }
