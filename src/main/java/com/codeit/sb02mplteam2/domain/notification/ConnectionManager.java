@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,10 +33,10 @@ public class ConnectionManager {
   //열려져 있는 탭마다 Emitters 연결함
   private final Map<Long, ConnectionInfo> connections = new ConcurrentHashMap<>();// SSE 연결 메모리에 저장
 
-  public Optional<SseEmitter> subscribe(Long userId) {
+  public SseEmitter subscribe(Long userId) {
     if (connectionCount.get() >= MAX_CONNECTIONS) {
       log.warn("SSE 연결이 최대가 되었습니다.");
-      return Optional.empty();
+      return null;
     }
     //TODO 여러 스레드에서 동시에 실행할 경우, 최대 연결을 넘어설 수 있는 문제 존재함
     SseEmitter sseEmitter = new SseEmitter(DEFAULT_TIME_UNIT * DEFAULT_TIMEOUT);
@@ -50,7 +49,7 @@ public class ConnectionManager {
     sseEmitter.onTimeout(() -> removeConnection(userId, "onTimeout"));
     sseEmitter.onError(e -> removeConnection(userId, "onError: " + e.getMessage()));
 
-    return Optional.of(sseEmitter);
+    return sseEmitter;
   }
 
   public ConnectionInfo getConnection(Long userId) {
