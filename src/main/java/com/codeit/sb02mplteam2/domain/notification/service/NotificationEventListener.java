@@ -33,11 +33,11 @@ public class NotificationEventListener {
     log.info("브로드캐스트 이벤트 처리 시작: type={}, targetId={}",
         event.getNotificationType(), event.getTargetId());
 
-    //TODO 필터링 시스템 손봐야함(브로드캐스트용으로)
+    //추천 알람 허용한 유저의 연결만 가져옴
     List<ConnectionInfo> connectionInfoList = filteringProcessor.broadcastClients();
 
     if (connectionInfoList.isEmpty()) {
-      log.warn("연결이 존재하지 않습니다.");
+      log.warn("브로드 캐스트 연결이 존재하지 않습니다.");
       return;
     }
 

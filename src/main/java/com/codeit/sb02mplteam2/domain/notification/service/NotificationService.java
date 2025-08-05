@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Set;
 
 public interface NotificationService {
-//  List<NotificationDto> findAllByReceiverId(Long receiverId);
   void delete(Long notificationId);
 
   void deleteAllByUserId(Long userId);
