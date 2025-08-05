@@ -25,11 +25,6 @@ import org.springframework.security.web.session.HttpSessionEventPublisher;
 public class SecurityConfig {
 
   @Bean
-  public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
-  }
-
-  @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
         // CSRF 보호 비활성화 (stateless한 API 서버의 경우 보통 비활성화 한다.)
@@ -43,6 +38,7 @@ public class SecurityConfig {
         // URL 별 접근 권한 설정
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(toH2Console()).permitAll() // H2 콘솔은 누구나 접근 가능
+            .requestMatchers("/api/admin/**").hasRole("ADMIN")
             .requestMatchers("/api/auth/**", "/login").permitAll() // 로그인, 회원가입 관련 API 누구나 접근 가능
             .anyRequest().permitAll() // 나머지 모든 요청은 인증된 사용자만 접근 가능
         )
@@ -59,10 +55,15 @@ public class SecurityConfig {
         .formLogin(Customizer.withDefaults())
         .sessionManagement(session -> session
             .maximumSessions(1) // 한 사용자 당 최대 1개의 세션만 허용 (동시 로그인 방지)
-            .sessionRegistry(sessionRegistry()) // 세션 정보를 관리할 레지스트리 등록
+            .sessionRegistry (sessionRegistry()) // 세션 정보를 관리할 레지스트리 등록
         );
 
     return http.build();
+  }
+
+  @Bean
+  public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
   }
 
   @Bean
