@@ -10,6 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /** <h2>유저의 알람 셋팅 엔티티</h2><br>
  * 해당 엔티티를 확인해 알람을 전송할 지, 전송하지 않을 지 결정할 수 있습니다.
@@ -28,21 +29,26 @@ public class AlarmSetting {
   private User user;
 
   // 팔로우 알람 설정
+  @Setter
   @Column(nullable = false)
   private Boolean followAlarmEnabled = true;
 
   // 권한 변경 알람 설정
+  @Setter
   @Column(nullable = false)
   private Boolean permissionChangeAlarmEnabled = true;
 
   // 팔로잉의 새 재생목록 알람 설정
+  @Setter
   @Column(nullable = false)
   private Boolean newPlaylistFromFollowingAlarmEnabled = true;
 
+  @Setter
   @Column(nullable = false)
   private Boolean subscribePlaylistAlarmEnable = true;
 
   // DM 알람 설정
+  @Setter
   @Column(nullable = false)
   private Boolean dmAlarmEnabled = true;
 
