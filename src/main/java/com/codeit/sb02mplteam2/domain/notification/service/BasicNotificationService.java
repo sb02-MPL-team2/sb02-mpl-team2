@@ -49,6 +49,11 @@ public class BasicNotificationService implements NotificationService{
     notificationRepository.deleteById(notificationId);
   }
 
+  @Override
+  public void deleteAllByUserId(Long userId) {
+    notificationRepository.deleteAllByReceiverId(userId);
+  }
+
   @Scheduled(cron = "0 0 0 * * *")
   private void deleteOldNotification() {
     //현재보다 ?일 이전의 알람 싸그리 삭제함
