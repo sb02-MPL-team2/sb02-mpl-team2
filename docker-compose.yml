@@ -24,6 +24,8 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/mpl_db
       - SPRING_DATASOURCE_USERNAME=mpl
       - SPRING_DATASOURCE_PASSWORD=mpl!
+      - TMDB_API_KEY=3dc79c430c6ec895d9a7f9b01bbd81da
+      - TMDB_BASE_URL=https://api.themoviedb.org/3
       # 원격 디버깅을 활성화하는 옵션 (선택 사항)
 #      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
     # Dockerfile의 ENTRYPOINT를 오버라이드하여 Gradle로 직접 실행합니다.
