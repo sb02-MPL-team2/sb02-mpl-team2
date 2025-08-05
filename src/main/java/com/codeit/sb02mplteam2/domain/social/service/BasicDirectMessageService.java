@@ -1,5 +1,6 @@
 package com.codeit.sb02mplteam2.domain.social.service;
 
+import com.codeit.sb02mplteam2.domain.social.dto.CursorPageResponseDirectMessageDto;
 import com.codeit.sb02mplteam2.domain.social.dto.DirectMessageCreateRequest;
 import com.codeit.sb02mplteam2.domain.social.dto.DirectMessageResponse;
 import com.codeit.sb02mplteam2.domain.social.dto.FollowResponse;
@@ -13,7 +14,11 @@ import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
 import com.codeit.sb02mplteam2.exception.ErrorCode;
 import com.codeit.sb02mplteam2.exception.directmessage.DirectMessageChannelException;
 import com.codeit.sb02mplteam2.exception.user.UserException;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,5 +52,39 @@ public class BasicDirectMessageService implements DirectMessageService {
 
     return new DirectMessageResponse(new UserSlimDto(sender.getId(), null, sender.getUsername()),
         directMessage.getId(), channel.getId(), request.content(), directMessage.getCreatedAt());
+  }
+
+  @Transactional(readOnly = true)
+  @Override
+  public CursorPageResponseDirectMessageDto findAll(Long channelId, Long fromId, Long toId, LocalDateTime cursor, int limit){
+
+    List<DirectMessage> messages = directMessageRepository.findMessagesByChannelWithCursor(
+        channelId, cursor, PageRequest.of(0, limit + 1)
+    );
+
+    boolean hasNext = messages.size() > limit;
+    List<DirectMessage> pageItems = hasNext ? messages.subList(0, limit) : messages;
+
+    Collections.reverse(pageItems);
+
+    LocalDateTime nextCursor = hasNext
+        ? pageItems.get(0).getCreatedAt() // 뒤집었으니까 첫 번째 요소가 가장 오래된 것
+        : null;
+
+    List<DirectMessageResponse> items = pageItems.stream()
+        .map(m -> new DirectMessageResponse(
+            new UserSlimDto(
+                m.getUser().getId(),
+                null, //TODO: 수정해야됨
+                m.getUser().getUsername()
+            ),
+            m.getId(),
+            m.getDirectMessageChannel().getId(),
+            m.getContent(),
+            m.getCreatedAt()
+        ))
+        .toList();
+
+    return new CursorPageResponseDirectMessageDto(items, nextCursor, hasNext);
   }
 }
