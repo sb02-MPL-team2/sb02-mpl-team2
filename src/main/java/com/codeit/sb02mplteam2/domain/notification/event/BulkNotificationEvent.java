@@ -9,7 +9,6 @@ import org.springframework.context.ApplicationEvent;
 public class BulkNotificationEvent extends ApplicationEvent {
   private final Set<Long> receiverIds; // 알림 받을 사용자 ID
   private final NotificationType notificationType;
-  //TODO 사용할 때 알림 관련 의논 필요
   private final Long targetId; // 알림과 관련된 플레이리스트 ID, DM ID
   private final Long publisherId; //이벤트를 발생시킨 사용자 ID
 

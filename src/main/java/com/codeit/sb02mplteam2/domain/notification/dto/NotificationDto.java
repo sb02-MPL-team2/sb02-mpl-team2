@@ -8,26 +8,35 @@ import lombok.Builder;
 @Builder
 public record NotificationDto (
     Long id,
-    LocalDateTime createdAt,
     Long receiverId,
-    String title,
-    String content,
-    NotificationType type,
+    Long publisherId,
     Long targetId,
-    Long publisherId
+    LocalDateTime createdAt,
+    NotificationType type,
+    String title,
+    String content
 ) {
 
-  public static NotificationDto from(Notification notification) {
-    LocalDateTime createdAt = LocalDateTime.now();
+  public static NotificationDto of(Notification notification, Long targetId) {
     return NotificationDto.builder()
         .id(notification.getId())
-        .createdAt(createdAt)
         .receiverId(notification.getReceiverId())
+        .publisherId(notification.getPublisherId())
+        .targetId(targetId)
+        .createdAt(notification.getCreatedAt())
+        .type(notification.getType())
         .title(notification.getTitle())
         .content(notification.getContent())
-        .type(notification.getType())
-        .targetId(notification.getTargetId())
-        .publisherId(notification.getPublisherId())
+        .build();
+  }
+
+  public static NotificationDto of(Long targetId,NotificationType type,String title, String content, LocalDateTime createdAt) {
+    return NotificationDto.builder()
+        .targetId(targetId)
+        .createdAt(createdAt)
+        .type(type)
+        .title(title)
+        .content(content)
         .build();
   }
 }

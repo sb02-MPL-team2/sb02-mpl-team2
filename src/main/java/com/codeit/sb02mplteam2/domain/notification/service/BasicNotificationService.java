@@ -3,25 +3,42 @@ package com.codeit.sb02mplteam2.domain.notification.service;
 import com.codeit.sb02mplteam2.domain.notification.dto.NotificationDto;
 import com.codeit.sb02mplteam2.domain.notification.entity.Notification;
 import com.codeit.sb02mplteam2.domain.notification.entity.NotificationType;
+import com.codeit.sb02mplteam2.domain.notification.event.BroadcastEvent;
 import com.codeit.sb02mplteam2.domain.notification.repository.NotificationRepository;
+import com.codeit.sb02mplteam2.domain.playlist.entity.Playlist;
+import com.codeit.sb02mplteam2.domain.playlist.repository.PlaylistRepository;
+import com.codeit.sb02mplteam2.domain.user.entity.AlarmSetting;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
+import com.codeit.sb02mplteam2.domain.user.repository.AlarmSettingRepository;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
 import com.codeit.sb02mplteam2.exception.ErrorCode;
+import com.codeit.sb02mplteam2.exception.MplException;
+import com.codeit.sb02mplteam2.exception.playlist.PlaylistException;
 import com.codeit.sb02mplteam2.exception.user.UserException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class BasicNotificationService implements NotificationService{
+public class BasicNotificationService implements NotificationService {
+
+  @Value("${mpl.notification.retention-period-in-days}")
+  private long notificationRetentionPeriodInDays;
 
   private final UserRepository userRepository;
   private final NotificationRepository notificationRepository;
+  private final AlarmSettingRepository alarmSettingRepository;
+  private final PlaylistRepository playlistRepository;
 
 //  @Override
 //  public List<NotificationDto> findAllByReceiverId(Long receiverId) {
@@ -29,53 +46,127 @@ public class BasicNotificationService implements NotificationService{
 //  }
 
   @Override
-  public void delete(Long notificationId, Long receiverId) {
-
+  public void delete(Long notificationId) {
+    if (notificationId == null) {
+      return;
+    }
+    notificationRepository.deleteById(notificationId);
   }
 
   @Override
-  public NotificationDto create(Long receiverId, NotificationType notificationType, Long targetId,
+  public void deleteAllByUserId(Long userId) {
+    if (userId == null) {
+      return;
+    }
+    notificationRepository.deleteAllByReceiverId(userId);
+  }
+
+  @Scheduled(cron = "0 0 0 * * *")
+  private void deleteOldNotification() {
+    //현재보다 ?일 이전의 알람 싸그리 삭제함
+    LocalDateTime cutoffDateTime = LocalDateTime.now().minusDays(notificationRetentionPeriodInDays);
+    log.info("{}일 이전의 오래된 알림 데이터 삭제를 시작합니다. (기준 시각: {})", notificationRetentionPeriodInDays,
+        cutoffDateTime);
+    notificationRepository.deleteByCreatedAtBefore(cutoffDateTime);
+    log.info("오래된 알림 데이터 삭제 완료.");
+  }
+
+  @Override
+  public NotificationDto broadcast(BroadcastEvent event) {
+    NotificationType notificationType = event.getNotificationType();
+    Long targetId = event.getTargetId();
+
+    String title = notificationType.getTitle();
+    String content = createContent(targetId, notificationType);
+
+    return NotificationDto.of(targetId, notificationType, title, content, event.getCreatedAt());
+  }
+
+  @Override
+  public NotificationDto create(Long receiverId, NotificationType type, Long targetId,
       Long publisherId) {
-    User user = userRepository.findById(receiverId).orElseThrow(
+    Notification notification = of(receiverId, publisherId, type, targetId);
+
+    if (notification == null) {
+      return null;
+    }
+
+    notificationRepository.save(notification);
+    return NotificationDto.of(notification, targetId);
+  }
+
+  @Override
+  public List<NotificationDto> createAll(Set<Long> receiverIds, NotificationType type,
+      Long targetId,
+      Long publisherId) {
+
+    User publisher = userRepository.findById(publisherId)
+        .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+
+    List<User> receivers = userRepository.findAllById(receiverIds);
+
+    // Map<userId, AlarmSetting> 형태로 변환하여 O(1) 시간 복잡도로 조회를 가능하게 함
+    Map<Long, AlarmSetting> alarmSettingsMap = alarmSettingRepository.findAllByUserIn(receivers)
+        .stream()
+        .collect(Collectors.toMap(setting -> setting.getUser().getId(), setting -> setting));
+
+    List<Notification> notificationsToSave = new ArrayList<>();
+    String titleTemplate = type.getMessageTemplate();
+    String content = createContent(targetId, type);
+
+    for (User receiver : receivers) {
+      AlarmSetting alarmSetting = alarmSettingsMap.get(receiver.getId());
+
+      if (alarmSetting == null) {
+        continue;
+      }
+
+      String title = NotificationType.toTitle(publisher.getUsername(), titleTemplate);
+
+      Notification notification = Notification.of(receiver.getId(), publisherId, title, content,
+          type, alarmSetting);
+      if (notification != null) {
+        notificationsToSave.add(notification);
+      }
+    }
+
+    List<Notification> savedNotifications = notificationRepository.saveAll(notificationsToSave);
+
+    return savedNotifications.stream()
+        .map(notification -> NotificationDto.of(notification, targetId))
+        .toList();
+  }
+
+  private Notification of(Long receiverId, Long publisherId, NotificationType type, Long targetId) {
+    User receiver = userRepository.findById(receiverId).orElseThrow(
         () -> new UserException(ErrorCode.USER_NOT_FOUND)
     );
-    String title = notificationType.getTitle();
-    String content = user.getUsername() + notificationType.getMessageTemplate();
 
-    Notification notification = Notification.builder()
-        .receiverId(receiverId)
-        .title(title)
-        .content(content)
-        .type(notificationType)
-        .targetId(targetId)
-        .publisherId(publisherId)
-        .build();
-    notificationRepository.save(notification);
-    return NotificationDto.from(notification);
+    //TODO 유저에 알람 설정 파일을 가져올 수 있으면 좋을듯
+    AlarmSetting alarmSetting = alarmSettingRepository.findByUser(receiver).orElseThrow(
+        () -> new MplException(ErrorCode.USER_NOT_FOUND)
+    );
+
+    User publisher = userRepository.findById(publisherId).orElseThrow(
+        () -> new UserException(ErrorCode.USER_NOT_FOUND)
+    );
+
+    String title = NotificationType.toTitle(publisher.getUsername(), type.getMessageTemplate());
+    String content = createContent(targetId, type);
+
+    return Notification.of(receiverId, publisherId, title, content, type, alarmSetting);
   }
 
-  @Override
-  public List<NotificationDto> createAll(Set<Long> receiverIds, NotificationType notificationType, Long targetId,
-      Long publisherId) {
-    String title = notificationType.getTitle();
-    List<NotificationDto> notificationDtoList = new ArrayList<>();
-
-    for (Long receiverId : receiverIds) {
-      User user = userRepository.findById(receiverId).orElseThrow(
-          () -> new UserException(ErrorCode.USER_NOT_FOUND)
-      );
-      String content = user.getUsername() + notificationType.getMessageTemplate();
-      Notification notification = Notification.builder()
-          .receiverId(receiverId)
-          .title(title)
-          .content(content)
-          .type(notificationType)
-          .targetId(targetId)
-          .publisherId(publisherId)
-          .build();
-      notificationRepository.save(notification);
-      notificationDtoList.add(NotificationDto.from(notification));
-    }
-    return notificationDtoList;
+  private String createContent(Long targetId, NotificationType type) {
+    return switch (type) {
+      case NEW_MESSAGE -> //TODO DM Repository 에서 targetId 찾을 예정
+          "아직 DM Repository가 없기에 빈 String 파일을 던집니다.";
+      case NEW_PLAYLIST_BY_FOLLOWING, PLAYLIST_SUBSCRIBED, BROADCAST_TODAY_PLAYLIST -> {
+        Playlist playlist = playlistRepository.findById(targetId)
+            .orElseThrow(() -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
+        yield playlist.getTitle();
+      }
+      default -> null;
+    };
   }
 }
