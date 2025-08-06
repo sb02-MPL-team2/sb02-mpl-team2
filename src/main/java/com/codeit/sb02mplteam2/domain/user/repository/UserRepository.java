@@ -11,6 +11,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
   boolean existsByEmail(String email);
   boolean existsByUsername(String username);
 
-  @Query("select u from User u left join fetch u.playlists left join u.profile where u.id = :id")
+  @Query("select u from User u left join fetch u.playlists left join fetch u.profile where u.id = :id")
   Optional<User> findById(Long id);
 }
