@@ -1,7 +1,7 @@
 package com.codeit.sb02mplteam2.domain.playlist.dto;
 
 import com.codeit.sb02mplteam2.domain.binary.entity.BinaryContent;
-import com.codeit.sb02mplteam2.domain.content.dto.ContentResponseDto;
+import com.codeit.sb02mplteam2.domain.content.dto.content.ContentResponseDto;
 import com.codeit.sb02mplteam2.domain.playlist.entity.Playlist;
 import com.codeit.sb02mplteam2.domain.playlist.entity.PlaylistItem;
 import com.codeit.sb02mplteam2.domain.playlist.entity.Subscribe;

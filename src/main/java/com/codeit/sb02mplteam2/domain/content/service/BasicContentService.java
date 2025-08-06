@@ -1,14 +1,16 @@
 package com.codeit.sb02mplteam2.domain.content.service;
 
-import com.codeit.sb02mplteam2.domain.binary.entity.BinaryContent;
-import com.codeit.sb02mplteam2.domain.binary.repository.BinaryContentRepository;
-import com.codeit.sb02mplteam2.domain.content.dto.ContentRequestDto;
-import com.codeit.sb02mplteam2.domain.content.dto.ContentResponseDto;
+import com.codeit.sb02mplteam2.domain.content.dto.content.ContentResponseDto;
+import com.codeit.sb02mplteam2.domain.content.dto.tmdb.TmdbMovieDto;
+import com.codeit.sb02mplteam2.domain.content.dto.tmdb.TmdbTvDto;
 import com.codeit.sb02mplteam2.domain.content.entity.Content;
+import com.codeit.sb02mplteam2.domain.content.entity.ContentCategory;
 import com.codeit.sb02mplteam2.domain.content.mapper.ContentMapper;
+import com.codeit.sb02mplteam2.domain.content.mapper.TmdbContentMapper;
 import com.codeit.sb02mplteam2.domain.content.repository.ContentRepository;
 import com.codeit.sb02mplteam2.exception.ErrorCode;
 import com.codeit.sb02mplteam2.exception.MplException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class BasicContentService implements ContentService{
 
   private final ContentRepository contentRepository;
-  private final BinaryContentRepository binaryContentRepository;
   private final ContentMapper contentMapper;
+  private final TmdbService tmdbService;
+  private final TmdbContentMapper tmdbContentMapper;
 
   @Override
   @Transactional(readOnly = true)
@@ -41,7 +44,7 @@ public class BasicContentService implements ContentService{
 
   @Override
   @Transactional(readOnly = true)
-  public List<ContentResponseDto> findByCategory(String category) {
+  public List<ContentResponseDto> findByCategory(ContentCategory category) {
     return contentRepository.findByCategory(category).stream()
         .map(contentMapper::toDto)
         .collect(Collectors.toList());
@@ -58,11 +61,33 @@ public class BasicContentService implements ContentService{
 
   @Override
   @Transactional
-  public void saveContent(ContentRequestDto dto) {
-    BinaryContent binaryContent = binaryContentRepository.findById(dto.binaryContentId())
-        .orElseThrow(() -> new MplException(ErrorCode.BINARY_CONTENT_NOT_FOUND));
+  public void saveTmdbMovies(ContentCategory category) {
+    List<TmdbMovieDto> movies = tmdbService.getTmdbMovies(category);
+    if (movies == null) {
+      return;
+    }
+    LocalDateTime now = LocalDateTime.now();
 
-    Content content = contentMapper.toEntity(dto, binaryContent);
-    contentRepository.save(content);
+    List<Content> contents = movies.stream()
+        .map(dto -> tmdbContentMapper.toEntity(dto, category))
+        .toList();
+
+    contentRepository.saveAll(contents);
+  }
+
+  @Override
+  @Transactional
+  public void saveTmdbTvs(ContentCategory category) {
+    List<TmdbTvDto> tvs = tmdbService.getTmdbTvs(category);
+    if (tvs == null) {
+      return;
+    }
+    LocalDateTime now = LocalDateTime.now();
+
+    List<Content> contents = tvs.stream()
+        .map(dto -> tmdbContentMapper.toEntity(dto, category))
+        .toList();
+
+    contentRepository.saveAll(contents);
   }
 }

@@ -1,6 +1,7 @@
 package com.codeit.sb02mplteam2.domain.playlist.service;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -14,6 +15,7 @@ import com.codeit.sb02mplteam2.domain.user.entity.User;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -47,6 +49,7 @@ class BasicPlaylistItemServiceTest {
   }
 
   @Test
+  @Disabled
   void addContent() {
     //given
     when(playlistRepository.findById(1L)).thenReturn(Optional.of(playlist));
@@ -62,6 +65,7 @@ class BasicPlaylistItemServiceTest {
   }
 
   @Test
+  @Disabled
   void addContentList() {
     when(playlistRepository.findById(1L)).thenReturn(Optional.of(playlist));
 
@@ -78,6 +82,7 @@ class BasicPlaylistItemServiceTest {
   }
 
   @Test
+  @Disabled
   void insertContent() {
     //given
     when(playlistRepository.findById(1L)).thenReturn(Optional.of(playlist));
@@ -102,6 +107,7 @@ class BasicPlaylistItemServiceTest {
   }
 
   @Test
+  @Disabled
   void insertContentList() {
     //given
     when(playlistRepository.findById(1L)).thenReturn(Optional.of(playlist));

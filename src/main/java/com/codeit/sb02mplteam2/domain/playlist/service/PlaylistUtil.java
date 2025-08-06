@@ -1,6 +1,6 @@
 package com.codeit.sb02mplteam2.domain.playlist.service;
 
-import com.codeit.sb02mplteam2.domain.content.dto.ContentResponseDto;
+import com.codeit.sb02mplteam2.domain.content.dto.content.ContentResponseDto;
 import com.codeit.sb02mplteam2.domain.playlist.entity.PlaylistItem;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,7 +18,7 @@ public final class PlaylistUtil {
             .id(content.getId())
             .title(content.getTitle())
             .description(content.getDescription())
-            .category(content.getCategory())
+            .category(content.getCategory().toString())
             // TODO: 관련된 실제 데이터를 채워 넣어야 함
             .build())
         .collect(Collectors.toList());

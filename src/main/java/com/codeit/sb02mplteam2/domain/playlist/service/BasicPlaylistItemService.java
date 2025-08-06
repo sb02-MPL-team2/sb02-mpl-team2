@@ -2,7 +2,7 @@ package com.codeit.sb02mplteam2.domain.playlist.service;
 
 import static com.codeit.sb02mplteam2.domain.playlist.service.PlaylistUtil.toResponseDto;
 
-import com.codeit.sb02mplteam2.domain.content.dto.ContentResponseDto;
+import com.codeit.sb02mplteam2.domain.content.dto.content.ContentResponseDto;
 import com.codeit.sb02mplteam2.domain.content.entity.Content;
 import com.codeit.sb02mplteam2.domain.content.repository.ContentRepository;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistDto;
