@@ -28,7 +28,7 @@ public interface DirectMessageChannelApi {
           responseCode = "404", description = "사용자를 찾을 수 없음"
       )
   })
-  @GetMapping("/api/channels/{senderId}")
+  @PostMapping("/api/channels/{senderId}")
   ResponseEntity<DirectMessageChannelResponse> create(
       @Parameter(description = "보내는 유저 ID")
       @PathVariable Long senderId,
