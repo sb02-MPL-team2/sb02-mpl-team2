@@ -19,9 +19,7 @@ public class RecommendWriter implements ItemWriter<PlaylistScore> {
   public void write(Chunk<? extends PlaylistScore> chunk) throws Exception {
     List<? extends PlaylistScore> items = chunk.getItems();
 
-    for (PlaylistScore item : items) {
-      playlistScoreRepository.save(item);
-    }
+    playlistScoreRepository.saveAll(items);
 
     //TODO 브로드캐스트 로직 실행해야함
   }
