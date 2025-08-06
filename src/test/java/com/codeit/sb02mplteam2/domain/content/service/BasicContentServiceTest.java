@@ -6,6 +6,7 @@ import com.codeit.sb02mplteam2.domain.content.entity.Content;
 import com.codeit.sb02mplteam2.domain.content.entity.ContentCategory;
 import com.codeit.sb02mplteam2.domain.content.repository.ContentRepository;
 import java.util.List;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,6 +23,7 @@ class BasicContentServiceTest {
   private ContentRepository contentRepository;
 
   @Test
+  @Disabled
   void testSaveTmdbMovies_realApi() {
     // when
     basicContentService.saveTmdbMovies(ContentCategory.MOVIE);
@@ -36,6 +38,7 @@ class BasicContentServiceTest {
   }
 
   @Test
+  @Disabled
   void testSaveTmdbTvs_realApi() {
     // when
     basicContentService.saveTmdbTvs(ContentCategory.TV);

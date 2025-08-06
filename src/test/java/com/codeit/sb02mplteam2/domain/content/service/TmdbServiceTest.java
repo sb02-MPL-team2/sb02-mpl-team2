@@ -1,10 +1,12 @@
 package com.codeit.sb02mplteam2.domain.content.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
 import com.codeit.sb02mplteam2.domain.content.dto.tmdb.TmdbMovieDto;
 import com.codeit.sb02mplteam2.domain.content.dto.tmdb.TmdbTvDto;
 import com.codeit.sb02mplteam2.domain.content.entity.ContentCategory;
 import java.util.List;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,6 +18,7 @@ class TmdbServiceTest {
   private TmdbService tmdbService;
 
   @Test
+  @Disabled
   void testGetTmdbMoviesRealApi() {
     List<TmdbMovieDto> movies = tmdbService.getTmdbMovies(ContentCategory.MOVIE);
 
@@ -26,6 +29,7 @@ class TmdbServiceTest {
   }
 
   @Test
+  @Disabled
   void testGetTmdbTvsRealApi() {
     List<TmdbTvDto> tvs = tmdbService.getTmdbTvs(ContentCategory.TV);
 

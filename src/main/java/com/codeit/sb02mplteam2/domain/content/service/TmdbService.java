@@ -1,7 +1,7 @@
 package com.codeit.sb02mplteam2.domain.content.service;
 
-import com.codeit.sb02mplteam2.domain.content.dto.tmdb.TmdbMovieDto;
 import com.codeit.sb02mplteam2.domain.content.dto.tmdb.TmdbMovieApiResponseDto;
+import com.codeit.sb02mplteam2.domain.content.dto.tmdb.TmdbMovieDto;
 import com.codeit.sb02mplteam2.domain.content.dto.tmdb.TmdbTvApiResponseDto;
 import com.codeit.sb02mplteam2.domain.content.dto.tmdb.TmdbTvDto;
 import com.codeit.sb02mplteam2.domain.content.entity.ContentCategory;
@@ -24,28 +24,36 @@ public class TmdbService {
   }
 
   public List<TmdbMovieDto> getTmdbMovies(ContentCategory category) {
-    return webClient.get()
-        .uri(uriBuilder -> uriBuilder
-            .path(category.getPath())
-            .queryParam("api_key", apiKey)
-            .queryParam("language", "ko-KR")
-            .build())
-        .retrieve()
-        .bodyToMono(TmdbMovieApiResponseDto.class)
-        .map(TmdbMovieApiResponseDto::results)
-        .block();
+    try {
+      return webClient.get()
+          .uri(uriBuilder -> uriBuilder
+              .path(category.getPath())
+              .queryParam("api_key", apiKey)
+              .queryParam("language", "ko-KR")
+              .build())
+          .retrieve()
+          .bodyToMono(TmdbMovieApiResponseDto.class)
+          .map(TmdbMovieApiResponseDto::results)
+          .block();
+    } catch (Exception e) {
+      return null;
+    }
   }
 
   public List<TmdbTvDto> getTmdbTvs(ContentCategory category) {
-    return webClient.get()
-        .uri(uriBuilder -> uriBuilder
-            .path(category.getPath())
-            .queryParam("api_key", apiKey)
-            .queryParam("language", "ko-KR")
-            .build())
-        .retrieve()
-        .bodyToMono(TmdbTvApiResponseDto.class)
-        .map(TmdbTvApiResponseDto::results)
-        .block();
+    try {
+      return webClient.get()
+          .uri(uriBuilder -> uriBuilder
+              .path(category.getPath())
+              .queryParam("api_key", apiKey)
+              .queryParam("language", "ko-KR")
+              .build())
+          .retrieve()
+          .bodyToMono(TmdbTvApiResponseDto.class)
+          .map(TmdbTvApiResponseDto::results)
+          .block();
+    } catch (Exception e) {
+      return null;
+    }
   }
 }

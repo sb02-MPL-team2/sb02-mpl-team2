@@ -63,7 +63,9 @@ public class BasicContentService implements ContentService{
   @Transactional
   public void saveTmdbMovies(ContentCategory category) {
     List<TmdbMovieDto> movies = tmdbService.getTmdbMovies(category);
-
+    if (movies == null) {
+      return;
+    }
     LocalDateTime now = LocalDateTime.now();
 
     List<Content> contents = movies.stream()
@@ -77,7 +79,9 @@ public class BasicContentService implements ContentService{
   @Transactional
   public void saveTmdbTvs(ContentCategory category) {
     List<TmdbTvDto> tvs = tmdbService.getTmdbTvs(category);
-
+    if (tvs == null) {
+      return;
+    }
     LocalDateTime now = LocalDateTime.now();
 
     List<Content> contents = tvs.stream()
