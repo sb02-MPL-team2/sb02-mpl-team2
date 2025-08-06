@@ -38,12 +38,11 @@ public class DirectMessageController {
   @GetMapping("/{channelId}/messages")
   public ResponseEntity<CursorPageResponseDirectMessageDto> findAll(
       @PathVariable Long channelId,
-      @RequestParam Long fromId,
-      @RequestParam Long toId,
-      @DateTimeFormat(iso=DateTimeFormat.ISO.DATE_TIME) LocalDateTime cursor,
-      @RequestParam(defaultValue = "20") int size
+      @RequestParam(required = false) Long after,
+      @RequestParam(required = false) Long before,
+      @RequestParam(defaultValue = "20") int limit
   ){
-    CursorPageResponseDirectMessageDto response = directMessageService.findAll(channelId, fromId, toId, cursor, size);
+    CursorPageResponseDirectMessageDto response = directMessageService.findAll(channelId, after, before, limit);
     return ResponseEntity.ok(response);
   }
 
