@@ -30,7 +30,7 @@ public interface DirectMessageApi {
           responseCode = "404", description = "사용자를 찾을 수 없음"
       )
   })
-  @GetMapping("/api/dms/{userId}")
+  @PostMapping("/api/dms/{userId}")
   ResponseEntity<DirectMessageResponse> create(
       @Parameter(description = "DM 생성 정보")
       @RequestBody DirectMessageCreateRequest request
