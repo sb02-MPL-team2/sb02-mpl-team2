@@ -13,8 +13,8 @@ public interface FollowService {
 
   FollowStatusResponse isFollowing(Long followeeId, Long followerId);
 
-  CursorPageResponseFollowDto getFollowers(Long userId, LocalDateTime cursor, int size);
+  CursorPageResponseFollowDto getFollowers(Long userId, Long cursor, int size);
 
-  CursorPageResponseFollowDto getFollowings(Long userId, LocalDateTime cursor, int size);
+  CursorPageResponseFollowDto getFollowings(Long userId, Long cursor, int size);
 
 }

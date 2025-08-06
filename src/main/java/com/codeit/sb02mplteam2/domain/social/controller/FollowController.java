@@ -4,10 +4,8 @@ import com.codeit.sb02mplteam2.domain.social.dto.CursorPageResponseFollowDto;
 import com.codeit.sb02mplteam2.domain.social.dto.FollowResponse;
 import com.codeit.sb02mplteam2.domain.social.dto.FollowStatusResponse;
 import com.codeit.sb02mplteam2.domain.social.service.FollowService;
-import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -58,7 +56,7 @@ public class FollowController {
   @GetMapping("/{userId}/followers")
   public ResponseEntity<CursorPageResponseFollowDto> getFollowers(
       @PathVariable Long userId,
-      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime cursor,
+      @RequestParam(required = false) Long cursor,
       @RequestParam(defaultValue = "20") int size
   ){
     CursorPageResponseFollowDto response = followService.getFollowers(userId, cursor, size);
@@ -69,7 +67,7 @@ public class FollowController {
   @GetMapping("/{userId}/followings")
   public ResponseEntity<CursorPageResponseFollowDto> getFollowings(
       @PathVariable Long userId,
-      @DateTimeFormat(iso=DateTimeFormat.ISO.DATE_TIME) LocalDateTime cursor,
+      @RequestParam(required = false) Long cursor,
       @RequestParam(defaultValue = "20") int size
   ){
     CursorPageResponseFollowDto response = followService.getFollowings(userId, cursor, size);

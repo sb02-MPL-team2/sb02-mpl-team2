@@ -23,30 +23,30 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
   Optional<Follow> findByToUserIdAndFromUserId(Long followeeId, Long followerId);
 
   @Query("""
-        SELECT f 
+        SELECT f
         FROM Follow f
         JOIN FETCH f.fromUser u
         WHERE f.toUser.id = :userId
-        AND (:cursor IS NULL OR f.createdAt < :cursor)
-        ORDER BY f.createdAt DESC
-        """)
-  List<Follow> findFollowersWithCursor(
+        AND (:cursor IS NULL OR f.id < :cursor)
+        ORDER BY f.id DESC
+    """)
+  List<Follow> findFollowers(
       @Param("userId") Long userId,
-      @Param("cursor") LocalDateTime cursor,
+      @Param("cursor") Long cursor,
       Pageable pageable
   );
 
   @Query("""
-        SELECT f 
+        SELECT f
         FROM Follow f
         JOIN FETCH f.toUser u
         WHERE f.fromUser.id = :userId
-        AND (:cursor IS NULL OR f.createdAt < :cursor)
-        ORDER BY f.createdAt DESC
-        """)
-  List<Follow> findFollowingsWithCursor(
-      @Param("userId")Long userId,
-      @Param("cursor") LocalDateTime cursor,
+        AND (:cursor IS NULL OR f.id < :cursor)
+        ORDER BY f.id DESC
+    """)
+  List<Follow> findFollowings(
+      @Param("userId") Long userId,
+      @Param("cursor") Long cursor,
       Pageable pageable
   );
 }
