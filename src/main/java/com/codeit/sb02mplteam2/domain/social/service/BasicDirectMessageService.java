@@ -49,6 +49,7 @@ public class BasicDirectMessageService implements DirectMessageService {
         : channel.getToUser();
 
     DirectMessage directMessage = DirectMessage.of(request.content(), sender, channel);
+    directMessage = directMessageRepository.save(directMessage);
 
     return new DirectMessageResponse(new UserSlimDto(sender.getId(), null, sender.getUsername()),
         directMessage.getId(), channel.getId(), request.content(), directMessage.getCreatedAt());
