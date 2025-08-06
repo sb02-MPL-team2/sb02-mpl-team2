@@ -58,11 +58,4 @@ public class Content {
     this.createdAt = createdAt;
   }
 
-  public static Content fromTmdbMovieDto(TmdbMovieDto dto, ContentCategory category, String imageUrl, LocalDateTime createdAt) {
-    return new Content(dto.title(), dto.overview(), category, imageUrl, createdAt);
-  }
-
-  public static Content fromTmdbTvDto(TmdbTvDto dto, ContentCategory category, String imageUrl, LocalDateTime createdAt) {
-    return new Content(dto.name(), dto.overview(), category, imageUrl, createdAt);
-  }
 }
