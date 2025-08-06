@@ -37,4 +37,15 @@ public class DirectMessage {
   @ManyToOne(fetch=FetchType.LAZY)
   @JoinColumn(name="direct_message_channel_id", nullable = false)
   private DirectMessageChannel directMessageChannel;
+
+  public static DirectMessage of(String content, User user, DirectMessageChannel channel) {
+    DirectMessage message = new DirectMessage();
+    message.content = content;
+    message.user = user;
+    message.directMessageChannel = channel;
+
+    channel.getMessages().add(message);
+
+    return message;
+  }
 }
