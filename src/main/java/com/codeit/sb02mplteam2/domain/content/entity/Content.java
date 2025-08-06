@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -49,8 +48,13 @@ public class Content {
   @OneToMany(mappedBy = "content")
   private List<Review> reviews = new ArrayList<>();
 
-  @Builder(builderMethodName = "of")
-  public Content(String title, String description, ContentCategory category, String imageUrl, LocalDateTime createdAt) {
+  public Content(String title, ContentCategory category) {
+    this.title = title;
+    this.category = category;
+  }
+
+  public Content(String title, String description, ContentCategory category, String imageUrl,
+      LocalDateTime createdAt) {
     this.title = title;
     this.description = description;
     this.category = category;
@@ -58,7 +62,4 @@ public class Content {
     this.createdAt = createdAt;
   }
 
-  public static ContentBuilder create(String title, ContentCategory category) {
-    return Content.of().title(title).category(category);
-  }
 }
