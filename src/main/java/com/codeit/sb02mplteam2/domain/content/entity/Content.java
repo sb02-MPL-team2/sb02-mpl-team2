@@ -1,7 +1,5 @@
 package com.codeit.sb02mplteam2.domain.content.entity;
 
-import com.codeit.sb02mplteam2.domain.content.dto.tmdb.TmdbMovieDto;
-import com.codeit.sb02mplteam2.domain.content.dto.tmdb.TmdbTvDto;
 import com.codeit.sb02mplteam2.domain.review.entity.Review;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,6 +13,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -50,6 +49,7 @@ public class Content {
   @OneToMany(mappedBy = "content")
   private List<Review> reviews = new ArrayList<>();
 
+  @Builder(builderMethodName = "of")
   public Content(String title, String description, ContentCategory category, String imageUrl, LocalDateTime createdAt) {
     this.title = title;
     this.description = description;
@@ -58,4 +58,7 @@ public class Content {
     this.createdAt = createdAt;
   }
 
+  public static ContentBuilder create(String title, ContentCategory category) {
+    return Content.of().title(title).category(category);
+  }
 }
