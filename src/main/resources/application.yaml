@@ -50,7 +50,7 @@ mpl:
 
 external-api:
   tmdb:
-    api-key: ${TMDB_API_KEY}
-    base-url: ${TMDB_BASE_URL}
+    api-key: ${TMDB_API_KEY:test_key}
+    base-url: ${TMDB_BASE_URL:test_url}
   sportsdb:
-    api-key: ${SPORTSDB_API_KEY}
+    api-key: ${SPORTSDB_API_KEY:test_sportdb_key}
