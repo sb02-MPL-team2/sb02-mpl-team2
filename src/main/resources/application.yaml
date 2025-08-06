@@ -53,6 +53,7 @@ mpl:
   sse:
     inactive-timeout-minutes: ${SSE_INACTIVE_TIMEOUT_MINUTES:10}
     default-timeout: ${SSE_DEFAULT_TIMEOUT:30}
+    max-connections: ${SSE_MAX_CONNECTIONS:100}
 
 external-api:
   tmdb:
