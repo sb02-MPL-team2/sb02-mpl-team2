@@ -5,8 +5,10 @@ import com.codeit.sb02mplteam2.domain.binary.service.BinaryContentService;
 import com.codeit.sb02mplteam2.domain.user.dto.UserCreateRequest;
 import com.codeit.sb02mplteam2.domain.user.dto.UserDto;
 import com.codeit.sb02mplteam2.domain.user.dto.UserUpdateRequest;
+import com.codeit.sb02mplteam2.domain.user.entity.AlarmSetting;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import com.codeit.sb02mplteam2.domain.user.mapper.UserMapper;
+import com.codeit.sb02mplteam2.domain.user.repository.AlarmSettingRepository;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
 import com.codeit.sb02mplteam2.exception.ErrorCode;
 import com.codeit.sb02mplteam2.exception.user.UserException;
@@ -31,7 +33,7 @@ public class BasicUserService implements UserService{
   private final UserMapper userMapper;
   private final PasswordEncoder passwordEncoder;
   private final BinaryContentService binaryContentService;
-
+  private final AlarmSettingRepository alarmSettingRepository;
   @Transactional
   @Override
   public UserDto create(UserCreateRequest request,
@@ -61,7 +63,7 @@ public class BasicUserService implements UserService{
     );
 
     User savedUser = userRepository.save(user);
-
+    alarmSettingRepository.save(new AlarmSetting(savedUser));
     return userMapper.toDto(savedUser);
   }
 

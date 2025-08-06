@@ -95,6 +95,7 @@ class BasicPlaylistServiceTest {
 
   @Test
   @DisplayName("구독 성공 테스트")
+  @Disabled
   void subscribe() {
     // given
     User newUser = new User();

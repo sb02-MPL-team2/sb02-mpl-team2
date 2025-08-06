@@ -7,6 +7,7 @@ import static com.codeit.sb02mplteam2.domain.playlist.service.PlaylistUtil.toUse
 import com.codeit.sb02mplteam2.domain.content.dto.content.ContentResponseDto;
 import com.codeit.sb02mplteam2.domain.notification.entity.NotificationType;
 import com.codeit.sb02mplteam2.domain.notification.event.BulkNotificationEvent;
+import com.codeit.sb02mplteam2.domain.notification.event.NotificationEvent;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistDto;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistItemDto;
 import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistCreateRequest;
@@ -104,14 +105,18 @@ public class BasicPlaylistService implements PlaylistService {
         log.info("구독 성공 user id = {}, name = {}, playlist id = {}, playlist Title = {}", userId,
             user.getUsername(), playlistId, playlist.getTitle());
 
-
-
       } else {
         log.warn("구독 실패 user id = {}, name = {}, playlist id = {}, playlist Title = {}", userId,
             user.getUsername(), playlistId, playlist.getTitle());
+
       }
     }
     playlistRepository.save(playlist);
+    //이벤트 발행
+    eventPublisher.publishEvent(
+        new NotificationEvent(this, playlist.getUser().getId(), NotificationType.PLAYLIST_SUBSCRIBED,
+            playlist.getId(), userId));
+
     List<ContentResponseDto> responseDto = toResponseDto(playlist.getItems());
     UserSlimDto userSlimDto = toUserSlimDto(playlist);
     List<PlaylistItemDto> playlistItemDtoList = toPlaylistItemDtoList(playlist);
