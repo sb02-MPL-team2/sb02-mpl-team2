@@ -14,14 +14,24 @@ import org.springframework.stereotype.Component;
 public class RecommendReader implements ItemReader<PlaylistItem> {
 
   private final PlaylistItemRepository playlistItemRepository;
-  private int index = 0;
+  private int pageDataIndex = 0;
   private List<PlaylistItem> data;
+  private int pageNumber = 0;
+  private final int pageSize = 1000; // Adjust page size as needed
 
   @Override
   public PlaylistItem read() {
-    if (data == null) {
-      data = playlistItemRepository.findAll();
+    // If data is null or we've exhausted the current page, fetch the next page
+    if (data == null || pageDataIndex >= data.size()) {
+      Pageable pageable = PageRequest.of(pageNumber, pageSize);
+      data = playlistItemRepository.findAll(pageable).getContent();
+      pageNumber++;
+      pageDataIndex = 0;
+      // If no more data, return null to signal end of reading
+      if (data.isEmpty()) {
+        return null;
+      }
     }
-    return index < data.size() ? data.get(index++) : null;
+    return data.get(pageDataIndex++);
   }
 }
