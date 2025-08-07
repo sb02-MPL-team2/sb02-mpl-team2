@@ -6,6 +6,8 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ItemReader;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -21,13 +23,11 @@ public class RecommendReader implements ItemReader<PlaylistItem> {
 
   @Override
   public PlaylistItem read() {
-    // If data is null or we've exhausted the current page, fetch the next page
     if (data == null || pageDataIndex >= data.size()) {
       Pageable pageable = PageRequest.of(pageNumber, pageSize);
       data = playlistItemRepository.findAll(pageable).getContent();
       pageNumber++;
       pageDataIndex = 0;
-      // If no more data, return null to signal end of reading
       if (data.isEmpty()) {
         return null;
       }
