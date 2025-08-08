@@ -1,41 +1,47 @@
 package com.codeit.sb02mplteam2.domain.livewatch.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.time.LocalDateTime;
-import java.util.*;
-
 import com.codeit.sb02mplteam2.domain.user.entity.User;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 
-@Entity
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
-@EntityListeners(AuditingEntityListener.class)
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Entity
+@Table(name = "live_chat_messages")
+//TODO: live_chat_room_id 인덱스, sentAt DESC 인덱스 따로 생성 VS (live_chat_room_id, sentAt DESC) 복합 인덱스 실험
 public class LiveChatMessage {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(columnDefinition = "TEXT", nullable = false)
-  private String content;
-
-  @CreatedDate
-  @Column(name = "created_at", nullable = false, updatable = false)
-  private LocalDateTime createdAt;
-
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id")
   private User user;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "chat_room_id", nullable = false)
-  private LiveChatRoom chatRoom;
+  @JoinColumn(name = "live_chat_room_id")
+  private LiveChatRoom liveChatRoom;
 
+  @Column(nullable = false)
+  private String content;
+
+  @CreatedDate
+  @Column(updatable = false)
+  private LocalDateTime sentAt;
 }

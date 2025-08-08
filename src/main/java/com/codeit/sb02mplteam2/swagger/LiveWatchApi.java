@@ -1,6 +1,7 @@
 package com.codeit.sb02mplteam2.swagger;
 
-import com.codeit.sb02mplteam2.domain.livewatch.dto.*;
+import com.codeit.sb02mplteam2.domain.livewatch.dto.response.ChatMessagePageResponse;
+import com.codeit.sb02mplteam2.domain.livewatch.dto.response.RoomJoinResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -9,102 +10,75 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
-@Tag(name = "LiveWatch", description = "LiveWatch API")
+@Tag(name = "LiveWatch", description = "실시간 채팅방 API")
 public interface LiveWatchApi {
 
-  @Operation(summary = "LiveChatMessage 생성")
+  @Operation(summary = "채팅방 입장", description = "채팅방에 입장하고 방 정보와 참여자 목록을 조회합니다.")
   @ApiResponses(value = {
       @ApiResponse(
-          responseCode = "201", description = "LiveChatMessage가 성공적으로 생성됨",
-          content = @Content(schema = @Schema(implementation = LiveChatMessageDto.class))
+          responseCode = "200", description = "채팅방 입장 성공",
+          content = @Content(schema = @Schema(implementation = RoomJoinResponse.class))
       ),
       @ApiResponse(
-          responseCode = "404", description = "LiveChatRoom 또는 User를 찾을 수 없음",
-          content = @Content(examples = @ExampleObject(value = "LiveChatRoom | User with id {chatRoomId | userId} not found"))
-      ),
-  })
-  ResponseEntity<LiveChatMessageDto> createMessage(
-      @Parameter(description = "채팅룸이 속한 Content Id") Long contentId,
-      @Parameter(
-          description = "LiveChatMessage 내용",
-          content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
-      ) LiveChatMessageCreateRequest liveChatMessageCreateRequest
-  );
-
-  @Operation(summary = "LiveChatRoom 조회")
-  @ApiResponses(value = {
-      @ApiResponse(
-          responseCode = "200", description = "LiveChatRoom 조회 성공",
-          content = @Content(schema = @Schema(implementation = LiveChatRoomDto.class))
+          responseCode = "404", description = "채팅방을 찾을 수 없음",
+          content = @Content(examples = @ExampleObject(value = "ChatRoom with id {roomId} not found"))
       ),
       @ApiResponse(
-          responseCode = "404", description = "LiveChatRoom을 찾을 수 없음",
-          content = @Content(examples = @ExampleObject(value = "LiveChatRoom for content id {contentId} not found"))
+          responseCode = "409", description = "이미 다른 채팅방에 참여 중",
+          content = @Content(examples = @ExampleObject(value = "User is already participating in another room"))
       )
   })
-  ResponseEntity<LiveChatRoomDto> findChatRoomByContentId(
-      @Parameter(description = "조회할 Content ID") Long contentId
+  ResponseEntity<RoomJoinResponse> joinRoom(
+      @Parameter(description = "입장할 채팅방 ID") Long roomId
   );
 
-  @Operation(summary = "LiveChatRoom 참가자 입장")
+  @Operation(summary = "채팅방 퇴장", description = "현재 참여 중인 채팅방에서 퇴장합니다.")
   @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "채팅방 퇴장 성공"),
       @ApiResponse(
-          responseCode = "200", description = "LiveChatRoom 입장 성공",
-          content = @Content(schema = @Schema(implementation = LiveChatRoomJoinResponse.class))
+          responseCode = "404", description = "채팅방을 찾을 수 없음",
+          content = @Content(examples = @ExampleObject(value = "ChatRoom with id {roomId} not found"))
       ),
       @ApiResponse(
-          responseCode = "404", description = "LiveChatRoom을 찾을 수 없음",
-          content = @Content(examples = @ExampleObject(value = "LiveChatRoom for content id {contentId} not found"))
+          responseCode = "400", description = "채팅방에 참여하지 않은 사용자",
+          content = @Content(examples = @ExampleObject(value = "User is not participating in this room"))
       )
   })
-  ResponseEntity<LiveChatRoomJoinResponse> joinChatRoom(
-      @Parameter(description = "입장할 Content ID") Long contentId
+  ResponseEntity<Void> leaveRoom(
+      @Parameter(description = "퇴장할 채팅방 ID") Long roomId
   );
 
-  @Operation(summary = "LiveChatRoom 참가자 퇴장")
+  @Operation(summary = "메시지 히스토리 조회", description = "채팅방의 메시지 히스토리를 페이지네이션으로 조회합니다.")
   @ApiResponses(value = {
       @ApiResponse(
-          responseCode = "204", description = "LiveChatRoom 퇴장 성공"
+          responseCode = "200", description = "메시지 히스토리 조회 성공",
+          content = @Content(schema = @Schema(implementation = ChatMessagePageResponse.class))
       ),
       @ApiResponse(
-          responseCode = "404", description = "LiveChatRoom을 찾을 수 없음",
-          content = @Content(examples = @ExampleObject(value = "LiveChatRoom for content id {contentId} not found"))
+          responseCode = "404", description = "채팅방을 찾을 수 없음",
+          content = @Content(examples = @ExampleObject(value = "ChatRoom with id {roomId} not found"))
       )
   })
-  ResponseEntity<Void> leaveChatRoom(
-      @Parameter(description = "퇴장할 Content ID") Long contentId
+  ResponseEntity<ChatMessagePageResponse> getMessages(
+      @Parameter(description = "조회할 채팅방 ID") Long roomId,
+      @Parameter(description = "페이지네이션 커서 (이전 조회의 마지막 메시지 시간)", required = false) String cursor,
+      @Parameter(description = "조회할 메시지 수 (기본: 30)", required = false) Integer size
   );
 
-  @Operation(summary = "LiveChatRoom 활성 사용자 목록 조회")
+  @Operation(summary = "현재 참여자 수 조회", description = "채팅방의 현재 참여자 수를 조회합니다.")
   @ApiResponses(value = {
       @ApiResponse(
-          responseCode = "200", description = "활성 사용자 목록 조회 성공",
-          content = @Content(schema = @Schema(implementation = LiveChatActiveUsersResponse.class))
+          responseCode = "200", description = "참여자 수 조회 성공",
+          content = @Content(schema = @Schema(implementation = Integer.class))
       ),
       @ApiResponse(
-          responseCode = "404", description = "LiveChatRoom을 찾을 수 없음",
-          content = @Content(examples = @ExampleObject(value = "LiveChatRoom for content id {contentId} not found"))
+          responseCode = "404", description = "채팅방을 찾을 수 없음",
+          content = @Content(examples = @ExampleObject(value = "ChatRoom with id {roomId} not found"))
       )
   })
-  ResponseEntity<LiveChatActiveUsersResponse> getActiveUsers(
-      @Parameter(description = "조회할 Content ID") Long contentId
-  );
-
-  @Operation(summary = "LiveChatRoom 통계 조회")
-  @ApiResponses(value = {
-      @ApiResponse(
-          responseCode = "200", description = "LiveChatRoom 통계 조회 성공",
-          content = @Content(schema = @Schema(implementation = LiveChatRoomStatsDto.class))
-      ),
-      @ApiResponse(
-          responseCode = "404", description = "LiveChatRoom을 찾을 수 없음",
-          content = @Content(examples = @ExampleObject(value = "LiveChatRoom for content id {contentId} not found"))
-      )
-  })
-  ResponseEntity<LiveChatRoomStatsDto> getChatRoomStats(
-      @Parameter(description = "조회할 Content ID") Long contentId
+  ResponseEntity<Integer> getParticipantCount(
+      @Parameter(description = "조회할 채팅방 ID") Long roomId
   );
 }
