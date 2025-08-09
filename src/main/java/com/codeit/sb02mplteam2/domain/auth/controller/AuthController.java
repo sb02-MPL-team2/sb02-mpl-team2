@@ -30,7 +30,7 @@ public class AuthController implements AuthApi{
       @RequestPart("userCreateRequest") @Valid UserCreateRequest userCreateRequest,
       @RequestPart("profile") MultipartFile profile) {
 
-    UserDto userDto = userService.create(userCreateRequest, Optional.of(profile));
+    UserDto userDto = userService.create(userCreateRequest, Optional.ofNullable(profile));
     return ResponseEntity.status(HttpStatus.CREATED).body(userDto);
   }
 }
