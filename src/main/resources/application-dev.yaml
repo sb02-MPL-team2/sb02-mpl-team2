@@ -38,8 +38,15 @@ logging:
       springframework:
         web: DEBUG # 스프링 웹 관련 로그를 줄입니다.
         data: warn
+        security: DEBUG
+
 mpl:
   admin:
     username: ${ADMIN_USERNAME:admin}
     email: ${ADMIN_EMAIL:admin@mpl.com}
     password: ${ADMIN_PASSWORD:admin123!}
+
+jwt:
+  secret: ${JWT_SECRET_KEY:this-is-a-default-secret-key-for-local-dev-only-and-is-not-secure}
+  access-token-expiration: 600000 # 10 분
+  refresh-token-expiration: 604800000 # 7일

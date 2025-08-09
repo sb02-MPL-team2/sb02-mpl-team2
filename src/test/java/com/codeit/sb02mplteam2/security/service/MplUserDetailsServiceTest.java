@@ -5,9 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
+import com.codeit.sb02mplteam2.domain.user.dto.UserDto;
 import com.codeit.sb02mplteam2.domain.user.entity.Role;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
+import com.codeit.sb02mplteam2.domain.user.mapper.UserMapper;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
+import com.codeit.sb02mplteam2.security.MplUserDetails;
 import com.codeit.sb02mplteam2.security.MplUserDetailsService;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,52 +33,63 @@ public class MplUserDetailsServiceTest {
   @Mock
   private UserRepository userRepository;
 
+  @Mock
+  private UserMapper userMapper;
+
   private User mockUser;
   private String username;
-  private String nonExistentUsername = "nonExistentUser";
+  private String email;
+  private String nonExistentEmail = "nonExistent@test.com";
+  private UserDto userDto;
 
   @BeforeEach()
   void setUp() {
     username = "testUser";
-    mockUser = new User(username, "test@test.com", "password", null);
+    email = "test@test.com";
+    mockUser = new User(username, email, "password", null);
+    userDto = new UserDto(1L, email, username, null,
+        Role.USER, false, false, 0, 0);
   }
 
   @Test
   @DisplayName("성공 - 사용자 이름으로 UserDetails 조회")
   void loadUserByUsername_Success() {
     // given (준비)
-    given(userRepository.findByUsername(username)).willReturn(Optional.of(mockUser));
+    given(userRepository.findByEmail(email)).willReturn(Optional.of(mockUser));
+    given(userMapper.toDto(mockUser)).willReturn(userDto);
 
     // when
-    UserDetails userDetails = mplUserDetailsService.loadUserByUsername(username);
+    UserDetails userDetails = mplUserDetailsService.loadUserByUsername(email);
 
     // then
     assertThat(userDetails).isNotNull();
-    assertThat(userDetails.getUsername()).isEqualTo(username);
+    assertThat(userDetails.getUsername()).isEqualTo(email);
     assertThat(userDetails.getPassword()).isEqualTo("password");
     assertThat(userDetails.isAccountNonLocked()).isTrue();
+    assertThat(userDetails.isEnabled()).isTrue();
 
     assertThat(userDetails.getAuthorities())
         .hasSize(1)
         .extracting(GrantedAuthority::getAuthority)
         .containsExactly("ROLE_" + Role.USER.name());
 
-    verify(userRepository).findByUsername(username);
+    verify(userRepository).findByEmail(email);
+    verify(userMapper).toDto(mockUser);
   }
 
   @Test
   @DisplayName("실패 - 존재하지 않는 사용자 이름으로 조회 시 예외 발생")
   void loadByUsername_Fail_UserNotFound() {
     // given
-    given(userRepository.findByUsername(nonExistentUsername)).willReturn(Optional.empty());
+    given(userRepository.findByEmail(nonExistentEmail)).willReturn(Optional.empty());
 
     // when
     UsernameNotFoundException exception = assertThrows(UsernameNotFoundException.class, () -> {
-        mplUserDetailsService.loadUserByUsername(nonExistentUsername);
+        mplUserDetailsService.loadUserByUsername(nonExistentEmail);
     });
 
-    assertThat(exception.getMessage()).contains(nonExistentUsername);
+    assertThat(exception.getMessage()).contains(nonExistentEmail);
 
-    verify(userRepository).findByUsername(nonExistentUsername);
+    verify(userRepository).findByEmail(nonExistentEmail);
   }
 }
