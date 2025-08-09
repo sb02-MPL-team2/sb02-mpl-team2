@@ -1,49 +1,47 @@
 package com.codeit.sb02mplteam2.domain.playlist.entity;
 
-import com.codeit.sb02mplteam2.domain.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
+@Table(name = "playlist_subscriber_history")
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
-public class Subscribe {
+public class PlaylistSubscriberHistory {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   @CreatedDate
-  @Column(name = "subscribed_at")
-  private LocalDateTime subscribedAt;
+  @Column(name = "created_at")
+  private LocalDateTime createdAt;
 
-  @Setter
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "user_id")
-  private User user;
-
-  @Setter
-  @ManyToOne(fetch = FetchType.LAZY)
+  //단방향 다대일
+  @ManyToOne
   @JoinColumn(name = "playlist_id")
   private Playlist playlist;
 
-  public Subscribe(User user, Playlist playlist) {
-    this.user = user;
+  @Column(name = "subscriber_Count")
+  private int count;
+
+  public PlaylistSubscriberHistory(Playlist playlist, int count) {
+    this.createdAt = LocalDateTime.now();
     this.playlist = playlist;
-    this.subscribedAt = LocalDateTime.now();
+    this.count = count;
   }
 }

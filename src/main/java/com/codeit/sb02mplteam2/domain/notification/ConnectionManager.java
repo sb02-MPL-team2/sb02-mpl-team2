@@ -22,12 +22,12 @@ public class ConnectionManager {
 
   private static final Long DEFAULT_TIME_UNIT = 1000L * 60; //1000 밀리초 * 1 밀리초 = 1초 * 60 초 = 1분 단위
 
-  @Value("${sse.inactive-timeout-minutes}")
-  private static int INACTIVE_TIMEOUT_MINUTES;
-  @Value("${sse.default-timeout}")
-  private static Long DEFAULT_TIMEOUT; //30분 타임아웃
-  @Value("${sse.max-connections}")
-  private static int MAX_CONNECTIONS; //최대 연결 수
+  @Value("${mpl.sse.inactive-timeout-minutes}")
+  private int INACTIVE_TIMEOUT_MINUTES;
+  @Value("${mpl.sse.default-timeout}")
+  private Long DEFAULT_TIMEOUT; //30분 타임아웃
+  @Value("${mpl.sse.max-connections}")
+  private int MAX_CONNECTIONS; //최대 연결 수
 
   private final AtomicInteger connectionCount = new AtomicInteger(0); //현재 연결된 수
   //열려져 있는 탭마다 Emitters 연결함

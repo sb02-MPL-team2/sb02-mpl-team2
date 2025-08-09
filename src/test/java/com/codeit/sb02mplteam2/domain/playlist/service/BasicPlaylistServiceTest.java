@@ -6,14 +6,15 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistCreateRequest;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistDto;
+import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistCreateRequest;
 import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistUpdateRequest;
 import com.codeit.sb02mplteam2.domain.playlist.dto.request.SubscribeRequest;
 import com.codeit.sb02mplteam2.domain.playlist.entity.Playlist;
 import com.codeit.sb02mplteam2.domain.playlist.entity.Subscribe;
 import com.codeit.sb02mplteam2.domain.playlist.repository.PlaylistRepository;
 import com.codeit.sb02mplteam2.domain.playlist.repository.SubscribeRepository;
+import com.codeit.sb02mplteam2.domain.social.repository.FollowRepository;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
 import java.util.Optional;
@@ -24,6 +25,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class BasicPlaylistServiceTest {
@@ -33,6 +35,12 @@ class BasicPlaylistServiceTest {
 
   @Mock
   private PlaylistRepository playlistRepository;
+
+  @Mock
+  private FollowRepository followRepository;
+
+  @Mock
+  private ApplicationEventPublisher eventPublisher;
 
   @Mock
   private SubscribeRepository subscribeRepository;
