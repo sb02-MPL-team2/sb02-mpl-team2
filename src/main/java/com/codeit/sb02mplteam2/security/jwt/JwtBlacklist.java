@@ -25,6 +25,6 @@ public class JwtBlacklist {
   // 1시간마다 정리
   @Scheduled(fixedDelay = 60 * 60 * 1000)
   public void cleanUp() {
-    blacklist.values().removeIf(expirationTime -> expirationTime.isBefore(Instant.now()));
+    blacklist.entrySet().removeIf(entry -> entry.getValue().isBefore(Instant.now()));
   }
 }
