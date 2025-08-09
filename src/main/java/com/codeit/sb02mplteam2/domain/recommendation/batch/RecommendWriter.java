@@ -20,7 +20,5 @@ public class RecommendWriter implements ItemWriter<PlaylistScore> {
     List<? extends PlaylistScore> items = chunk.getItems();
 
     playlistScoreRepository.saveAll(items);
-
-    //TODO 브로드캐스트 로직 실행해야함
   }
 }
