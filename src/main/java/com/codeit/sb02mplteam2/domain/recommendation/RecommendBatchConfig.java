@@ -44,9 +44,12 @@ public class RecommendBatchConfig {
       @Value("#{jobParameters['start']}") LocalDateTime start,
       @Value("#{jobParameters['end']}") LocalDateTime end
   ) {
-    String jpqlQuery = "SELECT DISTINCT h.playlist FROM PlaylistSubscriberHistory h " +
-        "WHERE h.createdAt >= :start AND h.createdAt < :end " +
-        "ORDER BY h.playlist.id ASC";
+    //SELECT DISTINCT를 사용하여 중복을 제거할 때는,
+    // ORDER BY 절에 사용하는 모든 열(column)이 반드시 SELECT 목록에도 포함되어야 함
+    String jpqlQuery = "SELECT p FROM Playlist p WHERE p.id IN " +
+        "(SELECT DISTINCT h.playlist.id FROM PlaylistSubscriberHistory h " +
+        "WHERE h.createdAt >= :start AND h.createdAt < :end) " +
+        "ORDER BY p.id ASC";
 
     // 파라미터 설정
     Map<String, Object> parameters = Map.of(
