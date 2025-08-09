@@ -142,4 +142,12 @@ public class User {
    this.followingCount--;
   }
 
+  public boolean isLocked() {
+   return this.isLocked;
+  }
+
+  public boolean isDeleted() {
+   return this.isDeleted;
+  }
+
 }
