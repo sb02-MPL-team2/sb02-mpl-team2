@@ -15,6 +15,7 @@ import com.codeit.sb02mplteam2.domain.user.dto.UserUpdateRequest;
 import com.codeit.sb02mplteam2.domain.user.entity.Role;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import com.codeit.sb02mplteam2.domain.user.mapper.UserMapper;
+import com.codeit.sb02mplteam2.domain.user.repository.AlarmSettingRepository;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
 import com.codeit.sb02mplteam2.exception.ErrorCode;
 import com.codeit.sb02mplteam2.exception.user.UserException;
@@ -47,7 +48,8 @@ public class UserServiceTest {
 
   @Mock
   private BinaryContentService binaryContentService;
-
+  @Mock
+  private AlarmSettingRepository alarmSettingRepository;
   @Mock
   private SessionRegistry sessionRegistry;
 

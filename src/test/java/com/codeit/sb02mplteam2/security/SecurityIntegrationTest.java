@@ -11,6 +11,7 @@ import com.codeit.sb02mplteam2.domain.admin.service.BasicAdminService;
 import com.codeit.sb02mplteam2.domain.auth.dto.LoginRequest;
 import com.codeit.sb02mplteam2.domain.user.entity.Role;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
+import com.codeit.sb02mplteam2.domain.user.repository.AlarmSettingRepository;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
 import com.codeit.sb02mplteam2.exception.ErrorCode;
 import com.codeit.sb02mplteam2.security.jwt.JwtBlacklist;
@@ -43,6 +44,9 @@ public class SecurityIntegrationTest {
   private UserRepository userRepository;
 
   @Autowired
+  private AlarmSettingRepository alarmSettingRepository;
+
+  @Autowired
   private BasicAdminService adminService;
 
   @Autowired
@@ -56,6 +60,7 @@ public class SecurityIntegrationTest {
 
   @BeforeEach
   void setUp() {
+    alarmSettingRepository.deleteAll();
     userRepository.deleteAll();
 
     normalUser = new User(
