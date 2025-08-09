@@ -26,7 +26,7 @@ public class NotificationEventListener {
   private final NotificationService notificationService;
   private final DeliveryService deliveryService;
 
-  @Async
+  @Async("notificationExecutor")
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void broadcast(BroadcastEvent event) {
 
@@ -48,7 +48,7 @@ public class NotificationEventListener {
     });
   }
 
-  @Async
+  @Async("notificationExecutor")
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void handleNotificationEvent(NotificationEvent event) {
     Long receiverId = event.getReceiverId();
@@ -74,7 +74,7 @@ public class NotificationEventListener {
     deliveryService.deliverToClient(connectionInfo, notificationDto);
   }
 
-  @Async
+  @Async("notificationExecutor")
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void handleBulkNotificationEvent(BulkNotificationEvent event) {
     Set<Long> receiverIds = event.getReceiverIds();

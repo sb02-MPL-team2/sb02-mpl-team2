@@ -17,7 +17,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class SseController {
 
   private final ConnectionManager connectionManager;
-  @GetMapping(value = "/sse/{userId}")
+  @GetMapping(value = "/{userId}")
   public ResponseEntity<SseEmitter> sse(
       @PathVariable Long userId
       // last Event ID = notification ID

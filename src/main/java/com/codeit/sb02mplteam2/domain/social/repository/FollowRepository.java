@@ -5,6 +5,7 @@ import com.codeit.sb02mplteam2.domain.user.entity.User;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -49,4 +50,7 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
       @Param("cursor") LocalDateTime cursor,
       Pageable pageable
   );
+
+  @Query("SELECT DISTINCT f.fromUser.id FROM Follow f WHERE f.toUser.id = :userId")
+  Set<Long> findAllFollowersIdByToUserId(Long userId);
 }

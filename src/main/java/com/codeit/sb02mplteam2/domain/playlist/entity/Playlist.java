@@ -4,6 +4,7 @@ import com.codeit.sb02mplteam2.domain.user.entity.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -21,12 +22,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Table(name = "playlists")
 //TODO 나중에 제약조건 걸 때, Protected 걸어야 함
 @NoArgsConstructor
 @Getter
+@EntityListeners(AuditingEntityListener.class)
 public class Playlist {
 
   @Id
@@ -49,16 +52,18 @@ public class Playlist {
   @OneToMany(mappedBy = "playlist", cascade = CascadeType.ALL, orphanRemoval = true)
   private Set<Subscribe> subscribes = new HashSet<>();
 
-  @Column(name = "description")
-  private String description;
-
   @Column(name = "title")
   private String title;
+
+  @Column(name = "description")
+  private String description;
 
   @OneToMany(mappedBy = "playlist", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<PlaylistItem> items = new ArrayList<>();
 
   public Playlist(User user,String title, String description) {
+    this.createdAt = LocalDateTime.now();
+    this.updatedAt = createdAt;
     this.user = user;
     this.title = title;
     this.description = description;

@@ -1,15 +1,19 @@
 package com.codeit.sb02mplteam2.domain.playlist.service;
 
+import static com.codeit.sb02mplteam2.domain.playlist.service.PlaylistUtil.toPlaylistItemDtoList;
 import static com.codeit.sb02mplteam2.domain.playlist.service.PlaylistUtil.toResponseDto;
+import static com.codeit.sb02mplteam2.domain.playlist.service.PlaylistUtil.toUserSlimDto;
 
 import com.codeit.sb02mplteam2.domain.content.dto.content.ContentResponseDto;
 import com.codeit.sb02mplteam2.domain.content.entity.Content;
 import com.codeit.sb02mplteam2.domain.content.repository.ContentRepository;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistDto;
+import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistItemDto;
 import com.codeit.sb02mplteam2.domain.playlist.entity.Playlist;
 import com.codeit.sb02mplteam2.domain.playlist.entity.PlaylistItem;
 import com.codeit.sb02mplteam2.domain.playlist.repository.PlaylistItemRepository;
 import com.codeit.sb02mplteam2.domain.playlist.repository.PlaylistRepository;
+import com.codeit.sb02mplteam2.domain.user.dto.UserSlimDto;
 import com.codeit.sb02mplteam2.exception.ErrorCode;
 import com.codeit.sb02mplteam2.exception.content.ContentException;
 import com.codeit.sb02mplteam2.exception.playlist.PlaylistException;
@@ -45,7 +49,9 @@ public class BasicPlaylistItemService implements PlaylistItemService {
 
     if (isExist) {
       log.warn("콘텐츠(id:{})는 이미 플레이리스트(id:{})에 존재합니다.", contentId, playlistId);
-      return PlaylistDto.from(playlist);
+      UserSlimDto userSlimDto = toUserSlimDto(playlist);
+      List<PlaylistItemDto> playlistItemDtoList = toPlaylistItemDtoList(playlist);
+      return PlaylistDto.of(playlist, userSlimDto, playlistItemDtoList);
     }
 
     Content content = contentRepository.findById(contentId).orElseThrow(
@@ -60,7 +66,9 @@ public class BasicPlaylistItemService implements PlaylistItemService {
     playlistRepository.save(playlist);
 
     List<ContentResponseDto> responseDto = toResponseDto(playlist.getItems());
-    return PlaylistDto.from(playlist, responseDto);
+    UserSlimDto userSlimDto = toUserSlimDto(playlist);
+    List<PlaylistItemDto> playlistItemDtoList = toPlaylistItemDtoList(playlist);
+    return PlaylistDto.of(playlist, userSlimDto, playlistItemDtoList, responseDto);
   }
 
   @Override
@@ -88,7 +96,9 @@ public class BasicPlaylistItemService implements PlaylistItemService {
     playlistRepository.save(playlist);
 
     List<ContentResponseDto> responseDto = toResponseDto(playlist.getItems());
-    return PlaylistDto.from(playlist, responseDto);
+    UserSlimDto userSlimDto = toUserSlimDto(playlist);
+    List<PlaylistItemDto> playlistItemDtoList = toPlaylistItemDtoList(playlist);
+    return PlaylistDto.of(playlist, userSlimDto, playlistItemDtoList, responseDto);
   }
 
   @Override

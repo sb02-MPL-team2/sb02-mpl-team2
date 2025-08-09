@@ -1,7 +1,12 @@
 package com.codeit.sb02mplteam2.domain.playlist.service;
 
+import com.codeit.sb02mplteam2.domain.binary.entity.BinaryContent;
 import com.codeit.sb02mplteam2.domain.content.dto.content.ContentResponseDto;
+import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistItemDto;
+import com.codeit.sb02mplteam2.domain.playlist.entity.Playlist;
 import com.codeit.sb02mplteam2.domain.playlist.entity.PlaylistItem;
+import com.codeit.sb02mplteam2.domain.user.dto.UserSlimDto;
+import com.codeit.sb02mplteam2.domain.user.entity.User;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.AccessLevel;
@@ -10,6 +15,22 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE) // private 생성자로 인스턴스화 방지
 public final class PlaylistUtil {
   private static final int MAX_LENGTH = 13;
+
+  public static UserSlimDto toUserSlimDto(Playlist playlist) {
+    User user = playlist.getUser();
+    BinaryContent userProfile = user.getProfile();
+    String profileUrl = null;
+    if (userProfile != null) {
+      profileUrl = userProfile.getUrl();
+    }
+    return new UserSlimDto(user.getId(), profileUrl, user.getUsername());
+  }
+
+  public static List<PlaylistItemDto> toPlaylistItemDtoList(Playlist playlist) {
+    return playlist.getItems().stream()
+        .map(item -> new PlaylistItemDto(item.getId(), item.getContent().getId())).toList();
+  }
+
   //Content DTO 변환 기능
   public static List<ContentResponseDto> toResponseDto(List<PlaylistItem> items) {
     return items.stream()

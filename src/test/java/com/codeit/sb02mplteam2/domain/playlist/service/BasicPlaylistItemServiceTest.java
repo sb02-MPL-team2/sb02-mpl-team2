@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.codeit.sb02mplteam2.domain.content.entity.Content;
+import com.codeit.sb02mplteam2.domain.content.entity.ContentCategory;
 import com.codeit.sb02mplteam2.domain.content.repository.ContentRepository;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistDto;
 import com.codeit.sb02mplteam2.domain.playlist.entity.Playlist;
@@ -15,18 +16,22 @@ import com.codeit.sb02mplteam2.domain.user.entity.User;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class BasicPlaylistItemServiceTest {
 
   @Mock
   private PlaylistItemRepository playlistItemRepository;
+
+  @Mock
+  private ApplicationEventPublisher eventPublisher;
 
   @Mock
   private ContentRepository contentRepository;
@@ -49,12 +54,12 @@ class BasicPlaylistItemServiceTest {
   }
 
   @Test
-  @Disabled
+  @DisplayName("플레이리스트에 콘텐츠가 성공적으로 추가되어야 한다.")
   void addContent() {
     //given
     when(playlistRepository.findById(1L)).thenReturn(Optional.of(playlist));
 
-    Content content = new Content();
+    Content content = new Content("테스트", ContentCategory.MOVIE);
     when(contentRepository.findById(1L)).thenReturn(Optional.of(content));
 
     PlaylistDto playlistDto = playlistItemService.addContent(1L, 1L);
@@ -65,13 +70,13 @@ class BasicPlaylistItemServiceTest {
   }
 
   @Test
-  @Disabled
+  @DisplayName("플레이리스트에 다수의 콘텐츠가 성공적으로 추가되어야 한다.")
   void addContentList() {
     when(playlistRepository.findById(1L)).thenReturn(Optional.of(playlist));
 
-    Content content1 = new Content();
-    Content content2 = new Content();
-    Content content3 = new Content();
+    Content content1 = new Content("테스트1", ContentCategory.MOVIE);
+    Content content2 = new Content("테스트2", ContentCategory.MOVIE);
+    Content content3 = new Content("테스트3", ContentCategory.MOVIE);
     when(contentRepository.findById(1L)).thenReturn(Optional.of(content1));
     when(contentRepository.findById(2L)).thenReturn(Optional.of(content2));
     when(contentRepository.findById(3L)).thenReturn(Optional.of(content3));
@@ -82,12 +87,13 @@ class BasicPlaylistItemServiceTest {
   }
 
   @Test
-  @Disabled
+  @DisplayName("콘텐츠 목록이 존재하는 플레이리스트에 콘텐츠가 성공적으로 추가되어야 한다.")
   void insertContent() {
     //given
     when(playlistRepository.findById(1L)).thenReturn(Optional.of(playlist));
     Content content1 = mock(Content.class);
     when(content1.getId()).thenReturn(1L);
+    when(content1.getCategory()).thenReturn(ContentCategory.TV);
     when(contentRepository.findById(1L)).thenReturn(Optional.of(content1));
     //1차적으로 값 주입
     PlaylistDto playlistDto1 = playlistItemService.addContent(1L, 1L);
@@ -97,7 +103,7 @@ class BasicPlaylistItemServiceTest {
     );
 
     //2차 값 주입
-    Content content2 = new Content();
+    Content content2 = new Content("테스트1", ContentCategory.MOVIE);
     when(contentRepository.findById(2L)).thenReturn(Optional.of(content2));
 
     PlaylistDto playlistDto2 = playlistItemService.addContent(1L,2L);
@@ -107,11 +113,11 @@ class BasicPlaylistItemServiceTest {
   }
 
   @Test
-  @Disabled
+  @DisplayName("콘텐츠 목록이 존재하는 플레이리스트에 다수의 콘텐츠가 성공적으로 추가되어야 한다.")
   void insertContentList() {
     //given
     when(playlistRepository.findById(1L)).thenReturn(Optional.of(playlist));
-    Content content1 = new Content();
+    Content content1 = new Content("테스트", ContentCategory.MOVIE);
     when(contentRepository.findById(1L)).thenReturn(Optional.of(content1));
 
     //1차적으로 값 주입
@@ -123,8 +129,8 @@ class BasicPlaylistItemServiceTest {
     );
 
     //2차 값 주입
-    Content content2 = new Content();
-    Content content3 = new Content();
+    Content content2 = new Content("테스트2", ContentCategory.MOVIE);
+    Content content3 = new Content("테스트3", ContentCategory.MOVIE);
     when(contentRepository.findById(2L)).thenReturn(Optional.of(content2));
     when(contentRepository.findById(3L)).thenReturn(Optional.of(content3));
 
