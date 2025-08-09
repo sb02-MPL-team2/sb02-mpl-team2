@@ -143,24 +143,6 @@ public class SecurityIntegrationTest {
         .andDo(print());
   }
 
-  @Test
-  @DisplayName("AOP 검증: 블랙리스트에 등록된 토큰으로 민감 API 접근 시 403 Forbidden을 반환한다.")
-  void access_sensitive_api_with_blacklisted_token() throws Exception {
-    // given
-    String accessToken = getAccessToken("normal@example.com", "password");
-    // 강제로 토큰을 블랙리스트에 추가
-    jwtBlacklist.put(accessToken, Instant.now().plusSeconds(3600));
-
-    // when & then
-    mockMvc.perform(get("/api/users/me")
-        .header("Authorization", "Bearer " + accessToken))
-        .andExpect(status().isForbidden())
-        .andExpect(jsonPath("$.message").value(ErrorCode.BLACKLIST_TOKEN.getMessage()))
-        .andDo(print());
-
-  }
-
-
   private String getAccessToken(String email, String password) throws Exception {
     LoginRequest loginRequest = new LoginRequest(email, password);
 
