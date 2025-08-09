@@ -36,7 +36,15 @@ public enum ErrorCode {
   NO_ACCESS_RIGHT(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
 
   //Review
-  REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND,"리뷰를 찾을 수 없습니다.");
+  REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND,"리뷰를 찾을 수 없습니다."),
+
+  //Follow
+  FOLLOW_NOT_FOUND(HttpStatus.NOT_FOUND, "팔로우 관계를 찾을 수 없습니다."),
+
+  //DirectMessage
+
+  //DirectMessageChannel
+  DIRECT_MESSAGE_CHANNEL_NOT_FOUND(HttpStatus.NOT_FOUND, "디엠 채널을 찾을 수 없습니다");
 
   private final HttpStatus httpStatus;
   private final String message;

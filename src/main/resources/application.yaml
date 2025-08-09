@@ -47,3 +47,17 @@ mpl:
     s3:
       bucket: ${AWS_S3_BUCKET:your-bucket-name}
       base-url: ${AWS_S3_BASE_URL:https://your-bucket-name.s3.amazonaws.com}
+  notification:
+    # 알림 데이터를 DB에 보관할 최대 일수 (이 기간이 지나면 삭제)
+    retention-period-in-days: ${RETENTION_PERIOD_IN_DAYS:3}
+  sse:
+    inactive-timeout-minutes: ${SSE_INACTIVE_TIMEOUT_MINUTES:10}
+    default-timeout: ${SSE_DEFAULT_TIMEOUT:30}
+    max-connections: ${SSE_MAX_CONNECTIONS:100}
+
+external-api:
+  tmdb:
+    api-key: ${TMDB_API_KEY:test_key}
+    base-url: ${TMDB_BASE_URL:test_url}
+  sportsdb:
+    api-key: ${SPORTSDB_API_KEY:test_sportdb_key}

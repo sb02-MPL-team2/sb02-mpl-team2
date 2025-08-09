@@ -1,4 +1,4 @@
-package com.codeit.sb02mplteam2.domain.content.dto;
+package com.codeit.sb02mplteam2.domain.content.dto.content;
 
 import lombok.Builder;
 
@@ -8,7 +8,7 @@ public record ContentResponseDto(
     String title,
     String description,
     String category,
-    String binaryContentUrl,
+    String imageUrl,
     Double totalRating,
     Integer reviewCount,
     Integer watchCount
