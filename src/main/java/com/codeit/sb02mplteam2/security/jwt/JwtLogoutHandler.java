@@ -25,7 +25,11 @@ public class JwtLogoutHandler implements LogoutHandler {
   }
 
   private Optional<String> resolveRefreshToken(HttpServletRequest request) {
-    return Arrays.stream(request.getCookies())
+    Cookie[] cookies = request.getCookies();
+    if (cookies == null) {
+      return Optional.empty();
+    }
+    return Arrays.stream(cookies)
         .filter(cookie -> cookie.getName().equals(JwtService.REFRESH_TOKEN_COOKIE_NAME))
         .findFirst()
         .map(Cookie::getValue);
