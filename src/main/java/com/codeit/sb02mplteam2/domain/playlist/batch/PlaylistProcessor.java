@@ -1,4 +1,4 @@
-package com.codeit.sb02mplteam2.domain.playlist.batch.processor;
+package com.codeit.sb02mplteam2.domain.playlist.batch;
 
 import com.codeit.sb02mplteam2.domain.playlist.entity.Playlist;
 import com.codeit.sb02mplteam2.domain.playlist.entity.PlaylistSubscriberHistory;

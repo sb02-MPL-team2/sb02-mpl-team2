@@ -1,4 +1,4 @@
-package com.codeit.sb02mplteam2.domain.recommendation.batch.writer;
+package com.codeit.sb02mplteam2.domain.recommendation.batch;
 
 import com.codeit.sb02mplteam2.domain.recommendation.entity.PlaylistScore;
 import com.codeit.sb02mplteam2.domain.recommendation.repository.PlaylistScoreRepository;

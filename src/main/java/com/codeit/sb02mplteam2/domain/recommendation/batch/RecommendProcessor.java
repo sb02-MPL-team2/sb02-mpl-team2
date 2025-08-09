@@ -1,4 +1,4 @@
-package com.codeit.sb02mplteam2.domain.recommendation.batch.processor;
+package com.codeit.sb02mplteam2.domain.recommendation.batch;
 
 import com.codeit.sb02mplteam2.domain.playlist.entity.Playlist;
 import com.codeit.sb02mplteam2.domain.playlist.entity.PlaylistSubscriberHistory;

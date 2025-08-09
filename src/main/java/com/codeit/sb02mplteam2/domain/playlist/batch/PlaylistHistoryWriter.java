@@ -1,4 +1,4 @@
-package com.codeit.sb02mplteam2.domain.playlist.batch.writer;
+package com.codeit.sb02mplteam2.domain.playlist.batch;
 
 import com.codeit.sb02mplteam2.domain.playlist.entity.PlaylistSubscriberHistory;
 import com.codeit.sb02mplteam2.domain.playlist.repository.PlaylistSubscriberHistoryRepository;
