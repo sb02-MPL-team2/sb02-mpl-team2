@@ -117,8 +117,7 @@ public class JwtService {
       }
 
       if(verified) {
-        verified = (jwtSessionRepository.existsByAccessToken(token) ||
-            jwtSessionRepository.existsByRefreshToken(token));
+        verified = jwtBlacklist.contains(token);
       }
 
     } catch (JOSEException | ParseException e) {
@@ -195,7 +194,9 @@ public class JwtService {
 
   private void invalidate(JwtSession session) {
     jwtSessionRepository.delete(session);
-    if(!session.isExpired()) {
+
+    JwtObject jwtObject = parseTokenToJwtObject(session.getAccessToken());
+    if(!jwtObject.isExpired()) {
       jwtBlacklist.put(session.getAccessToken(), session.getExpirationTime());
     }
   }
