@@ -11,6 +11,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,9 +39,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     if (optionalAccessToken.isPresent()) {
       try {
         String accessToken = optionalAccessToken.get();
-        UserDto userDto = jwtService.parseTokenToJwtObject(accessToken).userDto();
-        UserDetails userDetails = new MplUserDetails(userDto, "");
-        setAuthentication(userDetails);
+        // validate 토큰 유효성 검사
+        if(jwtService.validate(accessToken)) {
+          UserDto userDto = jwtService.parseTokenToJwtObject(accessToken).userDto();
+          UserDetails userDetails = new MplUserDetails(userDto, "");
+          setAuthentication(userDetails);
+        } else {
+          throw new MplException(ErrorCode.INVALID_TOKEN, Map.of("accessToken", accessToken));
+        }
       } catch (JwtException e) {
         log.warn("Invalid JWT token: {}", e.getMessage());
         sendErrorResponse(response, e);
