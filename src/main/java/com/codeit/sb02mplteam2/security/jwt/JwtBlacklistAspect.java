@@ -25,7 +25,11 @@ public class JwtBlacklistAspect {
   public void checkBlacklist() {
     log.debug("AOP: @CheckJwtBlacklist - 블랙리스트 검사를 시작합니다.");
 
-    HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+    Object requestAttributes = RequestContextHolder.getRequestAttributes();
+    if (!(requestAttributes instanceof ServletRequestAttributes)) {
+      throw new MplException(ErrorCode.UNAUTHORIZED);
+    }
+    HttpServletRequest request = ((ServletRequestAttributes) requestAttributes).getRequest();
     Optional<String> optionalAccessToken = resolveAccessToken(request);
 
     if(optionalAccessToken.isEmpty()) {
