@@ -22,7 +22,7 @@ spring:
     job:
       enabled: false
     jdbc:
-      initialize-schema: never
+      initialize-schema: always
   config:
     import: optional:file:.env[.properties]
 
@@ -57,8 +57,11 @@ mpl:
   scheduler:
     # 테스트 모드 활성화 플래그 (true로 바꾸면 테스트용 cron이 적용됩니다)
     test-mode: true
-    # 테스트용 cron (매 1분마다 실행)
-    cron-test: "0 * * * * *"
+    # 테스트용 cron
+    # 매 30초마다 실행
+    cron-test-playlist: "30 * * * * *"
+    # 매 1분마다 실행
+    cron-test-recommend: "0 * * * * *"
     # 운영용 cron (기존 스케줄)
     # 00시 01분에 스케쥴링 시작
     cron-prod-recommend: "0 1 0 * * *"
