@@ -117,7 +117,7 @@ public class JwtService {
       }
 
       if(verified) {
-        verified = jwtBlacklist.contains(token);
+        verified = !jwtBlacklist.contains(token);
       }
 
     } catch (JOSEException | ParseException e) {
