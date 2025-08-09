@@ -28,7 +28,7 @@ public class BatchScheduler {
     this.playlistHistoryJob = playlistHistoryJob;
   }
 
-  @Scheduled(cron = "0 1 0 * * *")
+  @Scheduled(cron = "#{${mpl.scheduler.test-mode} ? '${mpl.scheduler.cron-test}' : '${mpl.scheduler.cron-prod-recommend}'}")
   public void runRecommendJob() {
     LocalDateTime endDate = LocalDate.now().atStartOfDay();
     LocalDateTime startDate = endDate.minusDays(7);
@@ -48,8 +48,7 @@ public class BatchScheduler {
     }
   }
 
-  @Scheduled(cron = "0 0 6 * * *")
-  public void runPlaylistJob() {
+  @Scheduled(cron = "#{${mpl.scheduler.test-mode} ? '${mpl.scheduler.cron-test}' : '${mpl.scheduler.cron-prod-playlist}'}")  public void runPlaylistJob() {
     JobParameters jobParameters = new JobParametersBuilder()
         .addLong("time", System.currentTimeMillis())
         .toJobParameters();
