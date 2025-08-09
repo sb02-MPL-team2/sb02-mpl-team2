@@ -56,6 +56,8 @@ public class PlaylistItem {
   private int orderIndex;     // 콘텐츠 순서 등 추가 정보
 
   public PlaylistItem(int orderIndex, Content content) {
+    this.createdAt = LocalDateTime.now();
+    this.updatedAt = createdAt;
     this.orderIndex = orderIndex;
     this.content = content;
   }

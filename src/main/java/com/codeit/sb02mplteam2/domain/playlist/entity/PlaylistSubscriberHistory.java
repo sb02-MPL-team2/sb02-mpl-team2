@@ -40,6 +40,7 @@ public class PlaylistSubscriberHistory {
   private int count;
 
   public PlaylistSubscriberHistory(Playlist playlist, int count) {
+    this.createdAt = LocalDateTime.now();
     this.playlist = playlist;
     this.count = count;
   }

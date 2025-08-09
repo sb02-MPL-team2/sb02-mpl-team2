@@ -12,6 +12,7 @@ import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.database.JpaPagingItemReader;
@@ -27,10 +28,12 @@ public class RecommendBatchConfig {
 
   @Bean
   public Job RecommendJob(JobRepository jobRepository,
-      Step RecommendStep
+      Step RecommendStep,
+      Step broadcastTopPlaylistsStep
   ) {
     return new JobBuilder("recommendJob", jobRepository)
         .start(RecommendStep)
+        .next(broadcastTopPlaylistsStep)
         .build();
   }
 
@@ -41,10 +44,6 @@ public class RecommendBatchConfig {
       @Value("#{jobParameters['start']}") LocalDateTime start,
       @Value("#{jobParameters['end']}") LocalDateTime end
   ) {
-//    // JPQL 쿼리 작성
-//    String jpqlQuery = "SELECT h FROM PlaylistSubscriberHistory h " +
-//        "WHERE h.createdAt >= :start AND h.createdAt < :end " +
-//        "ORDER BY h.id ASC";
     String jpqlQuery = "SELECT DISTINCT h.playlist FROM PlaylistSubscriberHistory h " +
         "WHERE h.createdAt >= :start AND h.createdAt < :end " +
         "ORDER BY h.playlist.id ASC";
@@ -76,6 +75,16 @@ public class RecommendBatchConfig {
         .reader(recommendItemReader)
         .processor(processor)
         .writer(writer)
+        .build();
+  }
+
+  @Bean
+  public Step broadcastTopPlaylistsStep(
+      JobRepository jobRepository,
+      Tasklet recommendTasklet, // RecommendTasklet Bean 주입
+      PlatformTransactionManager transactionManager) {
+    return new StepBuilder("broadcastTopPlaylistsStep", jobRepository)
+        .tasklet(recommendTasklet, transactionManager)
         .build();
   }
 

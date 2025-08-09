@@ -41,6 +41,7 @@ public class PlaylistScore {
   private double score;
 
   public PlaylistScore(Playlist playlist, double score) {
+    this.createdAt = LocalDateTime.now();
     this.playlist = playlist;
     this.score = score;
   }

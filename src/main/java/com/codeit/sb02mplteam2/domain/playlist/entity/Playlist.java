@@ -62,6 +62,8 @@ public class Playlist {
   private List<PlaylistItem> items = new ArrayList<>();
 
   public Playlist(User user,String title, String description) {
+    this.createdAt = LocalDateTime.now();
+    this.updatedAt = createdAt;
     this.user = user;
     this.title = title;
     this.description = description;
