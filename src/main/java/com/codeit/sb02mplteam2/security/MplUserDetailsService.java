@@ -19,10 +19,10 @@ public class MplUserDetailsService implements UserDetailsService {
   // Spring Security가 인증을 시도할 때 호출하는 메서드
   // 로그인 폼에서 'username'의 파라미터로 넘어온 값을 인자로 받습니다.
   @Override
-  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+  public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
     // 전달받은 username으로 데이터베이스에서 사용자를 찾습니다.
-    User user = userRepository.findByUsername(username)
-        .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username));
+    User user = userRepository.findByEmail(email)
+        .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + email));
     // UsernameNotFoundException -> Bad Credential
 
     // Spring Security가 이해할 수 있는 userDetails 객체로 변환하여 반환
