@@ -5,6 +5,7 @@ import com.codeit.sb02mplteam2.domain.user.dto.UserDto;
 import com.codeit.sb02mplteam2.domain.user.dto.UserUpdateRequest;
 import com.codeit.sb02mplteam2.domain.user.service.UserService;
 import com.codeit.sb02mplteam2.security.MplUserDetails;
+import com.codeit.sb02mplteam2.security.jwt.CheckJwtBlacklist;
 import com.codeit.sb02mplteam2.swagger.UserApi;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -35,20 +36,7 @@ public class UserController implements UserApi {
 
   private final UserService userService;
 
-  @PostMapping(value = "/users", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-  public ResponseEntity<UserDto> create(
-      @RequestPart("userCreateRequest") @Valid UserCreateRequest userCreateRequest,
-      @RequestPart(value = "profile", required = false) MultipartFile profile
-  ) {
-    log.info("사용자 생성 요청: {}", userCreateRequest);
-
-    UserDto createdUser = userService.create(userCreateRequest, Optional.ofNullable(profile));
-    log.debug("사용자 생성 응답: {}", createdUser);
-    return ResponseEntity
-        .status(HttpStatus.CREATED)
-        .body(createdUser);
-  }
-
+  @CheckJwtBlacklist
   @PreAuthorize("hasRole('ADMIN') or #userId == principal.id")
   @PutMapping(value ="/users/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<UserDto> update(
@@ -68,7 +56,7 @@ public class UserController implements UserApi {
     return ResponseEntity.status(HttpStatus.OK).body(user);
   }
 
-  @PreAuthorize("hasRole('ADMIN')")
+  @PreAuthorize("hasRole('MANAGER')")
   @GetMapping("/users")
   public ResponseEntity<List<UserDto>> findAll() {
     log.info("유저 목록 조회 요청");
@@ -84,6 +72,7 @@ public class UserController implements UserApi {
     return ResponseEntity.noContent().build();
   }
 
+  @CheckJwtBlacklist
   @PreAuthorize("isAuthenticated()")
   @GetMapping("/users/me")
   public ResponseEntity<UserDto> getMyInfo(@AuthenticationPrincipal MplUserDetails userDetails) {
@@ -93,6 +82,7 @@ public class UserController implements UserApi {
     return ResponseEntity.status(HttpStatus.OK).body(userDto);
   }
 
+  @CheckJwtBlacklist
   @PreAuthorize("isAuthenticated()")
   @DeleteMapping("/users/me")
   public ResponseEntity<Void> deleteMyAccount(@AuthenticationPrincipal MplUserDetails userDetails) {

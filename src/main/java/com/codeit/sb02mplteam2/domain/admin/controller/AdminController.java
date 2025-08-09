@@ -23,7 +23,6 @@ public class AdminController {
 
   private final AdminService adminService;
 
-  @PreAuthorize("hasRole('ADMIN')")
   @PutMapping("/users/{userId}/role")
   public ResponseEntity<UserDto> updateUserRole(
       @PathVariable Long userId,
@@ -36,14 +35,12 @@ public class AdminController {
         .body(response);
   }
 
-  @PreAuthorize("hasRole('ADMIN')")
   @PostMapping("/users/{userId}/lock")
   public ResponseEntity<Void> lockUser(@PathVariable Long userId){
     adminService.lockUser(userId);
     return ResponseEntity.ok().build();
   }
 
-  @PreAuthorize("hasRole('ADMIN')")
   @PostMapping("/users/{userId}/unlock")
   public ResponseEntity<Void> unlockUser(@PathVariable Long userId){
     adminService.unlockUser(userId);
