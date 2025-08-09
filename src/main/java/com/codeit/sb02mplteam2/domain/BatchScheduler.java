@@ -1,5 +1,7 @@
 package com.codeit.sb02mplteam2.domain;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
@@ -26,9 +28,14 @@ public class BatchScheduler {
     this.playlistHistoryJob = playlistHistoryJob;
   }
 
-  @Scheduled(cron = "0 0 0 * * *")
+  @Scheduled(cron = "0 1 0 * * *")
   public void runRecommendJob() {
+    LocalDateTime endDate = LocalDate.now().atStartOfDay();
+    LocalDateTime startDate = endDate.minusDays(7);
+
     JobParameters jobParameters = new JobParametersBuilder()
+        .addLocalDateTime("start", startDate)
+        .addLocalDateTime("end", endDate)
         .addLong("time", System.currentTimeMillis())
         .toJobParameters();
 
