@@ -52,11 +52,11 @@ public class Playlist {
   @OneToMany(mappedBy = "playlist", cascade = CascadeType.ALL, orphanRemoval = true)
   private Set<Subscribe> subscribes = new HashSet<>();
 
-  @Column(name = "description")
-  private String description;
-
   @Column(name = "title")
   private String title;
+
+  @Column(name = "description")
+  private String description;
 
   @OneToMany(mappedBy = "playlist", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<PlaylistItem> items = new ArrayList<>();
