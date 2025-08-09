@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface PlaylistSubscriberHistoryRepository extends JpaRepository<PlaylistSubscriberHistory,Long> {
 
-  @Query("SELECT h FROm PlaylistSubscriberHistory h Where h.createdAt >= :startDate AND h.createdAt < :endDate")
+  @Query("SELECT h FROM PlaylistSubscriberHistory h WHERE h.createdAt >= :startDate AND h.createdAt < :endDate")
   List<PlaylistSubscriberHistory> findDataFromLastSevenDays(
       @Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
