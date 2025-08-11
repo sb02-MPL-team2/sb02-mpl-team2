@@ -1,0 +1,20 @@
+spring:
+  batch:
+    job:
+      enabled: false
+  sql:
+    init:
+      mode: never
+  jpa:
+    hibernate:
+      ddl-auto: none
+
+mpl:
+  admin:
+    username: test-admin
+    password: test-pass
+
+logging:
+  level:
+    org.springframework.jdbc.core: DEBUG
+    org.springframework.batch: DEBUG
