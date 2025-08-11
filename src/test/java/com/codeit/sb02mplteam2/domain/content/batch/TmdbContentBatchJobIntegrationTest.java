@@ -60,6 +60,12 @@ class TmdbContentBatchJobIntegrationTest {
   @MockitoBean
   private TmdbService tmdbService;
 
+  @MockitoBean
+  private com.codeit.sb02mplteam2.security.jwt.JwtService jwtService;
+
+  @MockitoBean
+  private com.codeit.sb02mplteam2.Initializer initializer;
+
   private JobParameters uniqueJobParameters() {
     return new JobParametersBuilder()
         .addLong("time", System.currentTimeMillis())
@@ -68,6 +74,9 @@ class TmdbContentBatchJobIntegrationTest {
 
   @Test
   void job_runsSuccessfully() throws Exception {
+    when(basicContentService.saveTmdbMovies(ContentCategory.MOVIE)).thenReturn(3);
+    when(basicContentService.saveTmdbTvs(ContentCategory.TV)).thenReturn(5);
+
     JobExecution execution = jobLauncher.run(tmdbContentUpdateJob, uniqueJobParameters());
 
     assertThat(execution.getStatus()).isEqualTo(BatchStatus.COMPLETED);
@@ -75,10 +84,13 @@ class TmdbContentBatchJobIntegrationTest {
     verify(basicContentService, times(1)).saveTmdbMovies(ContentCategory.MOVIE);
     verify(basicContentService, times(1)).saveTmdbTvs(ContentCategory.TV);
     verifyNoMoreInteractions(basicContentService);
+
+    verifyNoInteractions(tmdbService);
   }
 
   @Test
   void job_fails_when_tv_service_throws_exception() throws Exception {
+    when(basicContentService.saveTmdbMovies(ContentCategory.MOVIE)).thenReturn(2);
     doThrow(new RuntimeException("TV 저장 실패"))
         .when(basicContentService)
         .saveTmdbTvs(ContentCategory.TV);
@@ -87,5 +99,6 @@ class TmdbContentBatchJobIntegrationTest {
 
     assertThat(execution.getStatus()).isEqualTo(BatchStatus.FAILED);
     verify(basicContentService, atLeastOnce()).saveTmdbMovies(ContentCategory.MOVIE);
+    verify(basicContentService, times(1)).saveTmdbTvs(ContentCategory.TV);
   }
 }
