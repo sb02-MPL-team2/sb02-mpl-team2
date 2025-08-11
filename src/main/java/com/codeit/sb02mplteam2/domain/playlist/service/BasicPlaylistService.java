@@ -108,14 +108,13 @@ public class BasicPlaylistService implements PlaylistService {
       } else {
         log.warn("구독 실패 user id = {}, name = {}, playlist id = {}, playlist Title = {}", userId,
             user.getUsername(), playlistId, playlist.getTitle());
-
       }
+      //이벤트 발행
+      eventPublisher.publishEvent(
+          new NotificationEvent(this, playlist.getUser().getId(), NotificationType.PLAYLIST_SUBSCRIBED,
+              playlist.getId(), userId));
     }
     playlistRepository.save(playlist);
-    //이벤트 발행
-    eventPublisher.publishEvent(
-        new NotificationEvent(this, playlist.getUser().getId(), NotificationType.PLAYLIST_SUBSCRIBED,
-            playlist.getId(), userId));
 
     List<ContentResponseDto> responseDto = toResponseDto(playlist.getItems());
     UserSlimDto userSlimDto = toUserSlimDto(playlist);

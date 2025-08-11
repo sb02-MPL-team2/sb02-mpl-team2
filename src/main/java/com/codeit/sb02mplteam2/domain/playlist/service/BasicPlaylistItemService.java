@@ -43,13 +43,15 @@ public class BasicPlaylistItemService implements PlaylistItemService {
   public PlaylistDto addContent(Long playlistId, Long contentId) {
     Playlist playlist = playlistRepository.findById(playlistId).orElseThrow(
         () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
+
+    UserSlimDto userSlimDto = toUserSlimDto(playlist);
+
     //중복 검사 로직
     boolean isExist = playlist.getItems().stream()
         .anyMatch(item -> item.getContent().getId().equals(contentId));
 
     if (isExist) {
       log.warn("콘텐츠(id:{})는 이미 플레이리스트(id:{})에 존재합니다.", contentId, playlistId);
-      UserSlimDto userSlimDto = toUserSlimDto(playlist);
       List<PlaylistItemDto> playlistItemDtoList = toPlaylistItemDtoList(playlist);
       return PlaylistDto.of(playlist, userSlimDto, playlistItemDtoList);
     }
@@ -66,7 +68,7 @@ public class BasicPlaylistItemService implements PlaylistItemService {
     playlistRepository.save(playlist);
 
     List<ContentResponseDto> responseDto = toResponseDto(playlist.getItems());
-    UserSlimDto userSlimDto = toUserSlimDto(playlist);
+
     List<PlaylistItemDto> playlistItemDtoList = toPlaylistItemDtoList(playlist);
     return PlaylistDto.of(playlist, userSlimDto, playlistItemDtoList, responseDto);
   }
