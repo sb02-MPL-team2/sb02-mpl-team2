@@ -6,6 +6,7 @@ public record ParticipantResponseDto(
     Long userId,
     String userName,
     String profileUrl,
-    LocalDateTime joinedAt
+    LocalDateTime participatedAt
 ) {
+
 }

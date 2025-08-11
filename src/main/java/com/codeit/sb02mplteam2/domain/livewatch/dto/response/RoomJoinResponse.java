@@ -10,4 +10,5 @@ public record RoomJoinResponse(
     Integer participantCount,
     List<ParticipantResponseDto> participants
 ) {
+
 }

@@ -15,6 +15,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SourceType;
 import org.springframework.data.annotation.CreatedDate;
 
 @Builder
@@ -22,9 +24,9 @@ import org.springframework.data.annotation.CreatedDate;
 @NoArgsConstructor
 @Getter
 @Entity
-@Table(name = "live_chat_messages")
-//TODO: live_chat_room_id 인덱스, sentAt DESC 인덱스 따로 생성 VS (live_chat_room_id, sentAt DESC) 복합 인덱스 실험
-public class LiveChatMessage {
+@Table(name = "live_watch_participants")
+//TODO: (user_id, live_watch_room_id) 인덱스 고려
+public class LiveWatchParticipant {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,13 +37,10 @@ public class LiveChatMessage {
   private User user;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "live_chat_room_id")
-  private LiveChatRoom liveChatRoom;
+  @JoinColumn(name = "live_watch_room_id")
+  private LiveWatchRoom liveWatchRoom;
 
-  @Column(nullable = false)
-  private String content;
-
-  @CreatedDate
+  @CreationTimestamp(source = SourceType.DB)
   @Column(updatable = false)
-  private LocalDateTime sentAt;
+  private LocalDateTime participatedAt;
 }

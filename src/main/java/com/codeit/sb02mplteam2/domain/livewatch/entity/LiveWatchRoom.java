@@ -1,5 +1,6 @@
 package com.codeit.sb02mplteam2.domain.livewatch.entity;
 
+import com.codeit.sb02mplteam2.domain.content.entity.Content;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,22 +10,24 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SourceType;
 
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Entity
-@Table(name = "live_chat_participants")
-//TODO: (user_id, live_chat_room_id) 인덱스 고려
-public class LiveChatParticipant {
+@Table(name = "live_watch_rooms")
+public class LiveWatchRoom {
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -33,11 +36,13 @@ public class LiveChatParticipant {
   @JoinColumn(name = "user_id")
   private User user;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "live_chat_room_id")
-  private LiveChatRoom liveChatRoom;
+  @OneToOne
+  @JoinColumn(name = "content_id")
+  private Content content;
 
-  @CreatedDate
+  private String title;
+
+  @CreationTimestamp(source = SourceType.DB)
   @Column(updatable = false)
-  private LocalDateTime participatedAt;
+  private LocalDateTime createdAt;
 }
