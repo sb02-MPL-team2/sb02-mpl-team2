@@ -1,6 +1,5 @@
 package com.codeit.sb02mplteam2.domain.user.controller;
 
-import com.codeit.sb02mplteam2.domain.user.dto.UserCreateRequest;
 import com.codeit.sb02mplteam2.domain.user.dto.UserDto;
 import com.codeit.sb02mplteam2.domain.user.dto.UserUpdateRequest;
 import com.codeit.sb02mplteam2.domain.user.service.UserService;
@@ -16,11 +15,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -34,20 +31,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserController implements UserApi {
 
   private final UserService userService;
-
-  @PostMapping(value = "/users", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-  public ResponseEntity<UserDto> create(
-      @RequestPart("userCreateRequest") @Valid UserCreateRequest userCreateRequest,
-      @RequestPart(value = "profile", required = false) MultipartFile profile
-  ) {
-    log.info("사용자 생성 요청: {}", userCreateRequest);
-
-    UserDto createdUser = userService.create(userCreateRequest, Optional.ofNullable(profile));
-    log.debug("사용자 생성 응답: {}", createdUser);
-    return ResponseEntity
-        .status(HttpStatus.CREATED)
-        .body(createdUser);
-  }
 
   @PreAuthorize("hasRole('ADMIN') or #userId == principal.id")
   @PutMapping(value ="/users/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -68,7 +51,6 @@ public class UserController implements UserApi {
     return ResponseEntity.status(HttpStatus.OK).body(user);
   }
 
-  @PreAuthorize("hasRole('ADMIN')")
   @GetMapping("/users")
   public ResponseEntity<List<UserDto>> findAll() {
     log.info("유저 목록 조회 요청");

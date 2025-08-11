@@ -27,6 +27,14 @@ public enum ErrorCode {
   PLAYLIST_NOT_FOUND(HttpStatus.NOT_FOUND,"플레이리스트를 찾을 수 없습니다."),
   SUBSCRIBE_NOT_FOUND(HttpStatus.NOT_FOUND,"구독 정보를 찾을 수 없습니다."),
 
+  // Security
+  INVALID_TOKEN_SECRET(HttpStatus.UNAUTHORIZED,"유효하지 않은 시크릿입니다."),
+  INVALID_TOKEN(HttpStatus.UNAUTHORIZED,"유효하지 않은 토큰입니다."),
+  NOT_FOUND_TOKEN(HttpStatus.NOT_FOUND, "토큰을 찾을 수 없습니다."),
+  UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증에 실패했습니다."),
+  BLACKLIST_TOKEN(HttpStatus.FORBIDDEN, "블랙리스트에 있는 토큰입니다."),
+  NO_ACCESS_RIGHT(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
+
   //Review
   REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND,"리뷰를 찾을 수 없습니다."),
 

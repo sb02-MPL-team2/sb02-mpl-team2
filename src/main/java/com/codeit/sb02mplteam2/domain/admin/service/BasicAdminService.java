@@ -1,16 +1,13 @@
 package com.codeit.sb02mplteam2.domain.admin.service;
 
-import com.codeit.sb02mplteam2.domain.social.repository.FollowRepository;
 import com.codeit.sb02mplteam2.domain.user.dto.RoleUpdateRequest;
 import com.codeit.sb02mplteam2.domain.user.dto.UserDto;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import com.codeit.sb02mplteam2.domain.user.mapper.UserMapper;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
 import com.codeit.sb02mplteam2.exception.user.UserNotFoundException;
+import com.codeit.sb02mplteam2.security.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.session.SessionInformation;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,9 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class BasicAdminService implements AdminService {
 
   private final UserRepository userRepository;
-  private final FollowRepository followRepository;
   private final UserMapper userMapper;
-  private final SessionRegistry sessionRegistry;
+  private final JwtService jwtService;
 
   @Transactional
   @Override
@@ -42,7 +38,8 @@ public class BasicAdminService implements AdminService {
 
     user.lock();
 
-    expireUserSessions(user.getUsername());
+    // userId 로 token 무효화 시키기
+    jwtService.invalidateJwtSession(userId);
   }
 
   @Transactional
@@ -52,17 +49,5 @@ public class BasicAdminService implements AdminService {
         .orElseThrow(() -> UserNotFoundException.withId(userId));
 
     user.unlock();
-  }
-
-//  특정 사용자의 모든 활성 세션을 만료시킵니다.
-  private void expireUserSessions(String username) {
-    sessionRegistry.getAllPrincipals().stream()
-        .filter(principal -> principal instanceof UserDetails)
-        .map(principal -> (UserDetails) principal)
-        .filter(userDetails -> userDetails.getUsername().equals(username))
-        .forEach(userDetails ->
-            sessionRegistry.getAllSessions(userDetails, false)
-                .forEach(SessionInformation::expireNow)
-        );
   }
 }

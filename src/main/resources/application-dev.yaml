@@ -38,8 +38,47 @@ logging:
       springframework:
         web: DEBUG # 스프링 웹 관련 로그를 줄입니다.
         data: warn
+        security: DEBUG
+
 mpl:
   admin:
     username: ${ADMIN_USERNAME:admin}
     email: ${ADMIN_EMAIL:admin@mpl.com}
     password: ${ADMIN_PASSWORD:admin123!}
+  storage:
+    type: ${STORAGE_TYPE:local}  # local | s3 (???: local)
+    local:
+      root-path: ${STORAGE_LOCAL_ROOT_PATH:./storage}
+  aws:
+    accessKeyId: ${AWS_S3_ACCESS_KEY:your-access-key}
+    secretKey: ${AWS_S3_SECRET_KEY:your-secret-key}
+    region: ${AWS_S3_REGION:ap-northeast-2}
+    s3:
+      bucket: ${AWS_S3_BUCKET:your-bucket-name}
+      base-url: ${AWS_S3_BASE_URL:https://your-bucket-name.s3.amazonaws.com}
+  notification:
+    # 알림 데이터를 DB에 보관할 최대 일수 (이 기간이 지나면 삭제)
+    retention-period-in-days: ${RETENTION_PERIOD_IN_DAYS:3}
+  sse:
+    inactive-timeout-minutes: ${SSE_INACTIVE_TIMEOUT_MINUTES:10}
+    default-timeout: ${SSE_DEFAULT_TIMEOUT:30}
+    max-connections: ${SSE_MAX_CONNECTIONS:100}
+  scheduler:
+    # 테스트 모드 활성화 플래그 (true로 바꾸면 테스트용 cron이 적용됩니다)
+    test-mode: true
+    # 테스트용 cron (매 1분마다 실행)
+    # 테스트용 cron
+    # 매 30초마다 실행
+    cron-test-playlist: "30 * * * * *"
+    # 매 1분마다 실행
+    cron-test-recommend: "0 * * * * *"
+    # 운영용 cron (기존 스케줄)
+    # 00시 01분에 스케쥴링 시작
+    cron-prod-recommend: "0 1 0 * * *"
+    # 06시 00분에 스케쥴링 시작
+    cron-prod-playlist: "0 0 6 * * *"
+
+jwt:
+  secret: ${JWT_SECRET_KEY:this-is-a-default-secret-key-for-local-dev-only-and-is-not-secure}
+  access-token-expiration: 600000 # 10 분
+  refresh-token-expiration: 604800000 # 7일

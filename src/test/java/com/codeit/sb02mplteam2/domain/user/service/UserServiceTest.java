@@ -12,8 +12,10 @@ import com.codeit.sb02mplteam2.domain.binary.service.BinaryContentService;
 import com.codeit.sb02mplteam2.domain.user.dto.UserCreateRequest;
 import com.codeit.sb02mplteam2.domain.user.dto.UserDto;
 import com.codeit.sb02mplteam2.domain.user.dto.UserUpdateRequest;
+import com.codeit.sb02mplteam2.domain.user.entity.Role;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import com.codeit.sb02mplteam2.domain.user.mapper.UserMapper;
+import com.codeit.sb02mplteam2.domain.user.repository.AlarmSettingRepository;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
 import com.codeit.sb02mplteam2.exception.ErrorCode;
 import com.codeit.sb02mplteam2.exception.user.UserException;
@@ -46,7 +48,8 @@ public class UserServiceTest {
 
   @Mock
   private BinaryContentService binaryContentService;
-
+  @Mock
+  private AlarmSettingRepository alarmSettingRepository;
   @Mock
   private SessionRegistry sessionRegistry;
 
@@ -68,7 +71,8 @@ public class UserServiceTest {
     UserCreateRequest request = new UserCreateRequest("newUser",
         "new@email.com", "newPassword");
     User newUser =  new User(request.username(), request.email(), "password", null);
-    UserDto expectedDto = new UserDto(2L, null, request.username(), 0, 0);
+    UserDto expectedDto = new UserDto(2L, request.email(), request.username(), null,
+        Role.USER, false, false, 0, 0);
 
     given(userRepository.existsByUsername(request.username())).willReturn(false);
     given(userRepository.existsByEmail(request.email())).willReturn(false);
@@ -128,7 +132,8 @@ public class UserServiceTest {
   @DisplayName("성공 - ID로 사용자 조회")
   void findById_Success() {
     // given
-    UserDto expectedDto = new UserDto(userId, null, "testUser", 0, 0);
+    UserDto expectedDto = new UserDto(userId, "test@test.com", "testUser", null,
+        Role.USER, false, false, 0, 0);
     given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
     given(userMapper.toDto(mockUser)).willReturn(expectedDto);
 

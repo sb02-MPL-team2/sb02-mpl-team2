@@ -3,6 +3,7 @@ package com.codeit.sb02mplteam2.domain.playlist.entity;
 import com.codeit.sb02mplteam2.domain.content.entity.Content;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -11,18 +12,19 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Table(name = "playlist_items")
 //TODO 나중에 제약조건 걸 때, Protected 걸어야 함
 @NoArgsConstructor
 @Getter
+@EntityListeners(AuditingEntityListener.class)
 public class PlaylistItem {
 
   @Id
@@ -54,6 +56,8 @@ public class PlaylistItem {
   private int orderIndex;     // 콘텐츠 순서 등 추가 정보
 
   public PlaylistItem(int orderIndex, Content content) {
+    this.createdAt = LocalDateTime.now();
+    this.updatedAt = createdAt;
     this.orderIndex = orderIndex;
     this.content = content;
   }
