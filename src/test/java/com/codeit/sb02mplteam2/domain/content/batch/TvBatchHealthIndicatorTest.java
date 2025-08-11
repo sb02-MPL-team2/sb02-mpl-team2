@@ -38,7 +38,7 @@ class TvBatchHealthIndicatorTest {
 
     var details = health.getDetails();
     assertNotNull(details.get("lastFailedAt"));
-    assertEquals("최근 30분 이내 실패 발생", details.get("tv"));
+    assertEquals("최근 30분 이내 실패 발생", details.get("message"));
   }
 
   @Test
