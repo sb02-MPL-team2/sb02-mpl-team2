@@ -36,7 +36,7 @@ class MovieBatchHealthIndicatorTest {
 
     var details = health.getDetails();
     assertNotNull(details.get("lastFailedAt"));
-    assertEquals("최근 30분 이내 실패 발생", details.get("movie"));
+    assertEquals("최근 30분 이내 실패 발생", details.get("message"));
   }
 
   @Test

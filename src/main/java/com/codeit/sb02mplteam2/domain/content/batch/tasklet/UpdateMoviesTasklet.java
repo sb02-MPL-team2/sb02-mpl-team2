@@ -27,7 +27,6 @@ public class UpdateMoviesTasklet implements Tasklet {
     try {
       log.info("[Tasklet 시작] TMDB 영화 데이터 저장");
       int saved = basicContentService.saveTmdbMovies(CATEGORY);
-      tmdbBatchMetrics.recordItemCount(CATEGORY, saved);
       tmdbBatchMetrics.incrementSuccessCount(CATEGORY);
     } catch (Exception e) {
       tmdbBatchMetrics.incrementFailCount(CATEGORY);

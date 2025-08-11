@@ -27,7 +27,6 @@ public class UpdateTvsTasklet implements Tasklet {
     try {
       log.info("[Tasklet 시작] TMDB TV 데이터 저장");
       int saved = basicContentService.saveTmdbTvs(CATEGORY);
-      tmdbBatchMetrics.recordItemCount(CATEGORY, saved);
       tmdbBatchMetrics.incrementSuccessCount(CATEGORY);
     } catch (Exception e) {
       tmdbBatchMetrics.incrementFailCount(CATEGORY);
