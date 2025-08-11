@@ -17,12 +17,12 @@ public record NotificationDto (
     String content
 ) {
 
-  public static NotificationDto of(Notification notification, Long targetId) {
+  public static NotificationDto of(Notification notification) {
     return NotificationDto.builder()
         .id(notification.getId())
         .receiverId(notification.getReceiverId())
         .publisherId(notification.getPublisherId())
-        .targetId(targetId)
+        .targetId(notification.getTargetId())
         .createdAt(notification.getCreatedAt())
         .type(notification.getType())
         .title(notification.getTitle())

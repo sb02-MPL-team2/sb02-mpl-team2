@@ -1,6 +1,7 @@
 package com.codeit.sb02mplteam2.domain.notification;
 
 import com.codeit.sb02mplteam2.domain.notification.entity.ConnectionInfo;
+import com.codeit.sb02mplteam2.domain.notification.entity.NotificationType;
 import com.codeit.sb02mplteam2.domain.user.entity.AlarmSetting;
 import com.codeit.sb02mplteam2.domain.user.repository.AlarmSettingRepository;
 import com.codeit.sb02mplteam2.exception.ErrorCode;
@@ -16,6 +17,26 @@ public class FilteringProcessor {
 
   private final ConnectionManager connectionManager;
   private final AlarmSettingRepository alarmSettingRepository;
+
+  public ConnectionInfo filtering(NotificationType type, ConnectionInfo connectionInfo) {
+    Long userId = connectionInfo.getUserId();
+    AlarmSetting alarmSetting = alarmSettingRepository.findByUserId(userId).orElseThrow(
+        () -> new MplException(ErrorCode.USER_NOT_FOUND)
+    );
+    Boolean enabled = switch (type) {
+      case NEW_MESSAGE -> alarmSetting.getDmAlarmEnabled();
+      case NEW_FOLLOWER -> alarmSetting.getFollowAlarmEnabled();
+      case NEW_PLAYLIST_BY_FOLLOWING -> alarmSetting.getNewPlaylistFromFollowingAlarmEnabled();
+      case PLAYLIST_SUBSCRIBED -> alarmSetting.getSubscribePlaylistAlarmEnable();
+      case ROLE_CHANGED -> alarmSetting.getPermissionChangeAlarmEnabled();
+      case BROADCAST_TODAY_PLAYLIST -> alarmSetting.getRecommendPlaylistAlarmEnabled();
+      default -> false;
+    };
+    if (enabled) {
+      return connectionInfo;
+    }
+    return null;
+  }
 
   public ConnectionInfo filterTargetClient(Long receiverId) {
     return connectionManager.getConnection(receiverId);

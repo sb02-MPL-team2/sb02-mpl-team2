@@ -37,6 +37,9 @@ public class Notification {
   @Column(name = "publisher_id", columnDefinition = "BIGINT")
   private Long publisherId;
 
+  @Column(name = "target_id", columnDefinition = "BIGINT")
+  private Long targetId;
+
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private NotificationType type;
@@ -47,15 +50,25 @@ public class Notification {
   @Column(nullable = false)
   private String content;
 
+  public static Notification broadcast(Long targetId,String title, String content, NotificationType type) {
+    return Notification.builder()
+        .targetId(targetId)
+        .title(title)
+        .content(content != null ? content : "") // content가 null일 경우를 대비해 기본값 처리
+        .type(type)
+        .build();
+  }
+
   //TODO 인수타입이 너무 많음, 줄이는 방법 강구해야함
-  public static Notification of(Long receiverId, Long publisherId, String title, String content, NotificationType type, AlarmSetting alarmSetting) {
-    if (!isAlarmEnabled(type, alarmSetting)) {
+  public static Notification of(Long receiverId, Long publisherId, Long targetId,String title, String content, NotificationType type, AlarmSetting alarmSetting) {
+    if (alarmSetting != null && !isAlarmEnabled(type, alarmSetting)) {
       return null;
     }
 
     return Notification.builder()
         .receiverId(receiverId)
         .publisherId(publisherId)
+        .targetId(targetId)
         .title(title)
         .content(content != null ? content : "") // content가 null일 경우를 대비해 기본값 처리
         .type(type)

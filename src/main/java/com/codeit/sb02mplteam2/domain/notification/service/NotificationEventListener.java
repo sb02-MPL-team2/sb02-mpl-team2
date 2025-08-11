@@ -5,13 +5,16 @@ import com.codeit.sb02mplteam2.domain.notification.dto.NotificationDto;
 import com.codeit.sb02mplteam2.domain.notification.entity.ConnectionInfo;
 import com.codeit.sb02mplteam2.domain.notification.event.BroadcastEvent;
 import com.codeit.sb02mplteam2.domain.notification.event.BulkNotificationEvent;
+import com.codeit.sb02mplteam2.domain.notification.event.LostNotificationEvent;
 import com.codeit.sb02mplteam2.domain.notification.event.NotificationEvent;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
@@ -33,6 +36,8 @@ public class NotificationEventListener {
     log.info("브로드캐스트 이벤트 처리 시작: type={}, targetId={}",
         event.getNotificationType(), event.getTargetId());
 
+    NotificationDto broadcast = notificationService.broadcast(event);
+
     //추천 알람 허용한 유저의 연결만 가져옴
     List<ConnectionInfo> connectionInfoList = filteringProcessor.broadcastClients();
 
@@ -40,8 +45,6 @@ public class NotificationEventListener {
       log.warn("브로드 캐스트 연결이 존재하지 않습니다.");
       return;
     }
-
-    NotificationDto broadcast = notificationService.broadcast(event);
 
     connectionInfoList.forEach(connectionInfo -> {
       deliveryService.deliverToClient(connectionInfo, broadcast);
@@ -106,5 +109,28 @@ public class NotificationEventListener {
     });
 
     log.info("벌크 알림 실시간 전송 완료. 총 {}개 중 {}개 성공.", notificationDtoList.size(), connectionInfoMap.size());
+  }
+
+  @Async("notificationExecutor")
+  @EventListener
+  public void handleLostNotificationEvent(LostNotificationEvent event) {
+    Long receiverId = event.getUserId();
+    LocalDateTime lastEventTime = event.getLastEventTime();
+    log.info("마지막 알람 전송 이후 미전송된 알람 전송 : 유저 아이디 {}, 마지막 전송 시각 {}", receiverId, lastEventTime);
+    List<NotificationDto> lostNotificationList = notificationService.findByLastEventTime(receiverId,
+        event.getLastEventTime());
+
+    if (lostNotificationList.isEmpty()) {
+      log.warn("미전송된 알람이 존재하지 않습니다.");
+      return;
+    }
+    for (NotificationDto notificationDto : lostNotificationList) {
+      ConnectionInfo connectionInfo = filteringProcessor.filtering(notificationDto.type(),
+          event.getConnectionInfo());
+      if (connectionInfo == null) {
+        continue;
+      }
+      deliveryService.deliverToClient(connectionInfo, notificationDto);
+    }
   }
 }
