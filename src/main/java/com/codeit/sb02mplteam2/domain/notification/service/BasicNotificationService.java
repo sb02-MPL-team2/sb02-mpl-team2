@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -40,10 +41,13 @@ public class BasicNotificationService implements NotificationService {
   private final AlarmSettingRepository alarmSettingRepository;
   private final PlaylistRepository playlistRepository;
 
-//  @Override
-//  public List<NotificationDto> findAllByReceiverId(Long receiverId) {
-//    return List.of();
-//  }
+  @Override
+  public List<NotificationDto> findByLastEventTime(Long userId, LocalDateTime lastEventTime) {
+    log.info("알람 찾기 서비스 실행중");
+    return notificationRepository.findUserNotificationAfter(userId,
+            lastEventTime).stream()
+        .map(NotificationDto::of).toList();
+  }
 
   @Override
   public void delete(Long notificationId) {
@@ -75,11 +79,23 @@ public class BasicNotificationService implements NotificationService {
   public NotificationDto broadcast(BroadcastEvent event) {
     NotificationType notificationType = event.getNotificationType();
     Long targetId = event.getTargetId();
+    LocalDateTime twelveHoursAgo = LocalDateTime.now().minusHours(12);
 
-    String title = notificationType.getTitle();
-    String content = createContent(targetId, notificationType);
+    Optional<Notification> broadcastNotification = notificationRepository.findByTypeAndTargetIdAndCreatedAtAfter(
+        notificationType, targetId, twelveHoursAgo);
 
-    return NotificationDto.of(targetId, notificationType, title, content, event.getCreatedAt());
+    if (broadcastNotification.isPresent()) {
+      return NotificationDto.of(broadcastNotification.get());
+    } else {
+      log.info("브로드캐스트 알람 생성");
+      String title = notificationType.getTitle();
+      String content = createContent(targetId, notificationType);
+
+      Notification notification = Notification.broadcast(targetId, title, content, notificationType);
+      notificationRepository.save(notification);
+
+      return NotificationDto.of(notification);
+    }
   }
 
   @Override
@@ -92,7 +108,7 @@ public class BasicNotificationService implements NotificationService {
     }
 
     notificationRepository.save(notification);
-    return NotificationDto.of(notification, targetId);
+    return NotificationDto.of(notification);
   }
 
   @Override
@@ -123,7 +139,7 @@ public class BasicNotificationService implements NotificationService {
 
       String title = NotificationType.toTitle(publisher.getUsername(), titleTemplate);
 
-      Notification notification = Notification.of(receiver.getId(), publisherId, title, content,
+      Notification notification = Notification.of(receiver.getId(), publisherId, targetId,title, content,
           type, alarmSetting);
       if (notification != null) {
         notificationsToSave.add(notification);
@@ -133,7 +149,7 @@ public class BasicNotificationService implements NotificationService {
     List<Notification> savedNotifications = notificationRepository.saveAll(notificationsToSave);
 
     return savedNotifications.stream()
-        .map(notification -> NotificationDto.of(notification, targetId))
+        .map(NotificationDto::of)
         .toList();
   }
 
@@ -154,7 +170,7 @@ public class BasicNotificationService implements NotificationService {
     String title = NotificationType.toTitle(publisher.getUsername(), type.getMessageTemplate());
     String content = createContent(targetId, type);
 
-    return Notification.of(receiverId, publisherId, title, content, type, alarmSetting);
+    return Notification.of(receiverId, publisherId, targetId, title, content, type, alarmSetting);
   }
 
   private String createContent(Long targetId, NotificationType type) {

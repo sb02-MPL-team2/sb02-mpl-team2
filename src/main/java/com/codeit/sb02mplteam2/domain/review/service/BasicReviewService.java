@@ -17,6 +17,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +29,7 @@ public class BasicReviewService implements ReviewService{
   private final ReviewRepository reviewRepository;
 
   @Override
+  @Transactional
   public ReviewDto create(ReviewCreateRequest request) {
     User user = userRepository.findById(request.userId()).orElseThrow(
         () -> new UserException(ErrorCode.USER_NOT_FOUND));
@@ -40,6 +42,7 @@ public class BasicReviewService implements ReviewService{
   }
 
   @Override
+  @Transactional(readOnly = true)
   public ReviewDto findById(Long reviewId) {
     Review review = reviewRepository.findById(reviewId).orElseThrow(
         () -> new ReviewException(ErrorCode.REVIEW_NOT_FOUND));
@@ -47,18 +50,21 @@ public class BasicReviewService implements ReviewService{
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<ReviewDto> findAllByUserId(Long userId) {
     List<Review> reviewList = reviewRepository.findAllByUserId(userId);
     return reviewList.stream().map(ReviewDto::from).toList();
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<ReviewDto> findAllByContentId(Long contentId) {
     List<Review> reviewList = reviewRepository.findAllByContentId(contentId);
     return reviewList.stream().map(ReviewDto::from).toList();
   }
 
   @Override
+  @Transactional
   public void delete(Long id) {
     Review review = reviewRepository.findById(id).orElseThrow(
         () -> new ReviewException(ErrorCode.REVIEW_NOT_FOUND));
@@ -66,6 +72,7 @@ public class BasicReviewService implements ReviewService{
   }
 
   @Override
+  @Transactional
   public ReviewDto update(Long reviewId, ReviewUpdateRequest request) {
     Review review = reviewRepository.findById(reviewId).orElseThrow(
         () -> new ReviewException(ErrorCode.REVIEW_NOT_FOUND));
