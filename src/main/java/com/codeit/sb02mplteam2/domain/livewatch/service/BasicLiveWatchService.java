@@ -302,10 +302,8 @@ public class BasicLiveWatchService implements LiveWatchService {
       }
 
       try {
-        LocalDateTime sentAt = LocalDateTime.ofInstant(
-            Instant.ofEpochMilli(Long.parseLong(parts[0])),
-            ZoneOffset.UTC
-        );
+        Instant sentAt = Instant.ofEpochMilli(Long.parseLong(parts[0]));
+
         Long id = Long.parseLong(parts[1]);
         return new ChatCursor(sentAt, id);
       } catch (NumberFormatException e) {
