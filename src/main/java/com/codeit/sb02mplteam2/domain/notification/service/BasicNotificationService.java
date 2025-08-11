@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -78,11 +79,22 @@ public class BasicNotificationService implements NotificationService {
   public NotificationDto broadcast(BroadcastEvent event) {
     NotificationType notificationType = event.getNotificationType();
     Long targetId = event.getTargetId();
+    LocalDateTime twelveHoursAgo = LocalDateTime.now().minusHours(12);
 
-    String title = notificationType.getTitle();
-    String content = createContent(targetId, notificationType);
+    Optional<Notification> broadcastNotification = notificationRepository.findByTypeAndTargetIdAndCreatedAtAfter(
+        notificationType, targetId, twelveHoursAgo);
 
-    return NotificationDto.of(targetId, notificationType, title, content, event.getCreatedAt());
+    if (broadcastNotification.isPresent()) {
+      return NotificationDto.of(broadcastNotification.get());
+    } else {
+      String title = notificationType.getTitle();
+      String content = createContent(targetId, notificationType);
+
+      Notification notification = Notification.broadcast(targetId, title, content, notificationType);
+      notificationRepository.save(notification);
+
+      return NotificationDto.of(notification);
+    }
   }
 
   @Override

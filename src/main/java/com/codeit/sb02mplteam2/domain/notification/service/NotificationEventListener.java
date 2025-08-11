@@ -124,7 +124,12 @@ public class NotificationEventListener {
       return;
     }
     for (NotificationDto notificationDto : lostNotificationList) {
-      deliveryService.deliverToClient(event.getConnectionInfo(), notificationDto);
+      ConnectionInfo connectionInfo = filteringProcessor.filtering(notificationDto.type(),
+          event.getConnectionInfo());
+      if (connectionInfo == null) {
+        continue;
+      }
+      deliveryService.deliverToClient(connectionInfo, notificationDto);
     }
   }
 }
