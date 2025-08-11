@@ -22,7 +22,7 @@ public class DeliveryService {
     String eventName = notificationDto.type().name();
     try {
       SseEmitter emitter = connectionInfo.getSseEmitter();
-      log.info("SSE 이벤트 전송중...");
+      log.info("SSE 이벤트 전송중, eventId={}, eventName={}", eventId, eventName);
       emitter.send(SseEmitter.event()
           .id(eventId)
           .name(eventName)

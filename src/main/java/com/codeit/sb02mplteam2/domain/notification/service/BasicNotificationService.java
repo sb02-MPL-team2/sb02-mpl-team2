@@ -43,8 +43,8 @@ public class BasicNotificationService implements NotificationService {
 
   @Override
   public List<NotificationDto> findByLastEventTime(Long userId, LocalDateTime lastEventTime) {
-
-    return notificationRepository.findAllByReceiverIdAndCreatedAtAfterOrderByCreatedAtAsc(userId,
+    log.info("알람 찾기 서비스 실행중");
+    return notificationRepository.findUserNotificationAfter(userId,
             lastEventTime).stream()
         .map(NotificationDto::of).toList();
   }
@@ -87,6 +87,7 @@ public class BasicNotificationService implements NotificationService {
     if (broadcastNotification.isPresent()) {
       return NotificationDto.of(broadcastNotification.get());
     } else {
+      log.info("브로드캐스트 알람 생성");
       String title = notificationType.getTitle();
       String content = createContent(targetId, notificationType);
 

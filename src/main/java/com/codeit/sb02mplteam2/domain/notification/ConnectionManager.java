@@ -55,9 +55,10 @@ public class ConnectionManager {
     sseEmitter.onTimeout(() -> removeConnection(userId, "onTimeout"));
     sseEmitter.onError(e -> removeConnection(userId, "onError: " + e.getMessage()));
 
-    if (!lastEventId.isEmpty()) {
+    if (lastEventId != null && !lastEventId.isEmpty()) {
+      log.info("미전송 이벤트 발행 시작");
       long timestamp = Long.parseLong(lastEventId.split("_")[0]);
-      LocalDateTime lastEventTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp),
+      LocalDateTime lastEventTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp),
           ZoneId.systemDefault());
       eventPublisher.publishEvent(new LostNotificationEvent(this, userId, lastEventTime, connectionInfo));
     }

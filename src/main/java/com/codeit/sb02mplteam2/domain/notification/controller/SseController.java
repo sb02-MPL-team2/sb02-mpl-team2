@@ -24,7 +24,7 @@ public class SseController {
 //       last Event ID = "알람 생성 시간 + "_" + notification ID"
       ,@RequestHeader(value = "Last-Event-ID", required = false) String lastEventId
   ) {
-    log.info("SSE 연결 요청: userId={}", userId);
+    log.info("SSE 연결 요청: userId={}, last-event-id= {}", userId, lastEventId);
     SseEmitter sseEmitter = connectionManager.subscribe(userId, lastEventId);
 
     if (sseEmitter == null) {
