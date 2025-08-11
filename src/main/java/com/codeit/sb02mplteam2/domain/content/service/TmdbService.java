@@ -6,11 +6,14 @@ import com.codeit.sb02mplteam2.domain.content.dto.tmdb.TmdbTvApiResponseDto;
 import com.codeit.sb02mplteam2.domain.content.dto.tmdb.TmdbTvDto;
 import com.codeit.sb02mplteam2.domain.content.entity.ContentCategory;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+@Slf4j
 @Service
 public class TmdbService {
 
@@ -35,8 +38,12 @@ public class TmdbService {
           .bodyToMono(TmdbMovieApiResponseDto.class)
           .map(TmdbMovieApiResponseDto::results)
           .block();
+    } catch (WebClientResponseException e) {
+      log.error("TMDB API 응답 오류: status={}, body={}", e.getStatusCode(), e.getResponseBodyAsString(), e);
+      return List.of();
     } catch (Exception e) {
-      return null;
+      log.error("TMDB API 호출 실패", e);
+      return List.of();
     }
   }
 
@@ -52,8 +59,12 @@ public class TmdbService {
           .bodyToMono(TmdbTvApiResponseDto.class)
           .map(TmdbTvApiResponseDto::results)
           .block();
+    } catch (WebClientResponseException e) {
+      log.error("TMDB API 응답 오류: status={}, body={}", e.getStatusCode(), e.getResponseBodyAsString(), e);
+      return List.of();
     } catch (Exception e) {
-      return null;
+      log.error("TMDB API 호출 실패", e);
+      return List.of();
     }
   }
 }

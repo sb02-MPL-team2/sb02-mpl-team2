@@ -22,7 +22,7 @@ public interface TmdbContentMapper {
     );
   }
 
-  default Content toEntity(TmdbMovieDto dto, ContentCategory category) {
+  default Content toEntity(TmdbMovieDto dto, ContentCategory category, LocalDateTime now) {
     String imageUrl = fullImageUrl(dto.backdrop_path(), "w1280");
     return new Content(
         dto.title(),
@@ -33,7 +33,7 @@ public interface TmdbContentMapper {
     );
   }
 
-  default Content toEntity(TmdbTvDto dto, ContentCategory category) {
+  default Content toEntity(TmdbTvDto dto, ContentCategory category, LocalDateTime now) {
     String imageUrl = fullImageUrl(dto.backdrop_path(), "w1280");
     return new Content(
         dto.name(),

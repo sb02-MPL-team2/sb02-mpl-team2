@@ -1,5 +1,6 @@
-package com.codeit.sb02mplteam2.domain.content.service;
+package com.codeit.sb02mplteam2.domain.content;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.*;
 
 import com.codeit.sb02mplteam2.domain.content.dto.tmdb.TmdbMovieDto;
@@ -8,6 +9,10 @@ import com.codeit.sb02mplteam2.domain.content.entity.Content;
 import com.codeit.sb02mplteam2.domain.content.entity.ContentCategory;
 import com.codeit.sb02mplteam2.domain.content.mapper.TmdbContentMapper;
 import com.codeit.sb02mplteam2.domain.content.repository.ContentRepository;
+import com.codeit.sb02mplteam2.domain.content.service.BasicContentService;
+import com.codeit.sb02mplteam2.domain.content.service.TmdbService;
+import com.codeit.sb02mplteam2.domain.content.batch.TmdbBatchMetrics;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,6 +32,9 @@ class BasicContentServiceMockTest {
     @Mock
     private TmdbContentMapper tmdbContentMapper;
 
+    @Mock
+    private TmdbBatchMetrics tmdbBatchMetrics;
+
     @InjectMocks
     private BasicContentService basicContentService;
 
@@ -38,18 +46,19 @@ class BasicContentServiceMockTest {
             .thenReturn(List.of(movieDto));
 
         Content fakeContent = mock(Content.class);
-        when(tmdbContentMapper.toEntity(movieDto, ContentCategory.MOVIE))
+        when(tmdbContentMapper.toEntity(eq(movieDto), eq(ContentCategory.MOVIE), any(LocalDateTime.class)))
             .thenReturn(fakeContent);
 
         // when
-        basicContentService.saveTmdbMovies(ContentCategory.MOVIE);
+        int saved = basicContentService.saveTmdbMovies(ContentCategory.MOVIE);
 
         // then
-        verify(tmdbService, times(1)).getTmdbMovies(ContentCategory.MOVIE);
-        verify(tmdbContentMapper, times(1))
-            .toEntity(movieDto, ContentCategory.MOVIE);
-        verify(contentRepository, times(1))
-            .saveAll(List.of(fakeContent));
+        assertThat(saved).isEqualTo(1);
+        verify(tmdbService).getTmdbMovies(ContentCategory.MOVIE);
+        verify(tmdbContentMapper).toEntity(eq(movieDto), eq(ContentCategory.MOVIE), any(LocalDateTime.class));
+        verify(contentRepository).saveAll(anyList());
+        verify(tmdbBatchMetrics).recordItemCount(ContentCategory.MOVIE, 1);
+        verifyNoMoreInteractions(tmdbBatchMetrics, tmdbService, tmdbContentMapper, contentRepository);
     }
 
     @Test
@@ -60,17 +69,18 @@ class BasicContentServiceMockTest {
             .thenReturn(List.of(tvDto));
 
         Content fakeContent = mock(Content.class);
-        when(tmdbContentMapper.toEntity(tvDto, ContentCategory.TV))
+        when(tmdbContentMapper.toEntity(eq(tvDto), eq(ContentCategory.TV), any(LocalDateTime.class)))
             .thenReturn(fakeContent);
 
         // when
-        basicContentService.saveTmdbTvs(ContentCategory.TV);
+        int saved = basicContentService.saveTmdbTvs(ContentCategory.TV);
 
         // then
-        verify(tmdbService, times(1)).getTmdbTvs(ContentCategory.TV);
-        verify(tmdbContentMapper, times(1))
-            .toEntity(tvDto, ContentCategory.TV);
-        verify(contentRepository, times(1))
-            .saveAll(List.of(fakeContent));
+        assertThat(saved).isEqualTo(1);
+        verify(tmdbService).getTmdbTvs(ContentCategory.TV);
+        verify(tmdbContentMapper).toEntity(eq(tvDto), eq(ContentCategory.TV), any(LocalDateTime.class));
+        verify(contentRepository).saveAll(anyList());
+        verify(tmdbBatchMetrics).recordItemCount(ContentCategory.TV, 1);
+        verifyNoMoreInteractions(tmdbBatchMetrics, tmdbService, tmdbContentMapper, contentRepository);
     }
 }
