@@ -9,6 +9,6 @@ public interface ContentService {
   List<ContentResponseDto> findAll();
   List<ContentResponseDto> findByCategory(ContentCategory category);
   void delete(Long id);
-  void saveTmdbMovies(ContentCategory category);
-  void saveTmdbTvs(ContentCategory category);
+  int saveTmdbMovies(ContentCategory category);
+  int saveTmdbTvs(ContentCategory category);
 }
