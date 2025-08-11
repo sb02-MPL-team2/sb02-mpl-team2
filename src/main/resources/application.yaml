@@ -74,3 +74,12 @@ external-api:
     base-url: ${TMDB_BASE_URL:test_url}
   sportsdb:
     api-key: ${SPORTSDB_API_KEY:test_sportdb_key}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, metrics
+  endpoint:
+    health:
+      show-details: when-authorized

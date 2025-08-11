@@ -1,7 +1,6 @@
 package com.codeit.sb02mplteam2.domain.social.repository;
 
 import com.codeit.sb02mplteam2.domain.social.entity.DirectMessageChannel;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Pageable;
@@ -17,15 +16,17 @@ public interface DirectMessageChannelRepository extends JpaRepository<DirectMess
   );
 
   @Query("""
-        SELECT c
-        FROM DirectMessageChannel c
-        WHERE (c.fromUser.id = :userId OR c.toUser.id = :userId)
-        AND (:cursor IS NULL OR c.createdAt < :cursor)
-        ORDER BY c.createdAt DESC
+        SELECT dmc
+        FROM DirectMessageChannel dmc
+        JOIN FETCH dmc.fromUser fu
+        JOIN FETCH dmc.toUser tu
+        WHERE (dmc.fromUser.id = :userId OR dmc.toUser.id = :userId)
+        AND (:cursor IS NULL OR dmc.id < :cursor)
+        ORDER BY dmc.id DESC
     """)
-  List<DirectMessageChannel> findAllByUserIdWithCursor(
+  List<DirectMessageChannel> findByUserIdWithCursor(
       @Param("userId") Long userId,
-      @Param("cursor") LocalDateTime cursor,
+      @Param("cursor") Long cursor,
       Pageable pageable
   );
 }

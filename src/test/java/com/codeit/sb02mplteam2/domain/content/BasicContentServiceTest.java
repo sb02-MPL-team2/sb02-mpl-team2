@@ -1,10 +1,11 @@
-package com.codeit.sb02mplteam2.domain.content.service;
+package com.codeit.sb02mplteam2.domain.content;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.codeit.sb02mplteam2.domain.content.entity.Content;
 import com.codeit.sb02mplteam2.domain.content.entity.ContentCategory;
 import com.codeit.sb02mplteam2.domain.content.repository.ContentRepository;
+import com.codeit.sb02mplteam2.domain.content.service.BasicContentService;
 import java.util.List;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;

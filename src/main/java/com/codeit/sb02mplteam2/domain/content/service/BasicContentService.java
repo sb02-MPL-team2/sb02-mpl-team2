@@ -1,5 +1,6 @@
 package com.codeit.sb02mplteam2.domain.content.service;
 
+import com.codeit.sb02mplteam2.domain.content.batch.TmdbBatchMetrics;
 import com.codeit.sb02mplteam2.domain.content.dto.content.ContentResponseDto;
 import com.codeit.sb02mplteam2.domain.content.dto.tmdb.TmdbMovieDto;
 import com.codeit.sb02mplteam2.domain.content.dto.tmdb.TmdbTvDto;
@@ -25,6 +26,7 @@ public class BasicContentService implements ContentService{
   private final ContentMapper contentMapper;
   private final TmdbService tmdbService;
   private final TmdbContentMapper tmdbContentMapper;
+  private final TmdbBatchMetrics tmdbBatchMetrics;
 
   @Override
   @Transactional(readOnly = true)
@@ -61,33 +63,41 @@ public class BasicContentService implements ContentService{
 
   @Override
   @Transactional
-  public void saveTmdbMovies(ContentCategory category) {
+  public int saveTmdbMovies(ContentCategory category) {
     List<TmdbMovieDto> movies = tmdbService.getTmdbMovies(category);
-    if (movies == null) {
-      return;
+    if (movies == null || movies.isEmpty()) {
+      tmdbBatchMetrics.recordItemCount(category, 0);
+      return 0;
     }
-    LocalDateTime now = LocalDateTime.now();
 
+    LocalDateTime now = LocalDateTime.now();
     List<Content> contents = movies.stream()
-        .map(dto -> tmdbContentMapper.toEntity(dto, category))
+        .map(dto -> tmdbContentMapper.toEntity(dto, category, now))
         .toList();
 
     contentRepository.saveAll(contents);
+    int saved = contents.size();
+    tmdbBatchMetrics.recordItemCount(category, saved);
+    return saved;
   }
 
   @Override
   @Transactional
-  public void saveTmdbTvs(ContentCategory category) {
+  public int saveTmdbTvs(ContentCategory category) {
     List<TmdbTvDto> tvs = tmdbService.getTmdbTvs(category);
-    if (tvs == null) {
-      return;
+    if (tvs == null || tvs.isEmpty()) {
+      tmdbBatchMetrics.recordItemCount(category, 0);
+      return 0;
     }
-    LocalDateTime now = LocalDateTime.now();
 
+    LocalDateTime now = LocalDateTime.now();
     List<Content> contents = tvs.stream()
-        .map(dto -> tmdbContentMapper.toEntity(dto, category))
+        .map(dto -> tmdbContentMapper.toEntity(dto, category, now))
         .toList();
 
     contentRepository.saveAll(contents);
+    int saved = contents.size();
+    tmdbBatchMetrics.recordItemCount(category, saved);
+    return saved;
   }
 }

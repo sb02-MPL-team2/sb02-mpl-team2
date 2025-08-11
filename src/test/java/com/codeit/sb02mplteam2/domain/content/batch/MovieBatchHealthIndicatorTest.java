@@ -1,0 +1,49 @@
+package com.codeit.sb02mplteam2.domain.content.batch;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import com.codeit.sb02mplteam2.domain.content.entity.ContentCategory;
+import java.time.Duration;
+import java.time.Instant;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.actuate.health.Status;
+
+class MovieBatchHealthIndicatorTest {
+
+  private BatchFailureTracker tracker;
+  private MovieBatchHealthIndicator indicator;
+
+  @BeforeEach
+  void setUp() {
+    tracker = new BatchFailureTracker();
+    indicator = new MovieBatchHealthIndicator(tracker);
+  }
+
+  @Test
+  void health_returnsUp_whenNoRecentFailure() {
+    var health = indicator.health();
+    assertEquals(Status.UP, health.getStatus());
+  }
+
+  @Test
+  void health_returnsDown_whenFailedRecently() {
+    tracker.markFailed(ContentCategory.MOVIE);
+
+    var health = indicator.health();
+    assertEquals(Status.DOWN, health.getStatus());
+
+    var details = health.getDetails();
+    assertNotNull(details.get("lastFailedAt"));
+    assertEquals("최근 30분 이내 실패 발생", details.get("message"));
+  }
+
+  @Test
+  void health_returnsUp_whenFailureIsTooOld() {
+    tracker.forceSetFailureTime(ContentCategory.MOVIE, Instant.now().minus(Duration.ofHours(2)));
+
+    var health = indicator.health();
+    assertEquals(Status.UP, health.getStatus());
+  }
+}
