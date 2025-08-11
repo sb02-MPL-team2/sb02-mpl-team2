@@ -49,7 +49,7 @@ public class BasicLiveWatchService implements LiveWatchService {
   @Transactional
   public LiveWatchRoom createRoom(Long contentId, String title) {
     Content content = contentRepository.findById(contentId)
-        .orElseThrow(() -> new LiveWatchException(ErrorCode.LIVE_WATCH_ROOM_NOT_FOUND));
+        .orElseThrow(() -> new LiveWatchException(ErrorCode.CONTENT_NOT_FOUND));
 
     LiveWatchRoom room = LiveWatchRoom.builder()
         .content(content)
