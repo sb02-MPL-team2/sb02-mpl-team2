@@ -5,7 +5,9 @@ import com.codeit.sb02mplteam2.domain.notification.dto.NotificationDto;
 import com.codeit.sb02mplteam2.domain.notification.entity.ConnectionInfo;
 import com.codeit.sb02mplteam2.domain.notification.event.BroadcastEvent;
 import com.codeit.sb02mplteam2.domain.notification.event.BulkNotificationEvent;
+import com.codeit.sb02mplteam2.domain.notification.event.LostNotificationEvent;
 import com.codeit.sb02mplteam2.domain.notification.event.NotificationEvent;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -106,5 +108,23 @@ public class NotificationEventListener {
     });
 
     log.info("벌크 알림 실시간 전송 완료. 총 {}개 중 {}개 성공.", notificationDtoList.size(), connectionInfoMap.size());
+  }
+
+  @Async("notificationExecutor")
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void handleLostNotificationEvent(LostNotificationEvent event) {
+    Long receiverId = event.getUserId();
+    LocalDateTime lastEventTime = event.getLastEventTime();
+    log.info("마지막 알람 전송 이후 미전송된 알람 전송 : 유저 아이디 {}, 마지막 전송 시각 {}", receiverId, lastEventTime);
+    List<NotificationDto> lostNotificationList = notificationService.findByLastEventTime(receiverId,
+        event.getLastEventTime());
+
+    if (lostNotificationList.isEmpty()) {
+      log.warn("미전송된 알람이 존재하지 않습니다.");
+      return;
+    }
+    for (NotificationDto notificationDto : lostNotificationList) {
+      deliveryService.deliverToClient(event.getConnectionInfo(), notificationDto);
+    }
   }
 }

@@ -3,6 +3,7 @@ package com.codeit.sb02mplteam2.domain.notification.service;
 import com.codeit.sb02mplteam2.domain.notification.dto.NotificationDto;
 import com.codeit.sb02mplteam2.domain.notification.entity.ConnectionInfo;
 import java.io.IOException;
+import java.time.ZoneId;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -15,7 +16,9 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class DeliveryService {
 
   public void deliverToClient(ConnectionInfo connectionInfo, NotificationDto notificationDto) {
-    String eventId = notificationDto.id().toString();
+    long timestamp = notificationDto.createdAt().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+
+    String eventId = timestamp + "_" + notificationDto.id().toString();
     String eventName = notificationDto.type().name();
     try {
       SseEmitter emitter = connectionInfo.getSseEmitter();

@@ -9,9 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface NotificationRepository extends JpaRepository<Notification,Long> {
 
-  List<Notification> findAllByReceiverId(Long receiverId);
-
-  List<Notification> findAllByReceiverIdAndIdAfter(Long receiverId, Long idAfter);
+  List<Notification> findAllByReceiverIdAndCreatedAtAfterOrderByCreatedAtAsc(Long receiverId, LocalDateTime lastEventTime);
 
   @Modifying
   @Query("DELETE FROM Notification n WHERE n.createdAt < :current")
@@ -20,4 +18,5 @@ public interface NotificationRepository extends JpaRepository<Notification,Long>
   @Modifying
   @Query("DELETE FROM Notification n WHERE n.receiverId = :receiverId")
   void deleteAllByReceiverId(Long userId);
+
 }

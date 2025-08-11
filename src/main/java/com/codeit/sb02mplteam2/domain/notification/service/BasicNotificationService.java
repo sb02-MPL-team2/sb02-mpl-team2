@@ -40,10 +40,13 @@ public class BasicNotificationService implements NotificationService {
   private final AlarmSettingRepository alarmSettingRepository;
   private final PlaylistRepository playlistRepository;
 
-//  @Override
-//  public List<NotificationDto> findAllByReceiverId(Long receiverId) {
-//    return List.of();
-//  }
+  @Override
+  public List<NotificationDto> findByLastEventTime(Long userId, LocalDateTime lastEventTime) {
+
+    return notificationRepository.findAllByReceiverIdAndCreatedAtAfterOrderByCreatedAtAsc(userId,
+            lastEventTime).stream()
+        .map(NotificationDto::of).toList();
+  }
 
   @Override
   public void delete(Long notificationId) {
@@ -92,7 +95,7 @@ public class BasicNotificationService implements NotificationService {
     }
 
     notificationRepository.save(notification);
-    return NotificationDto.of(notification, targetId);
+    return NotificationDto.of(notification);
   }
 
   @Override
@@ -123,7 +126,7 @@ public class BasicNotificationService implements NotificationService {
 
       String title = NotificationType.toTitle(publisher.getUsername(), titleTemplate);
 
-      Notification notification = Notification.of(receiver.getId(), publisherId, title, content,
+      Notification notification = Notification.of(receiver.getId(), publisherId, targetId,title, content,
           type, alarmSetting);
       if (notification != null) {
         notificationsToSave.add(notification);
@@ -133,7 +136,7 @@ public class BasicNotificationService implements NotificationService {
     List<Notification> savedNotifications = notificationRepository.saveAll(notificationsToSave);
 
     return savedNotifications.stream()
-        .map(notification -> NotificationDto.of(notification, targetId))
+        .map(NotificationDto::of)
         .toList();
   }
 
@@ -154,7 +157,7 @@ public class BasicNotificationService implements NotificationService {
     String title = NotificationType.toTitle(publisher.getUsername(), type.getMessageTemplate());
     String content = createContent(targetId, type);
 
-    return Notification.of(receiverId, publisherId, title, content, type, alarmSetting);
+    return Notification.of(receiverId, publisherId, targetId, title, content, type, alarmSetting);
   }
 
   private String createContent(Long targetId, NotificationType type) {

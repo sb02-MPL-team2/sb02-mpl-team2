@@ -1,7 +1,10 @@
 package com.codeit.sb02mplteam2.domain.notification;
 
 import com.codeit.sb02mplteam2.domain.notification.entity.ConnectionInfo;
+import com.codeit.sb02mplteam2.domain.notification.event.LostNotificationEvent;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -11,6 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -33,7 +37,9 @@ public class ConnectionManager {
   //열려져 있는 탭마다 Emitters 연결함
   private final Map<Long, ConnectionInfo> connections = new ConcurrentHashMap<>();// SSE 연결 메모리에 저장
 
-  public SseEmitter subscribe(Long userId) {
+  private final ApplicationEventPublisher eventPublisher;
+
+  public SseEmitter subscribe(Long userId, String lastEventId) {
     if (connectionCount.get() >= MAX_CONNECTIONS) {
       log.warn("SSE 연결이 최대가 되었습니다.");
       return null;
@@ -48,6 +54,13 @@ public class ConnectionManager {
     sseEmitter.onCompletion(() -> removeConnection(userId, "onCompletion"));
     sseEmitter.onTimeout(() -> removeConnection(userId, "onTimeout"));
     sseEmitter.onError(e -> removeConnection(userId, "onError: " + e.getMessage()));
+
+    if (!lastEventId.isEmpty()) {
+      long timestamp = Long.parseLong(lastEventId.split("_")[0]);
+      LocalDateTime lastEventTime = LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp),
+          ZoneId.systemDefault());
+      eventPublisher.publishEvent(new LostNotificationEvent(this, userId, lastEventTime, connectionInfo));
+    }
 
     return sseEmitter;
   }
