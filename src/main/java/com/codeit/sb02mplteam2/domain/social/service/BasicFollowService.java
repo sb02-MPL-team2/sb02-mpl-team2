@@ -51,7 +51,7 @@ public class BasicFollowService implements FollowService {
     Follow follow = Follow.of(follower, followee);
     followRepository.save(follow);
 
-    notificationService.create(followeeId, NEW_FOLLOWER, follow.getId(), followerId);
+//    notificationService.create(followeeId, NEW_FOLLOWER, follow.getId(), followerId);
 
     followee.increaseFollowerCount();
     follower.increaseFollowingCount();
@@ -84,46 +84,48 @@ public class BasicFollowService implements FollowService {
 
   @Transactional(readOnly = true)
   @Override
-  public CursorPageResponseFollowDto getFollowers(Long userId, LocalDateTime cursor, int size){
-    Pageable pageable = PageRequest.of(0, size + 1);
-
-    List<Follow> follows = followRepository.findFollowersWithCursor(userId, cursor, pageable);
+  public CursorPageResponseFollowDto getFollowers(Long userId, Long cursor, int size){
+    List<Follow> follows = followRepository.findFollowers(userId, cursor, PageRequest.of(0, size + 1));
 
     boolean hasNext = follows.size() > size;
+    if (hasNext) {
+      follows = follows.subList(0, size);
+    }
 
-    List<Follow> result = hasNext ? follows.subList(0, size) : follows;
+    Long nextCursor = hasNext
+        ? follows.get(follows.size() - 1).getId()
+        : null;
 
-    List<UserSlimDto> userList = result.stream()
-        .map(f -> {
-          User user = f.getFromUser();
-          return new UserSlimDto(user.getId(), null, user.getUsername());
-        })//TODO: profileUrl 값 수정해야됨
+    List<UserSlimDto> userList = follows.stream()
+        .map(f -> new UserSlimDto(
+            f.getFromUser().getId(),
+            null, //TODO:유저 프로필
+            f.getFromUser().getUsername()
+        ))
         .toList();
-
-    LocalDateTime nextCursor = hasNext ? result.get(result.size() - 1).getCreatedAt() : null;
 
     return new CursorPageResponseFollowDto(userList, nextCursor, hasNext);
   }
 
   @Transactional(readOnly = true)
   @Override
-  public CursorPageResponseFollowDto getFollowings(Long userId, LocalDateTime cursor, int size){
-    Pageable pageable = PageRequest.of(0, size + 1);
-
-    List<Follow> follows = followRepository.findFollowingsWithCursor(userId, cursor, pageable);
+  public CursorPageResponseFollowDto getFollowings(Long userId, Long cursor, int size){
+    List<Follow> follows = followRepository.findFollowings(userId, cursor, PageRequest.of(0, size + 1));
 
     boolean hasNext = follows.size() > size;
+    if (hasNext) {
+      follows = follows.subList(0, size);
+    }
 
-    List<Follow> result = hasNext ? follows.subList(0, size) : follows;
+    Long nextCursor = hasNext ? follows.get(follows.size() - 1).getId() : null;
 
-    List<UserSlimDto> userList = result.stream()
-        .map(f -> {
-          User user = f.getToUser();
-          return new UserSlimDto(user.getId(), null, user.getUsername());
-        })//TODO: profileUrl 값 수정해야됨
+    List<UserSlimDto> userList = follows.stream()
+        .map(f -> new UserSlimDto(
+            f.getToUser().getId(),
+            null,
+            f.getToUser().getUsername()
+        ))
         .toList();
-
-    LocalDateTime nextCursor = hasNext ? result.get(result.size() - 1).getCreatedAt() : null;
 
     return new CursorPageResponseFollowDto(userList, nextCursor, hasNext);
   }

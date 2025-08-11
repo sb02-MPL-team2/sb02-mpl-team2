@@ -11,12 +11,10 @@ import com.codeit.sb02mplteam2.exception.ErrorCode;
 import com.codeit.sb02mplteam2.exception.directmessage.DirectMessageChannelException;
 import com.codeit.sb02mplteam2.exception.user.UserException;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -79,29 +77,29 @@ public class BasicDirectMessageChannelService implements DirectMessageChannelSer
 
   @Transactional(readOnly = true)
   @Override
-  public CursorPageResponseDirectMessageChannelDto findAll(Long userId, LocalDateTime cursor,
+  public CursorPageResponseDirectMessageChannelDto findAll(Long userId, Long cursor,
       int size) {
-
-    Pageable pageable = PageRequest.of(0, size + 1);
-    List<DirectMessageChannel> channels =
-        directMessageChannelRepository.findAllByUserIdWithCursor(userId, cursor, pageable);
+    List<DirectMessageChannel> channels = directMessageChannelRepository.findByUserIdWithCursor(userId, cursor, PageRequest.of(0, size + 1));
 
     boolean hasNext = channels.size() > size;
-
     if (hasNext) {
       channels = channels.subList(0, size);
     }
 
-    LocalDateTime nextCursor = hasNext ? channels.get(channels.size() - 1).getCreatedAt() : null;
+    Long nextCursor = hasNext ? channels.get(channels.size() - 1).getId() : null;
 
     List<DirectMessageChannelResponse> items = channels.stream()
-        .map(c -> {
-          User otherUser = c.getFromUser().getId().equals(userId) ? c.getToUser() : c.getFromUser();
-          return new DirectMessageChannelResponse(
-              new UserSlimDto(otherUser.getId(), null, otherUser.getUsername()), //TODO:user 프로필
-              c.getId(),
-              userId
+        .map(ch -> {
+          // 상대방 유저 찾기 (채널 당사자 중 userId가 아닌 쪽)
+          User otherUser = ch.getFromUser().getId().equals(userId) ? ch.getToUser() : ch.getFromUser();
+
+          UserSlimDto userDto = new UserSlimDto(
+              otherUser.getId(),
+              null, //TODO:유저프로필
+              otherUser.getUsername()
           );
+
+          return new DirectMessageChannelResponse(userDto, ch.getId(), userId);
         })
         .toList();
 

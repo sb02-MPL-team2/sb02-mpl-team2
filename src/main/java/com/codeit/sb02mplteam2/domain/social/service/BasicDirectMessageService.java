@@ -51,34 +51,37 @@ public class BasicDirectMessageService implements DirectMessageService {
     DirectMessage directMessage = DirectMessage.of(request.content(), sender, channel);
     directMessage = directMessageRepository.save(directMessage);
 
-    return new DirectMessageResponse(new UserSlimDto(sender.getId(), null, sender.getUsername()),
+    return new DirectMessageResponse(new UserSlimDto(sender.getId(), null, sender.getUsername()), //TODO:유저프로필
         directMessage.getId(), channel.getId(), request.content(), directMessage.getCreatedAt());
   }
 
   @Transactional(readOnly = true)
   @Override
-  public CursorPageResponseDirectMessageDto findAll(Long channelId, Long fromId, Long toId, LocalDateTime cursor, int limit){
+  public CursorPageResponseDirectMessageDto findAll(Long channelId, Long after, Long before, int limit){
+    List<DirectMessage> messages;
 
-    List<DirectMessage> messages = directMessageRepository.findMessagesByChannelWithCursor(
-        channelId, cursor, PageRequest.of(0, limit + 1)
-    );
+    if (after != null) {
+      messages = directMessageRepository.findMessagesAfter(channelId, after, PageRequest.of(0, limit + 1));
+    } else if (before != null) {
+      messages = directMessageRepository.findMessagesBefore(channelId, before, PageRequest.of(0, limit + 1));
+    } else {
+      messages = directMessageRepository.findInitialMessages(channelId, PageRequest.of(0, limit));
+      Collections.reverse(messages);
+    }
 
     boolean hasNext = messages.size() > limit;
-    List<DirectMessage> pageItems = hasNext ? messages.subList(0, limit) : messages;
+    if (hasNext) {
+      messages = messages.subList(0, limit);
+    }
 
-    Collections.reverse(pageItems);
+    //before 조회 시 역순 정렬
+    if (before != null) {
+      Collections.reverse(messages);
+    }
 
-    LocalDateTime nextCursor = hasNext
-        ? pageItems.get(0).getCreatedAt() // 뒤집었으니까 첫 번째 요소가 가장 오래된 것
-        : null;
-
-    List<DirectMessageResponse> items = pageItems.stream()
+    List<DirectMessageResponse> items = messages.stream()
         .map(m -> new DirectMessageResponse(
-            new UserSlimDto(
-                m.getUser().getId(),
-                null, //TODO: 수정해야됨
-                m.getUser().getUsername()
-            ),
+            new UserSlimDto(m.getUser().getId(), null, m.getUser().getUsername()),
             m.getId(),
             m.getDirectMessageChannel().getId(),
             m.getContent(),
@@ -86,6 +89,15 @@ public class BasicDirectMessageService implements DirectMessageService {
         ))
         .toList();
 
-    return new CursorPageResponseDirectMessageDto(items, nextCursor, hasNext);
+    String startCursor = items.isEmpty() ? null : String.valueOf(items.get(0).directMessageId());
+    String endCursor = items.isEmpty() ? null : String.valueOf(items.get(items.size() - 1).directMessageId());
+
+    return new CursorPageResponseDirectMessageDto(
+        items,
+        hasNext,
+        (after != null || before != null), //hasPrevious
+        startCursor,
+        endCursor
+    );
   }
 }
