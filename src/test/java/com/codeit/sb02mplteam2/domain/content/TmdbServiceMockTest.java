@@ -1,4 +1,4 @@
-package com.codeit.sb02mplteam2.domain.content.service;
+package com.codeit.sb02mplteam2.domain.content;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import com.codeit.sb02mplteam2.domain.content.dto.tmdb.TmdbMovieApiResponseDto;
 import com.codeit.sb02mplteam2.domain.content.dto.tmdb.TmdbMovieDto;
 import com.codeit.sb02mplteam2.domain.content.entity.ContentCategory;
+import com.codeit.sb02mplteam2.domain.content.service.TmdbService;
 import java.util.List;
 import java.util.function.Function;
 import org.junit.jupiter.api.Test;

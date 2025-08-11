@@ -1,10 +1,11 @@
-package com.codeit.sb02mplteam2.domain.content.service;
+package com.codeit.sb02mplteam2.domain.content;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.codeit.sb02mplteam2.domain.content.dto.tmdb.TmdbMovieDto;
 import com.codeit.sb02mplteam2.domain.content.dto.tmdb.TmdbTvDto;
 import com.codeit.sb02mplteam2.domain.content.entity.ContentCategory;
+import com.codeit.sb02mplteam2.domain.content.service.TmdbService;
 import java.util.List;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;

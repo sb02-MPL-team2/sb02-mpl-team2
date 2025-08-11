@@ -1,4 +1,4 @@
-package com.codeit.sb02mplteam2.domain.content.service;
+package com.codeit.sb02mplteam2.domain.content;
 
 import static org.mockito.Mockito.*;
 
@@ -8,6 +8,9 @@ import com.codeit.sb02mplteam2.domain.content.entity.Content;
 import com.codeit.sb02mplteam2.domain.content.entity.ContentCategory;
 import com.codeit.sb02mplteam2.domain.content.mapper.TmdbContentMapper;
 import com.codeit.sb02mplteam2.domain.content.repository.ContentRepository;
+import com.codeit.sb02mplteam2.domain.content.service.BasicContentService;
+import com.codeit.sb02mplteam2.domain.content.service.TmdbService;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,8 +40,10 @@ class BasicContentServiceMockTest {
         when(tmdbService.getTmdbMovies(ContentCategory.MOVIE))
             .thenReturn(List.of(movieDto));
 
+        LocalDateTime now = LocalDateTime.now();
+
         Content fakeContent = mock(Content.class);
-        when(tmdbContentMapper.toEntity(movieDto, ContentCategory.MOVIE))
+        when(tmdbContentMapper.toEntity(movieDto, ContentCategory.MOVIE, now))
             .thenReturn(fakeContent);
 
         // when
@@ -47,7 +52,7 @@ class BasicContentServiceMockTest {
         // then
         verify(tmdbService, times(1)).getTmdbMovies(ContentCategory.MOVIE);
         verify(tmdbContentMapper, times(1))
-            .toEntity(movieDto, ContentCategory.MOVIE);
+            .toEntity(movieDto, ContentCategory.MOVIE, now);
         verify(contentRepository, times(1))
             .saveAll(List.of(fakeContent));
     }
@@ -59,8 +64,10 @@ class BasicContentServiceMockTest {
         when(tmdbService.getTmdbTvs(ContentCategory.TV))
             .thenReturn(List.of(tvDto));
 
+        LocalDateTime now = LocalDateTime.now();
+
         Content fakeContent = mock(Content.class);
-        when(tmdbContentMapper.toEntity(tvDto, ContentCategory.TV))
+        when(tmdbContentMapper.toEntity(tvDto, ContentCategory.TV, now))
             .thenReturn(fakeContent);
 
         // when
@@ -69,7 +76,7 @@ class BasicContentServiceMockTest {
         // then
         verify(tmdbService, times(1)).getTmdbTvs(ContentCategory.TV);
         verify(tmdbContentMapper, times(1))
-            .toEntity(tvDto, ContentCategory.TV);
+            .toEntity(tvDto, ContentCategory.TV, now);
         verify(contentRepository, times(1))
             .saveAll(List.of(fakeContent));
     }
