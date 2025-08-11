@@ -37,7 +37,7 @@ public class AuthController implements AuthApi{
   @Override
   public ResponseEntity<UserDto> signup(
       @RequestPart("userCreateRequest") @Valid UserCreateRequest userCreateRequest,
-      @RequestPart("profile") MultipartFile profile) {
+      @RequestPart(value = "profile", required = false) MultipartFile profile) {
 
     UserDto userDto = userService.create(userCreateRequest, Optional.ofNullable(profile));
     return ResponseEntity.status(HttpStatus.CREATED).body(userDto);

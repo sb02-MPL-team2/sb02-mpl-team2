@@ -13,6 +13,9 @@ import com.codeit.sb02mplteam2.security.jwt.JwtLogoutHandler;
 import com.codeit.sb02mplteam2.security.jwt.JwtService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +41,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 
 @Slf4j
 @Configuration
@@ -53,12 +58,22 @@ public class SecurityConfig {
 
   public static final String[] PERMIT_ALL_PATTERNS = {
       // --- Static Resources ---
-      "/", "/static/**", "/favicon.ico",
+      "/", "/assets/**", "/favicon.ico", "/index.html", "/placeholder-logo.svg", "/error",
       // --- Swagger / API Docs ---
-      "/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
+      "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
       // --- Auth APIs ---
-      "/api/auth/**", "/login", // /api/auth/login 으로 들어오고 있는데 이거 path 어떻게 할 지 의논
+      "/api/auth/**", "/login",
   };
+
+    private RequestMatcher createPublicPathMatcher() {
+    List<RequestMatcher> publicMatchers = Arrays.stream(PERMIT_ALL_PATTERNS)
+        .map(PathPatternRequestMatcher.withDefaults()::matcher)
+        .collect(Collectors.toList());
+
+    publicMatchers.add(toH2Console());
+
+    return new OrRequestMatcher(publicMatchers);
+  }
 
   @Bean
   public SecurityFilterChain filterChain(
@@ -115,7 +130,7 @@ public class SecurityConfig {
         // Custom filter 들을 filterChain 에 등록
         // 로그인 요청을 처리파는 필터를 UsernamePasswordAuthenticationFilter 위치에 대체
     http.addFilterBefore(
-        new JwtAuthenticationFilter(jwtService, objectMapper),
+        new JwtAuthenticationFilter(jwtService, objectMapper, createPublicPathMatcher()),
         UsernamePasswordAuthenticationFilter.class
     );
 

@@ -21,6 +21,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.jwt.JwtException;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Slf4j
@@ -29,11 +30,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final JwtService jwtService;
   private final ObjectMapper objectMapper;
+  private final RequestMatcher publicPathMatcher;
+
+  @Override
+  protected boolean shouldNotFilter(HttpServletRequest request) {
+    return publicPathMatcher.matches(request);
+  }
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
       FilterChain filterChain) throws ServletException, IOException {
-
+    log.debug("JwtAuthenticationFilter.doFilterInternal()");
     Optional<String> optionalAccessToken = resolveAccessToken(request);
 
     if (optionalAccessToken.isPresent()) {
@@ -59,6 +66,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   }
 
   private Optional<String> resolveAccessToken(HttpServletRequest request) {
+    log.debug("JwtAuthenticationFilter.resolveAccessToken() - {}", request.getHeader(HttpHeaders.AUTHORIZATION));
     String prefix = "Bearer ";
     return Optional.ofNullable(request.getHeader(HttpHeaders.AUTHORIZATION))
         .map(value -> {

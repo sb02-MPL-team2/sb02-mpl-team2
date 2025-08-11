@@ -11,6 +11,7 @@ public enum ErrorCode {
   USER_NOT_FOUND(HttpStatus.NOT_FOUND,"사용자를 찾을 수 없습니다."),
   EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 사용 중인 이메일입니다."),
   USERNAME_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 사용 중인 유저 이름입니다."),
+  ADMIN_USER_NOT_FOUND(HttpStatus.FORBIDDEN, "관리자 정보를 찾을 수 없습니다."),
 
   // Server Error
   INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"서버 내부 오류가 발생했습니다."),
@@ -20,8 +21,13 @@ public enum ErrorCode {
 
   // Binary
   BINARY_CONTENT_NOT_FOUND(HttpStatus.NOT_FOUND,"바이너리 콘텐츠를 찾을 수 없습니다."),
+  FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "파일을 찾을 수 없습니다."),
   FILE_PROCESSING_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "파일 처리 중 오류가 발생했습니다."),
-  FILE_STORAGE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "파일 저장 중 오류가 발생했습니다."),
+  FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "파일 업로드에 실패했습니다."),
+  FILE_DOWNLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "파일 다운로드에 실패했습니다."),
+  STORAGE_INIT_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "스토리지 초기화 실패"),
+  FILE_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "파일 삭제에 실패했습니다."),
+  FILE_IS_EMPTY(HttpStatus.BAD_REQUEST, "파일이 비어있습니다."),
 
   //Playlist
   PLAYLIST_NOT_FOUND(HttpStatus.NOT_FOUND,"플레이리스트를 찾을 수 없습니다."),
