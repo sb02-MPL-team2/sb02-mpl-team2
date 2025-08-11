@@ -44,7 +44,12 @@ public enum ErrorCode {
   //DirectMessage
 
   //DirectMessageChannel
-  DIRECT_MESSAGE_CHANNEL_NOT_FOUND(HttpStatus.NOT_FOUND, "디엠 채널을 찾을 수 없습니다");
+  DIRECT_MESSAGE_CHANNEL_NOT_FOUND(HttpStatus.NOT_FOUND, "디엠 채널을 찾을 수 없습니다"),
+  
+  //LiveWatch
+  LIVE_WATCH_ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "실시간 같이 보기 방을 찾을 수 없습니다."),
+  LIVE_WATCH_USER_NOT_IN_ROOM(HttpStatus.FORBIDDEN, "실시간 같이 보기 방에 참여하지 않은 사용자입니다."),
+  LIVE_WATCH_MESSAGE_CURSOR_INVALID(HttpStatus.BAD_REQUEST, "유효하지 않은 채팅 메시지 조회 커서입니다.");
 
   private final HttpStatus httpStatus;
   private final String message;
