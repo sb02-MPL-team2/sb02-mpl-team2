@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface LiveWatchService {
 
-  LiveWatchRoom createRoom(Long contentId, Long userId, String title);
+  LiveWatchRoom createRoom(Long contentId, String title);
 
   void sendMessage(SendMessageRequest request, Long userId);
 

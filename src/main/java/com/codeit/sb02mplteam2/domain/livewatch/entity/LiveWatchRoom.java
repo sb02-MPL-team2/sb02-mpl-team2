@@ -32,6 +32,7 @@ public class LiveWatchRoom {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  //방의 생성자, 현재 자동 생성되는 방의 로직상 null로 사용
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id")
   private User user;

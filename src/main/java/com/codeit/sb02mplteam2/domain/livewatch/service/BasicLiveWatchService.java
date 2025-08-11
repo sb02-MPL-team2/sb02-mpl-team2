@@ -47,15 +47,13 @@ public class BasicLiveWatchService implements LiveWatchService {
 
   @Override
   @Transactional
-  public LiveWatchRoom createRoom(Long contentId, Long userId, String title) {
+  public LiveWatchRoom createRoom(Long contentId, String title) {
     Content content = contentRepository.findById(contentId)
         .orElseThrow(() -> new LiveWatchException(ErrorCode.LIVE_WATCH_ROOM_NOT_FOUND));
 
-    User user = getValidatedUser(userId);
-
     LiveWatchRoom room = LiveWatchRoom.builder()
         .content(content)
-        .user(user)
+        .user(null)  // 현재 로직 상 채팅방 소유자 없음
         .title(title)
         .build();
 
