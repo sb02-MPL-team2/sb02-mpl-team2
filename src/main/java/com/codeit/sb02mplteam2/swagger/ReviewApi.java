@@ -11,6 +11,7 @@ import com.codeit.sb02mplteam2.swagger.review.ReviewSuccessDeleteResponse;
 import com.codeit.sb02mplteam2.swagger.review.ReviewSuccessRetrievalResponse;
 import com.codeit.sb02mplteam2.swagger.review.ReviewSuccessSingleRetrievalResponse;
 import com.codeit.sb02mplteam2.swagger.review.ReviewSuccessUpdateResponse;
+import com.codeit.sb02mplteam2.swagger.review.ReviewUnauthorizedResponse;
 import com.codeit.sb02mplteam2.swagger.user.UserNotFoundResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -40,6 +41,7 @@ public interface ReviewApi {
   @Operation(summary = "Review 삭제")
   @ReviewSuccessDeleteResponse
   @ReviewNotFoundResponse
+  @ReviewUnauthorizedResponse
   ResponseEntity<Void> delete(
       @AuthenticationPrincipal MplUserDetails userDetails,
       @Parameter(description = "삭제할 Review ID") Long reviewId
@@ -48,6 +50,7 @@ public interface ReviewApi {
   @Operation(summary = "Review 내용 수정")
   @ReviewSuccessUpdateResponse
   @ReviewNotFoundResponse
+  @ReviewUnauthorizedResponse
   ResponseEntity<ReviewDto> update(
       @AuthenticationPrincipal MplUserDetails userDetails,
       @Parameter(description = "수정할 Review ID") Long reviewId,
@@ -55,6 +58,7 @@ public interface ReviewApi {
   );
 
   @Operation(summary = "Review 단건 조회")
+  @ReviewNotFoundResponse
   @ReviewSuccessSingleRetrievalResponse
   ResponseEntity<ReviewDto> findById(
       @Parameter(description = "조회할 Review ID") Long reviewId
