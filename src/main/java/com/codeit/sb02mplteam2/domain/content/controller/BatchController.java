@@ -21,7 +21,7 @@ public class BatchController {
   private final Job tmdbContentUpdateJob;
 
   @PostMapping("/tmdb/update")
-  public ResponseEntity<?> runTmdbUpdate() throws Exception {
+  public ResponseEntity<BatchResponseDto> runTmdbUpdate() {
     try {
       JobParameters params = new JobParametersBuilder()
           .addLong("time", System.currentTimeMillis())
