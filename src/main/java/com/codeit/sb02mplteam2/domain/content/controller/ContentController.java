@@ -42,16 +42,14 @@ public class ContentController {
   }
 
   @PostMapping("/tmdb/movies")
-  public ResponseEntity<SaveResultDto> saveTmdbMovies(
-      @RequestParam("category") @NotNull ContentCategory category) {
-    int saved = contentService.saveTmdbMovies(category);
-    return ResponseEntity.ok(new SaveResultDto(category, saved));
+  public ResponseEntity<SaveResultDto> saveTmdbMovies() {
+    int saved = contentService.saveTmdbMovies(ContentCategory.MOVIE);
+    return ResponseEntity.ok(new SaveResultDto(ContentCategory.MOVIE, saved));
   }
 
   @PostMapping("/tmdb/tvs")
-  public ResponseEntity<SaveResultDto> saveTmdbTvs(
-      @RequestParam("category") @NotNull ContentCategory category) {
-    int saved = contentService.saveTmdbTvs(category);
-    return ResponseEntity.ok(new SaveResultDto(category, saved));
+  public ResponseEntity<SaveResultDto> saveTmdbTvs() {
+    int saved = contentService.saveTmdbTvs(ContentCategory.TV);
+    return ResponseEntity.ok(new SaveResultDto(ContentCategory.TV, saved));
   }
 }
