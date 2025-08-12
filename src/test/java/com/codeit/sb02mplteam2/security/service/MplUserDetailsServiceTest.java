@@ -48,14 +48,14 @@ public class MplUserDetailsServiceTest {
     email = "test@test.com";
     mockUser = new User(username, email, "password", null);
     userDto = new UserDto(1L, email, username, null,
-        Role.USER, false, false, 0, 0);
+        Role.USER, null,false, false, 0, 0);
   }
 
   @Test
   @DisplayName("성공 - 사용자 이름으로 UserDetails 조회")
   void loadUserByUsername_Success() {
     // given (준비)
-    given(userRepository.findByEmail(email)).willReturn(Optional.of(mockUser));
+    given(userRepository.findByEmailWithProfile(email)).willReturn(Optional.of(mockUser));
     given(userMapper.toDto(mockUser)).willReturn(userDto);
 
     // when
@@ -73,7 +73,7 @@ public class MplUserDetailsServiceTest {
         .extracting(GrantedAuthority::getAuthority)
         .containsExactly("ROLE_" + Role.USER.name());
 
-    verify(userRepository).findByEmail(email);
+    verify(userRepository).findByEmailWithProfile(email);
     verify(userMapper).toDto(mockUser);
   }
 
@@ -81,7 +81,7 @@ public class MplUserDetailsServiceTest {
   @DisplayName("실패 - 존재하지 않는 사용자 이름으로 조회 시 예외 발생")
   void loadByUsername_Fail_UserNotFound() {
     // given
-    given(userRepository.findByEmail(nonExistentEmail)).willReturn(Optional.empty());
+    given(userRepository.findByEmailWithProfile(nonExistentEmail)).willReturn(Optional.empty());
 
     // when
     UsernameNotFoundException exception = assertThrows(UsernameNotFoundException.class, () -> {
@@ -90,6 +90,6 @@ public class MplUserDetailsServiceTest {
 
     assertThat(exception.getMessage()).contains(nonExistentEmail);
 
-    verify(userRepository).findByEmail(nonExistentEmail);
+    verify(userRepository).findByEmailWithProfile(nonExistentEmail);
   }
 }

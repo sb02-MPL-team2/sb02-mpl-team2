@@ -3,11 +3,14 @@ package com.codeit.sb02mplteam2.domain.user.mapper;
 
 import com.codeit.sb02mplteam2.domain.user.dto.UserDto;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
+import java.time.format.DateTimeFormatter;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring") // UserMapperImpl 클래스에 Spring의 @Component 애노테이션을 추가
 public interface UserMapper {
+
+  DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
   default UserDto toDto(User user) {
     // user 객체가 null일 경우를 대비한 방어 코드
@@ -25,6 +28,7 @@ public interface UserMapper {
         user.getUsername(),
         profileUrl,
         user.getRole(),
+        formatter.format(user.getCreatedAt()),
         user.isLocked(),
         user.isDeleted(),
         user.getFollowerCount(),

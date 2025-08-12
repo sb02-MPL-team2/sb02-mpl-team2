@@ -3,9 +3,11 @@ package com.codeit.sb02mplteam2.domain.admin.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
+import com.codeit.sb02mplteam2.domain.notification.event.NotificationEvent;
 import com.codeit.sb02mplteam2.domain.user.dto.RoleUpdateRequest;
 import com.codeit.sb02mplteam2.domain.user.dto.UserDto;
 import com.codeit.sb02mplteam2.domain.user.entity.Role;
@@ -13,6 +15,7 @@ import com.codeit.sb02mplteam2.domain.user.entity.User;
 import com.codeit.sb02mplteam2.domain.user.mapper.UserMapper;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
 import com.codeit.sb02mplteam2.exception.user.UserNotFoundException;
+import com.codeit.sb02mplteam2.security.MplUserDetails;
 import com.codeit.sb02mplteam2.security.jwt.JwtService;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +25,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @ExtendWith(MockitoExtension.class)
 public class BasicAdminServiceTest {
@@ -37,6 +45,9 @@ public class BasicAdminServiceTest {
 
   @Mock
   private JwtService jwtService;
+
+  @Mock
+  private ApplicationEventPublisher eventPublisher;
 
   private User mockUser;
   private Long userId;
@@ -56,7 +67,18 @@ public class BasicAdminServiceTest {
   void updateUserRole_Success() {
     // given
     RoleUpdateRequest request = new RoleUpdateRequest(Role.ADMIN);
-    UserDto expectedDto = new UserDto(userId, "test@test.com", "testUser", null, Role.ADMIN, false, false, 0, 0);
+    UserDto expectedDto = new UserDto(userId, "test@test.com", username, null,
+        Role.ADMIN, null, false, false, 0, 0);
+
+    Long adminId = 100L;
+    MplUserDetails adminDetails = new MplUserDetails(
+        new UserDto(adminId, "admin@mpl.com", "admin", null, Role.ADMIN,
+            null, false, false, 0, 0), "");
+
+    SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+    securityContext.setAuthentication(
+        new UsernamePasswordAuthenticationToken(adminDetails, null, adminDetails.getAuthorities()));
+    SecurityContextHolder.setContext(securityContext);
 
     // Mock 객체 행동 정의
     given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
@@ -72,6 +94,8 @@ public class BasicAdminServiceTest {
 
     // Mock 객체가 예상대로 호출되었는지 검증
     verify(userRepository).findById(userId);
+    // 이벤트 발행 호출 되었는지 검증
+    verify(eventPublisher).publishEvent(any(NotificationEvent.class));
   }
 
   @Test

@@ -1,6 +1,7 @@
-package com.codeit.sb02mplteam2.domain.binary.dto;
+package com.codeit.sb02mplteam2.domain.binaryContent.dto;
 
-import com.codeit.sb02mplteam2.domain.binary.entity.BinaryContent;
+import com.codeit.sb02mplteam2.domain.binaryContent.entity.BinaryContent;
+import com.codeit.sb02mplteam2.domain.binaryContent.entity.UploadStatus;
 import java.time.LocalDateTime;
 import lombok.Builder;
 
@@ -11,7 +12,10 @@ public record BinaryContentDto(
     Long size,
     String contentType,
     String extension,
-    LocalDateTime createdAt
+    String url,
+    UploadStatus uploadStatus,
+    LocalDateTime createdAt,
+    LocalDateTime updatedAt
 ) {
   public static BinaryContentDto from(BinaryContent binaryContent) {
     return BinaryContentDto.builder()
@@ -20,7 +24,10 @@ public record BinaryContentDto(
         .size(binaryContent.getSize())
         .contentType(binaryContent.getContentType())
         .extension(binaryContent.getExtension())
+        .url(binaryContent.getUrl())
+        .uploadStatus(binaryContent.getUploadStatus())
         .createdAt(binaryContent.getCreatedAt())
+        .updatedAt(binaryContent.getUpdatedAt())
         .build();
   }
 }

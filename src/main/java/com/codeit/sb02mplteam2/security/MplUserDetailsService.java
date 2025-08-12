@@ -21,7 +21,7 @@ public class MplUserDetailsService implements UserDetailsService {
   @Override
   public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
     // 전달받은 username으로 데이터베이스에서 사용자를 찾습니다.
-    User user = userRepository.findByEmail(email)
+    User user = userRepository.findByEmailWithProfile(email)
         .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + email));
     // UsernameNotFoundException -> Bad Credential
 

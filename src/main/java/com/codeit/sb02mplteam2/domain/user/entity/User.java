@@ -1,8 +1,7 @@
 package com.codeit.sb02mplteam2.domain.user.entity;
 
-import com.codeit.sb02mplteam2.domain.binary.entity.BinaryContent;
+import com.codeit.sb02mplteam2.domain.binaryContent.entity.BinaryContent;
 import com.codeit.sb02mplteam2.domain.playlist.entity.Playlist;
-import com.codeit.sb02mplteam2.domain.binary.entity.BinaryContent;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

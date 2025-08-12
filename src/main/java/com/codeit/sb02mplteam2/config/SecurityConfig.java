@@ -58,14 +58,17 @@ public class SecurityConfig {
 
   public static final String[] PERMIT_ALL_PATTERNS = {
       // --- Static Resources ---
-      "/", "/assets/**", "/favicon.ico", "/index.html", "/placeholder-logo.svg", "/error",
+      "/", "/assets/**", "/favicon.ico", "/index.html", "/placeholder.svg", "/error",
       // --- Swagger / API Docs ---
       "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
       // --- Auth APIs ---
       "/api/auth/**", "/login",
+      // --- files/images ---
+      "/files/**"
   };
 
-    private RequestMatcher createPublicPathMatcher() {
+  @Bean
+  public RequestMatcher publicPathMatcher() {
     List<RequestMatcher> publicMatchers = Arrays.stream(PERMIT_ALL_PATTERNS)
         .map(PathPatternRequestMatcher.withDefaults()::matcher)
         .collect(Collectors.toList());
@@ -130,7 +133,7 @@ public class SecurityConfig {
         // Custom filter 들을 filterChain 에 등록
         // 로그인 요청을 처리파는 필터를 UsernamePasswordAuthenticationFilter 위치에 대체
     http.addFilterBefore(
-        new JwtAuthenticationFilter(jwtService, objectMapper, createPublicPathMatcher()),
+        new JwtAuthenticationFilter(jwtService, objectMapper, publicPathMatcher()),
         UsernamePasswordAuthenticationFilter.class
     );
 
