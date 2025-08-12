@@ -39,7 +39,7 @@ public class Initializer implements ApplicationRunner {
     }
 
     if (!playlistRepository.existsById(1L)) {
-      playlistService.create(new PlaylistCreateRequest(1L, "테스트 플리", "테스트 제목"));
+      playlistService.create(1L, new PlaylistCreateRequest( "테스트 플리", "테스트 제목"));
       log.info("테스트용 플리 자동 생성");
     }
 

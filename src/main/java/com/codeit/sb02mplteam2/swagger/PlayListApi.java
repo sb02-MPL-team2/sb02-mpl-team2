@@ -1,12 +1,13 @@
 package com.codeit.sb02mplteam2.swagger;
 
 import com.codeit.sb02mplteam2.domain.playlist.dto.CursorPageResponsePlayListDto;
-import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistCreateRequest;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistDto;
+import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistCreateRequest;
 import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistItemListRequest;
 import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistItemRequest;
 import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistUpdateRequest;
 import com.codeit.sb02mplteam2.domain.playlist.dto.request.SubscribeRequest;
+import com.codeit.sb02mplteam2.security.MplUserDetails;
 import com.codeit.sb02mplteam2.swagger.content.ContentNotFoundResponse;
 import com.codeit.sb02mplteam2.swagger.playlist.ItemSuccessInsertResponse;
 import com.codeit.sb02mplteam2.swagger.playlist.PlaylistNotFoundResponse;
@@ -21,10 +22,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @Tag(name = "PlayList", description = "PlayList API")
@@ -35,6 +37,7 @@ public interface PlayListApi {
   @UserNotFoundResponse
   @ContentNotFoundResponse
   ResponseEntity<PlaylistDto> create(
+      @AuthenticationPrincipal MplUserDetails userDetails,
       @Parameter(
           description = "PlayList 생성 정보",
           content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
@@ -47,6 +50,7 @@ public interface PlayListApi {
   @UserNotFoundResponse
   @PlaylistNotFoundResponse
   ResponseEntity<PlaylistDto> subscribe(
+      @AuthenticationPrincipal MplUserDetails userDetails,
       @Parameter(
           description = "Subscribe 생성 정보",
           content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
@@ -60,6 +64,7 @@ public interface PlayListApi {
   @PlaylistNotFoundResponse
   @SubscribeNotFoundResponse
   ResponseEntity<PlaylistDto> unSubscribe(
+      @AuthenticationPrincipal MplUserDetails userDetails,
       @Parameter(
           description = "Subscribe 취소 정보",
           content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
@@ -72,6 +77,7 @@ public interface PlayListApi {
   @PlaylistNotFoundResponse
   @ContentNotFoundResponse
   ResponseEntity<PlaylistDto> addContent(
+      @AuthenticationPrincipal MplUserDetails userDetails,
       @Parameter(
           description = "PlayList 내 Content 추가 정보",
           content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
@@ -84,6 +90,7 @@ public interface PlayListApi {
   @PlaylistNotFoundResponse
   @ContentNotFoundResponse
   ResponseEntity<PlaylistDto> addContentList(
+      @AuthenticationPrincipal MplUserDetails userDetails,
       @Parameter(
           description = "PlayList 내 Content 추가 정보",
           content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
@@ -95,6 +102,7 @@ public interface PlayListApi {
   @PlaylistSuccessDeleteResponse
   @PlaylistNotFoundResponse
   ResponseEntity<Void> delete(
+      @AuthenticationPrincipal MplUserDetails userDetails,
       @Parameter(description = "PlayList ID")
       Long playListId
   );
@@ -103,6 +111,7 @@ public interface PlayListApi {
   @PlaylistSuccessUpdateResponse
   @PlaylistNotFoundResponse
   ResponseEntity<PlaylistDto> update(
+      @AuthenticationPrincipal MplUserDetails userDetails,
       @Parameter(description = "수정할 PlayList ID")
       Long playListId,
       @Parameter(description = "수정할 PlayList 내용")
