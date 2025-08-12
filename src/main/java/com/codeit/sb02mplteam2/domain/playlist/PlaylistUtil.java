@@ -1,4 +1,4 @@
-package com.codeit.sb02mplteam2.domain.playlist.service;
+package com.codeit.sb02mplteam2.domain.playlist;
 
 import com.codeit.sb02mplteam2.domain.binary.entity.BinaryContent;
 import com.codeit.sb02mplteam2.domain.content.dto.content.ContentResponseDto;

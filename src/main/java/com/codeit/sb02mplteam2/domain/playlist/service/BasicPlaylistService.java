@@ -1,8 +1,8 @@
 package com.codeit.sb02mplteam2.domain.playlist.service;
 
-import static com.codeit.sb02mplteam2.domain.playlist.service.PlaylistUtil.toPlaylistItemDtoList;
-import static com.codeit.sb02mplteam2.domain.playlist.service.PlaylistUtil.toResponseDto;
-import static com.codeit.sb02mplteam2.domain.playlist.service.PlaylistUtil.toUserSlimDto;
+import static com.codeit.sb02mplteam2.domain.playlist.PlaylistUtil.toPlaylistItemDtoList;
+import static com.codeit.sb02mplteam2.domain.playlist.PlaylistUtil.toResponseDto;
+import static com.codeit.sb02mplteam2.domain.playlist.PlaylistUtil.toUserSlimDto;
 
 import com.codeit.sb02mplteam2.domain.content.dto.content.ContentResponseDto;
 import com.codeit.sb02mplteam2.domain.notification.entity.NotificationType;

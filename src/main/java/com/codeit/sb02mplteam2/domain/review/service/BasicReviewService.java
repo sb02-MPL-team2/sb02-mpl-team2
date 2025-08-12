@@ -1,5 +1,9 @@
 package com.codeit.sb02mplteam2.domain.review.service;
 
+import static com.codeit.sb02mplteam2.domain.review.ReviewUtil.toResponseDto;
+import static com.codeit.sb02mplteam2.domain.review.ReviewUtil.toUserSlimDto;
+
+import com.codeit.sb02mplteam2.domain.content.dto.content.ContentResponseDto;
 import com.codeit.sb02mplteam2.domain.content.entity.Content;
 import com.codeit.sb02mplteam2.domain.content.repository.ContentRepository;
 import com.codeit.sb02mplteam2.domain.review.dto.ReviewCreateRequest;
@@ -7,6 +11,7 @@ import com.codeit.sb02mplteam2.domain.review.dto.ReviewDto;
 import com.codeit.sb02mplteam2.domain.review.dto.ReviewUpdateRequest;
 import com.codeit.sb02mplteam2.domain.review.entity.Review;
 import com.codeit.sb02mplteam2.domain.review.repository.ReviewRepository;
+import com.codeit.sb02mplteam2.domain.user.dto.UserSlimDto;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
 import com.codeit.sb02mplteam2.exception.ErrorCode;
@@ -38,7 +43,10 @@ public class BasicReviewService implements ReviewService{
 
     Review review = new Review(user, content, request.rating(), request.comment());
     reviewRepository.save(review);
-    return ReviewDto.from(review);
+
+    UserSlimDto userSlimDto = toUserSlimDto(review);
+    ContentResponseDto responseDto = toResponseDto(content);
+    return ReviewDto.from(review, userSlimDto, responseDto);
   }
 
   @Override
@@ -46,21 +54,32 @@ public class BasicReviewService implements ReviewService{
   public ReviewDto findById(Long reviewId) {
     Review review = reviewRepository.findById(reviewId).orElseThrow(
         () -> new ReviewException(ErrorCode.REVIEW_NOT_FOUND));
-    return ReviewDto.from(review);
+
+    UserSlimDto userSlimDto = toUserSlimDto(review);
+    ContentResponseDto responseDto = toResponseDto(review.getContent());
+    return ReviewDto.from(review, userSlimDto, responseDto);
   }
 
   @Override
   @Transactional(readOnly = true)
   public List<ReviewDto> findAllByUserId(Long userId) {
     List<Review> reviewList = reviewRepository.findAllByUserId(userId);
-    return reviewList.stream().map(ReviewDto::from).toList();
+    return reviewList.stream().map(review -> {
+      UserSlimDto userSlimDto = toUserSlimDto(review);
+      ContentResponseDto responseDto = toResponseDto(review.getContent());
+      return ReviewDto.from(review, userSlimDto, responseDto);
+    }).toList();
   }
 
   @Override
   @Transactional(readOnly = true)
   public List<ReviewDto> findAllByContentId(Long contentId) {
     List<Review> reviewList = reviewRepository.findAllByContentId(contentId);
-    return reviewList.stream().map(ReviewDto::from).toList();
+    return reviewList.stream().map(review -> {
+      UserSlimDto userSlimDto = toUserSlimDto(review);
+      ContentResponseDto responseDto = toResponseDto(review.getContent());
+      return ReviewDto.from(review, userSlimDto, responseDto);
+    }).toList();
   }
 
   @Override
@@ -79,6 +98,8 @@ public class BasicReviewService implements ReviewService{
     review.update(request.newRating(), request.newComment());
     reviewRepository.save(review);
 
-    return ReviewDto.from(review);
+    UserSlimDto userSlimDto = toUserSlimDto(review);
+    ContentResponseDto responseDto = toResponseDto(review.getContent());
+    return ReviewDto.from(review, userSlimDto, responseDto);
   }
 }
