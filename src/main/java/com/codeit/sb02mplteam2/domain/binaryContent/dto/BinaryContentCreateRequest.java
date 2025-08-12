@@ -1,4 +1,4 @@
-package com.codeit.sb02mplteam2.domain.binary.dto;
+package com.codeit.sb02mplteam2.domain.binaryContent.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

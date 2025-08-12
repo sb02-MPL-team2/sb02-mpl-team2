@@ -1,36 +1,43 @@
-package com.codeit.sb02mplteam2.domain.binary.entity;
+package com.codeit.sb02mplteam2.domain.binaryContent.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.apache.commons.io.FilenameUtils;
-import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.web.multipart.MultipartFile;
 
 @Entity
 @Table(name = "binary_contents")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@EntityListeners(AuditingEntityListener.class)
 public class BinaryContent {
 
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   @CreatedDate
-  @Column(name="created_at")
+  @Column(name="created_at", updatable = false, nullable = false)
   private LocalDateTime createdAt;
+
+  @LastModifiedDate
+  @Column(name = "updated_at")
+  private LocalDateTime updatedAt;
 
   @Column(name = "file_name")
   private String fileName;
@@ -44,14 +51,11 @@ public class BinaryContent {
   @Column(name = "extension")
   private String extension;
 
-  // TODO binaryService에서 setUrl() 설정해야함 / UserMapper에서 사용
   @Column(name = "url", length = 2048) // URL 저장할 칼럼 추가
-  @Setter // service에서 URL 설정할 수 있도록 url 필드에만 Setter 추가
   private String url;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "upload_status")
-  @Setter
   private UploadStatus uploadStatus;
 
   private BinaryContent(String fileName, Long size, String contentType, String extension) {
@@ -64,13 +68,19 @@ public class BinaryContent {
 
   public static BinaryContent from(MultipartFile file) {
     String originalFilename = file.getOriginalFilename();
-    String fileName = FilenameUtils.getBaseName(originalFilename);
+    String fileName = FilenameUtils.getName(originalFilename);
     String fileExtension = FilenameUtils.getExtension(originalFilename);
     return new BinaryContent(fileName, file.getSize(), file.getContentType(), fileExtension);
   }
 
-  public static BinaryContent of(String fileName, Long size, String contentType, String extension) {
-    return new BinaryContent(fileName, size, contentType, extension);
+  public void completeUpload(String url) {
+    this.url = url;
+    this.uploadStatus = UploadStatus.COMPLETED;
   }
+
+  public void failUpload() {
+    this.uploadStatus = UploadStatus.FAILED;
+  }
+
 
 }
