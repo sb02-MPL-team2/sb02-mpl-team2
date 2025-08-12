@@ -12,6 +12,7 @@ import com.codeit.sb02mplteam2.domain.content.repository.ContentRepository;
 import com.codeit.sb02mplteam2.domain.content.service.BasicContentService;
 import com.codeit.sb02mplteam2.domain.content.service.TmdbService;
 import com.codeit.sb02mplteam2.domain.content.batch.TmdbBatchMetrics;
+import com.codeit.sb02mplteam2.domain.livewatch.service.LiveWatchService;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -35,6 +36,9 @@ class BasicContentServiceMockTest {
     @Mock
     private TmdbBatchMetrics tmdbBatchMetrics;
 
+    @Mock
+    private LiveWatchService liveWatchService;
+
     @InjectMocks
     private BasicContentService basicContentService;
 
@@ -48,6 +52,11 @@ class BasicContentServiceMockTest {
         Content fakeContent = mock(Content.class);
         when(tmdbContentMapper.toEntity(eq(movieDto), eq(ContentCategory.MOVIE), any(LocalDateTime.class)))
             .thenReturn(fakeContent);
+
+        when(fakeContent.getId()).thenReturn(1L);
+        when(fakeContent.getTitle()).thenReturn("제목");
+
+        when(contentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
 
         // when
         int saved = basicContentService.saveTmdbMovies(ContentCategory.MOVIE);
@@ -71,6 +80,11 @@ class BasicContentServiceMockTest {
         Content fakeContent = mock(Content.class);
         when(tmdbContentMapper.toEntity(eq(tvDto), eq(ContentCategory.TV), any(LocalDateTime.class)))
             .thenReturn(fakeContent);
+
+        when(fakeContent.getId()).thenReturn(10L);
+        when(fakeContent.getTitle()).thenReturn("이름");
+
+        when(contentRepository.saveAll(anyList())).thenAnswer(inv -> inv.getArgument(0));
 
         // when
         int saved = basicContentService.saveTmdbTvs(ContentCategory.TV);
