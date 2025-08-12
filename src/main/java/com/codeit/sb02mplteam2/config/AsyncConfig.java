@@ -12,7 +12,7 @@ import org.springframework.security.task.DelegatingSecurityContextAsyncTaskExecu
 @EnableAsync
 public class AsyncConfig {
 
-  @Bean("binaryContentTaskExecutor")
+  @Bean("fileUploadExecutor")
   public TaskExecutor binaryContentTaskExecutor() {
     ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
     executor.setCorePoolSize(5);
