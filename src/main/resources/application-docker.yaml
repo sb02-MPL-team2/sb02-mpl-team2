@@ -4,6 +4,11 @@ spring:
       on-profile: docker
   # docker-compose.yml에서 환경 변수로 주입한 값을 사용합니다.
   # 이 값들은 docker-compose.yml에 정의된 값이 없을 경우 사용될 기본값(fallback)입니다.
+  batch:
+    job:
+      enabled: false
+    jdbc:
+      initialize-schema: always
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/mpl_db}
     username: ${SPRING_DATASOURCE_USERNAME:mpl}
