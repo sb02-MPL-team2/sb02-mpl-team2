@@ -9,12 +9,14 @@ import com.codeit.sb02mplteam2.domain.content.entity.ContentCategory;
 import com.codeit.sb02mplteam2.domain.content.mapper.ContentMapper;
 import com.codeit.sb02mplteam2.domain.content.mapper.TmdbContentMapper;
 import com.codeit.sb02mplteam2.domain.content.repository.ContentRepository;
+import com.codeit.sb02mplteam2.domain.livewatch.service.LiveWatchService;
 import com.codeit.sb02mplteam2.exception.ErrorCode;
 import com.codeit.sb02mplteam2.exception.MplException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +29,7 @@ public class BasicContentService implements ContentService{
   private final TmdbService tmdbService;
   private final TmdbContentMapper tmdbContentMapper;
   private final TmdbBatchMetrics tmdbBatchMetrics;
+  private final LiveWatchService liveWatchService;
 
   @Override
   @Transactional(readOnly = true)
@@ -54,6 +57,7 @@ public class BasicContentService implements ContentService{
 
   @Override
   @Transactional
+  @PreAuthorize("hasRole('MANAGER')")
   public void delete(Long id) {
     if (!contentRepository.existsById(id)) {
       throw new MplException(ErrorCode.CONTENT_NOT_FOUND);
@@ -76,6 +80,9 @@ public class BasicContentService implements ContentService{
         .toList();
 
     contentRepository.saveAll(contents);
+
+    contents.forEach(c -> liveWatchService.createRoom(c.getId(), c.getTitle()));
+
     int saved = contents.size();
     tmdbBatchMetrics.recordItemCount(category, saved);
     return saved;
@@ -96,6 +103,9 @@ public class BasicContentService implements ContentService{
         .toList();
 
     contentRepository.saveAll(contents);
+
+    contents.forEach(c -> liveWatchService.createRoom(c.getId(), c.getTitle()));
+
     int saved = contents.size();
     tmdbBatchMetrics.recordItemCount(category, saved);
     return saved;
