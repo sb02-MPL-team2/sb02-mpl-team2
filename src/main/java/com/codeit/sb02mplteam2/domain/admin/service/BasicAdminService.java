@@ -44,20 +44,13 @@ public class BasicAdminService implements AdminService {
     }
     Long adminId = adminPrincipal.getId();
 
-    // 커밋 완료 후 eventPublish
-    TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-      @Override
-      public void afterCommit() {
-
-        eventPublisher.publishEvent(new NotificationEvent(
-            this,
-            userId, // 받는 사람, 권한 변경 된 유저
-            NotificationType.ROLE_CHANGED,
-            null,
-            adminId // 이벤트 발생시킨 사람, 관리자
-        ));
-      }
-    });
+    eventPublisher.publishEvent(new NotificationEvent(
+        this,
+        userId, // 받는 사람, 권한 변경 된 유저
+        NotificationType.ROLE_CHANGED,
+        null,
+        adminId // 이벤트 발생시킨 사람, 관리자
+    ));
 
     return userMapper.toDto(user);
   }
