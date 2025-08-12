@@ -45,7 +45,7 @@ class BasicPlaylistItemServiceTest {
 
   private User user;
   private Playlist playlist;
-  private final String title = "title";
+  private final String title = "summary";
   private final String description = "description";
 
   @BeforeEach
