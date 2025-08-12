@@ -137,7 +137,7 @@ public class BasicUserService implements UserService{
     User user = userRepository.findById(userId)
         .orElseThrow(() -> UserNotFoundException.withId(userId));
 
-    if(user.isDeleted() == true || user.isLocked()){
+    if(user.isDeleted() || user.isLocked()){
       log.warn("삭제되었거나 잠긴 사용자에 대한 조회 시도: userId={}", userId);
       throw UserNotFoundException.withId(userId);
     }
