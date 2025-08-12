@@ -77,7 +77,7 @@ public class PlaylistController implements PlayListApi {
   @Override
   @PostMapping("/add-list")
   public ResponseEntity<PlaylistDto> addContentList(
-      @AuthenticationPrincipal MplUserDetails userDetails, PlaylistItemListRequest request) {
+      @AuthenticationPrincipal MplUserDetails userDetails, @RequestBody PlaylistItemListRequest request) {
     PlaylistDto playlistDto = playlistItemService.addContentList(userDetails.getUserDto().id(), request.playListId(),
         request.contentIds());
 
@@ -90,6 +90,25 @@ public class PlaylistController implements PlayListApi {
       @AuthenticationPrincipal MplUserDetails userDetails, @PathVariable Long playListId) {
     playlistService.delete(playListId, userDetails.getUserDto().id());
 
+    return ResponseEntity.noContent().build();
+  }
+
+  @Override
+  @DeleteMapping("/item")
+  public ResponseEntity<Void> deleteItemByContentId(
+      @AuthenticationPrincipal MplUserDetails userDetails,
+      @RequestBody PlaylistItemRequest request) {
+    playlistItemService.deleteByContentId(userDetails.getUserDto().id(), request.playListId(),
+        request.contentId());
+    return ResponseEntity.noContent().build();
+  }
+
+  @Override
+  @DeleteMapping("/item/{playListId}")
+  public ResponseEntity<Void> deleteAllItemByPlaylistId(
+      @AuthenticationPrincipal MplUserDetails userDetails,
+      @PathVariable Long playListId) {
+    playlistItemService.deleteAllByPlaylistId(userDetails.getUserDto().id(), playListId);
     return ResponseEntity.noContent().build();
   }
 

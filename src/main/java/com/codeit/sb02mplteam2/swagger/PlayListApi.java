@@ -9,14 +9,16 @@ import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistUpdateRequest
 import com.codeit.sb02mplteam2.domain.playlist.dto.request.SubscribeRequest;
 import com.codeit.sb02mplteam2.security.MplUserDetails;
 import com.codeit.sb02mplteam2.swagger.content.ContentNotFoundResponse;
-import com.codeit.sb02mplteam2.swagger.playlist.ItemSuccessInsertResponse;
 import com.codeit.sb02mplteam2.swagger.playlist.PlaylistNotFoundResponse;
 import com.codeit.sb02mplteam2.swagger.playlist.PlaylistSuccessCreationResponse;
 import com.codeit.sb02mplteam2.swagger.playlist.PlaylistSuccessDeleteResponse;
 import com.codeit.sb02mplteam2.swagger.playlist.PlaylistSuccessRetrievalResponse;
 import com.codeit.sb02mplteam2.swagger.playlist.PlaylistSuccessSingleRetrievalResponse;
 import com.codeit.sb02mplteam2.swagger.playlist.PlaylistSuccessUpdateResponse;
+import com.codeit.sb02mplteam2.swagger.playlist.PlaylistUnauthorizedResponse;
 import com.codeit.sb02mplteam2.swagger.playlist.SubscribeNotFoundResponse;
+import com.codeit.sb02mplteam2.swagger.playlist.item.ItemSuccessInsertResponse;
+import com.codeit.sb02mplteam2.swagger.playlist.item.PlaylistItemSuccessDeleteResponse;
 import com.codeit.sb02mplteam2.swagger.user.UserNotFoundResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -36,6 +38,7 @@ public interface PlayListApi {
   @PlaylistSuccessCreationResponse
   @UserNotFoundResponse
   @ContentNotFoundResponse
+  @PlaylistUnauthorizedResponse
   ResponseEntity<PlaylistDto> create(
       @AuthenticationPrincipal MplUserDetails userDetails,
       @Parameter(
@@ -49,6 +52,7 @@ public interface PlayListApi {
   @PlaylistSuccessUpdateResponse
   @UserNotFoundResponse
   @PlaylistNotFoundResponse
+  @PlaylistUnauthorizedResponse
   ResponseEntity<PlaylistDto> subscribe(
       @AuthenticationPrincipal MplUserDetails userDetails,
       @Parameter(
@@ -63,6 +67,7 @@ public interface PlayListApi {
   @UserNotFoundResponse
   @PlaylistNotFoundResponse
   @SubscribeNotFoundResponse
+  @PlaylistUnauthorizedResponse
   ResponseEntity<PlaylistDto> unSubscribe(
       @AuthenticationPrincipal MplUserDetails userDetails,
       @Parameter(
@@ -76,6 +81,7 @@ public interface PlayListApi {
   @ItemSuccessInsertResponse
   @PlaylistNotFoundResponse
   @ContentNotFoundResponse
+  @PlaylistUnauthorizedResponse
   ResponseEntity<PlaylistDto> addContent(
       @AuthenticationPrincipal MplUserDetails userDetails,
       @Parameter(
@@ -89,6 +95,7 @@ public interface PlayListApi {
   @ItemSuccessInsertResponse
   @PlaylistNotFoundResponse
   @ContentNotFoundResponse
+  @PlaylistUnauthorizedResponse
   ResponseEntity<PlaylistDto> addContentList(
       @AuthenticationPrincipal MplUserDetails userDetails,
       @Parameter(
@@ -101,15 +108,40 @@ public interface PlayListApi {
   @Operation(summary = "PlayList 삭제")
   @PlaylistSuccessDeleteResponse
   @PlaylistNotFoundResponse
+  @PlaylistUnauthorizedResponse
   ResponseEntity<Void> delete(
       @AuthenticationPrincipal MplUserDetails userDetails,
       @Parameter(description = "PlayList ID")
       Long playListId
   );
 
+  @Operation(summary = "Playlist Content 삭제")
+  @PlaylistItemSuccessDeleteResponse
+  @PlaylistNotFoundResponse
+  @ContentNotFoundResponse
+  @PlaylistUnauthorizedResponse
+  ResponseEntity<Void> deleteItemByContentId(
+      @AuthenticationPrincipal MplUserDetails userDetails,
+      @Parameter(
+          description = "PlayList 내 Content 추가 정보",
+          content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE)
+      )
+      @RequestBody PlaylistItemRequest request);
+
+  @Operation(summary = "Playlist Content 전체 삭제")
+  @PlaylistItemSuccessDeleteResponse
+  @PlaylistNotFoundResponse
+  @PlaylistUnauthorizedResponse
+  ResponseEntity<Void> deleteAllItemByPlaylistId(
+      @AuthenticationPrincipal MplUserDetails userDetails,
+      @Parameter(description = "PlayList ID")
+      Long playListId);
+
+
   @Operation(summary = "Message 내용 수정")
   @PlaylistSuccessUpdateResponse
   @PlaylistNotFoundResponse
+  @PlaylistUnauthorizedResponse
   ResponseEntity<PlaylistDto> update(
       @AuthenticationPrincipal MplUserDetails userDetails,
       @Parameter(description = "수정할 PlayList ID")

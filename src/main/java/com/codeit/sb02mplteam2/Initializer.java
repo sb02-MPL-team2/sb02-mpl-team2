@@ -44,7 +44,7 @@ public class Initializer implements ApplicationRunner {
     }
 
     if (!playlistItemRepository.existsById(1L)) {
-      playlistItemService.addContent(1L, 1L);
+      playlistItemService.addContent(1L, 1L, 1L);
       log.info("테스트용 플리에 콘텐츠 삽입");
     }
   }
