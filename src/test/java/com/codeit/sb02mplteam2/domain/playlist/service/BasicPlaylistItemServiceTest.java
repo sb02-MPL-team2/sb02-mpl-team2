@@ -23,6 +23,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class BasicPlaylistItemServiceTest {
@@ -44,12 +45,13 @@ class BasicPlaylistItemServiceTest {
 
   private User user;
   private Playlist playlist;
-  private final String title = "title";
+  private final String title = "summary";
   private final String description = "description";
 
   @BeforeEach
   void setUp() {
     user = new User();
+    ReflectionTestUtils.setField(user, "id", 1L);
     playlist = new Playlist(user, title, description);
   }
 
@@ -62,7 +64,7 @@ class BasicPlaylistItemServiceTest {
     Content content = new Content("테스트", ContentCategory.MOVIE);
     when(contentRepository.findById(1L)).thenReturn(Optional.of(content));
 
-    PlaylistDto playlistDto = playlistItemService.addContent(1L, 1L);
+    PlaylistDto playlistDto = playlistItemService.addContent(1L, 1L, 1L);
 
     assertAll(
         () -> assertEquals(1, playlistDto.items().size())
@@ -80,7 +82,7 @@ class BasicPlaylistItemServiceTest {
     when(contentRepository.findById(1L)).thenReturn(Optional.of(content1));
     when(contentRepository.findById(2L)).thenReturn(Optional.of(content2));
     when(contentRepository.findById(3L)).thenReturn(Optional.of(content3));
-    PlaylistDto playlistDto = playlistItemService.addContentList(1L, List.of(1L, 2L, 3L));
+    PlaylistDto playlistDto = playlistItemService.addContentList(1L, 1L, List.of(1L, 2L, 3L));
     assertAll(
         () -> assertEquals(3, playlistDto.items().size())
     );
@@ -96,7 +98,7 @@ class BasicPlaylistItemServiceTest {
     when(content1.getCategory()).thenReturn(ContentCategory.TV);
     when(contentRepository.findById(1L)).thenReturn(Optional.of(content1));
     //1차적으로 값 주입
-    PlaylistDto playlistDto1 = playlistItemService.addContent(1L, 1L);
+    PlaylistDto playlistDto1 = playlistItemService.addContent(1L, 1L, 1L);
     //1차 값 증명
     assertAll(
         () -> assertEquals(1, playlistDto1.items().size())
@@ -106,7 +108,7 @@ class BasicPlaylistItemServiceTest {
     Content content2 = new Content("테스트1", ContentCategory.MOVIE);
     when(contentRepository.findById(2L)).thenReturn(Optional.of(content2));
 
-    PlaylistDto playlistDto2 = playlistItemService.addContent(1L,2L);
+    PlaylistDto playlistDto2 = playlistItemService.addContent(1L, 1L,2L);
     assertAll(
         () -> assertEquals(2, playlistDto2.items().size())
     );
@@ -121,7 +123,7 @@ class BasicPlaylistItemServiceTest {
     when(contentRepository.findById(1L)).thenReturn(Optional.of(content1));
 
     //1차적으로 값 주입
-    PlaylistDto playlistDto1 = playlistItemService.addContent(1L, 1L);
+    PlaylistDto playlistDto1 = playlistItemService.addContent(1L, 1L, 1L);
 
     //1차 값 증명
     assertAll(
@@ -134,7 +136,7 @@ class BasicPlaylistItemServiceTest {
     when(contentRepository.findById(2L)).thenReturn(Optional.of(content2));
     when(contentRepository.findById(3L)).thenReturn(Optional.of(content3));
 
-    PlaylistDto playlistDto2 = playlistItemService.addContentList(1L, List.of(2L, 3L));
+    PlaylistDto playlistDto2 = playlistItemService.addContentList(1L, 1L, List.of(2L, 3L));
     assertAll(
         () -> assertEquals(3, playlistDto2.items().size())
     );

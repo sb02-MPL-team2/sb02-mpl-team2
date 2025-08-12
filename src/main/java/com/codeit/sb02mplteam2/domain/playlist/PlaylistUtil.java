@@ -1,4 +1,4 @@
-package com.codeit.sb02mplteam2.domain.playlist.service;
+package com.codeit.sb02mplteam2.domain.playlist;
 
 import com.codeit.sb02mplteam2.domain.binary.entity.BinaryContent;
 import com.codeit.sb02mplteam2.domain.content.dto.content.ContentResponseDto;
@@ -40,7 +40,7 @@ public final class PlaylistUtil {
             .title(content.getTitle())
             .description(content.getDescription())
             .category(content.getCategory().toString())
-            // TODO: 관련된 실제 데이터를 채워 넣어야 함
+            .imageUrl(content.getImageUrl())
             .build())
         .collect(Collectors.toList());
   }

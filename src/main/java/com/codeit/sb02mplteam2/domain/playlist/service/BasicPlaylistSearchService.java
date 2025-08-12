@@ -1,13 +1,12 @@
 package com.codeit.sb02mplteam2.domain.playlist.service;
 
+import com.codeit.sb02mplteam2.domain.playlist.PlaylistUtil;
 import com.codeit.sb02mplteam2.domain.playlist.dto.CursorPageResponsePlayListDto;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistSlimDto;
 import com.codeit.sb02mplteam2.domain.playlist.entity.Playlist;
-import com.codeit.sb02mplteam2.domain.playlist.entity.PlaylistItem;
 import com.codeit.sb02mplteam2.domain.playlist.repository.PlaylistRepository;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -23,11 +22,23 @@ public class BasicPlaylistSearchService implements PlaylistSearchService{
   private final PlaylistRepository playlistRepository;
 
   @Override
+  public CursorPageResponsePlayListDto findAll(LocalDateTime cursor, Pageable pageable) {
+    Slice<Playlist> slice = playlistRepository.findAllByCursor(cursor, pageable);
+
+    return toCursorPageResponse(slice);
+  }
+
+  @Override
   @Transactional(readOnly = true)
   public CursorPageResponsePlayListDto findAllByUserId(Long userId, LocalDateTime cursor,
       Pageable pageable) {
     Slice<Playlist> slice = playlistRepository.findAllByUserId(userId, cursor, pageable);
 
+    return toCursorPageResponse(slice);
+  }
+
+
+  private CursorPageResponsePlayListDto toCursorPageResponse(Slice<Playlist> slice) {
     List<PlaylistSlimDto> slimDtos = slice.getContent().stream()
         .map(playlist -> {
           // PlaylistUtil을 사용해 각 플레이리스트의 요약(summary) 생성

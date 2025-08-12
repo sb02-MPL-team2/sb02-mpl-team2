@@ -7,12 +7,15 @@ import com.codeit.sb02mplteam2.domain.notification.event.BroadcastEvent;
 import com.codeit.sb02mplteam2.domain.notification.repository.NotificationRepository;
 import com.codeit.sb02mplteam2.domain.playlist.entity.Playlist;
 import com.codeit.sb02mplteam2.domain.playlist.repository.PlaylistRepository;
+import com.codeit.sb02mplteam2.domain.social.entity.DirectMessage;
+import com.codeit.sb02mplteam2.domain.social.repository.DirectMessageRepository;
 import com.codeit.sb02mplteam2.domain.user.entity.AlarmSetting;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import com.codeit.sb02mplteam2.domain.user.repository.AlarmSettingRepository;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
 import com.codeit.sb02mplteam2.exception.ErrorCode;
 import com.codeit.sb02mplteam2.exception.MplException;
+import com.codeit.sb02mplteam2.exception.directmessage.DirectMessageException;
 import com.codeit.sb02mplteam2.exception.playlist.PlaylistException;
 import com.codeit.sb02mplteam2.exception.user.UserException;
 import java.time.LocalDateTime;
@@ -38,6 +41,7 @@ public class BasicNotificationService implements NotificationService {
 
   private final UserRepository userRepository;
   private final NotificationRepository notificationRepository;
+  private final DirectMessageRepository directMessageRepository;
   private final AlarmSettingRepository alarmSettingRepository;
   private final PlaylistRepository playlistRepository;
 
@@ -175,8 +179,12 @@ public class BasicNotificationService implements NotificationService {
 
   private String createContent(Long targetId, NotificationType type) {
     return switch (type) {
-      case NEW_MESSAGE -> //TODO DM Repository 에서 targetId 찾을 예정
-          "아직 DM Repository가 없기에 빈 String 파일을 던집니다.";
+      case NEW_MESSAGE -> {
+        DirectMessage directMessage = directMessageRepository.findById(targetId)
+            //TODO ErrorCode에 DM Not found 넣어야함
+            .orElseThrow(() -> new DirectMessageException(ErrorCode.INTERNAL_SERVER_ERROR));
+        yield directMessage.getContent();
+      }
       case NEW_PLAYLIST_BY_FOLLOWING, PLAYLIST_SUBSCRIBED, BROADCAST_TODAY_PLAYLIST -> {
         Playlist playlist = playlistRepository.findById(targetId)
             .orElseThrow(() -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
