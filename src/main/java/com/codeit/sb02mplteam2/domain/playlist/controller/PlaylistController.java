@@ -145,4 +145,18 @@ public class PlaylistController implements PlayListApi {
         pageable);
     return ResponseEntity.ok(response);
   }
+
+  @Override
+  @GetMapping
+  public ResponseEntity<CursorPageResponsePlayListDto> findAll(
+      @RequestParam(value = "cursor", required = false) LocalDateTime cursor,
+      @PageableDefault(
+          size = 20,
+          page = 0,
+          sort = "createdAt,desc"
+      )
+      Pageable pageable) {
+    CursorPageResponsePlayListDto response = playlistSearchService.findAll(cursor, pageable);
+    return ResponseEntity.ok(response);
+  }
 }

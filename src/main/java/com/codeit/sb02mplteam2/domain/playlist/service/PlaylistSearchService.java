@@ -5,6 +5,9 @@ import java.time.LocalDateTime;
 import org.springframework.data.domain.Pageable;
 
 public interface PlaylistSearchService {
+
+  CursorPageResponsePlayListDto findAll(LocalDateTime cursor, Pageable pageable);
+
   CursorPageResponsePlayListDto findAllByUserId(Long userId, LocalDateTime cursor, Pageable pageable);
 
 

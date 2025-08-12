@@ -22,11 +22,23 @@ public class BasicPlaylistSearchService implements PlaylistSearchService{
   private final PlaylistRepository playlistRepository;
 
   @Override
+  public CursorPageResponsePlayListDto findAll(LocalDateTime cursor, Pageable pageable) {
+    Slice<Playlist> slice = playlistRepository.findAllByCursor(cursor, pageable);
+
+    return toCursorPageResponse(slice);
+  }
+
+  @Override
   @Transactional(readOnly = true)
   public CursorPageResponsePlayListDto findAllByUserId(Long userId, LocalDateTime cursor,
       Pageable pageable) {
     Slice<Playlist> slice = playlistRepository.findAllByUserId(userId, cursor, pageable);
 
+    return toCursorPageResponse(slice);
+  }
+
+
+  private CursorPageResponsePlayListDto toCursorPageResponse(Slice<Playlist> slice) {
     List<PlaylistSlimDto> slimDtos = slice.getContent().stream()
         .map(playlist -> {
           // PlaylistUtil을 사용해 각 플레이리스트의 요약(summary) 생성

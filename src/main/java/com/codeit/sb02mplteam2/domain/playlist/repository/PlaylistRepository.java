@@ -19,4 +19,7 @@ public interface PlaylistRepository extends JpaRepository<Playlist,Long> {
   @Query("SELECT p FROM Playlist p LEFT JOIN FETCH p.user u WHERE u.id = :userId AND (:#{#cursor} IS NULL OR p.createdAt < :cursor)")
   Slice<Playlist> findAllByUserId(@Param("userId") Long userId,
       @Param("cursor") LocalDateTime cursor, Pageable pageable);
+
+  @Query("SELECT p FROM Playlist p LEFT JOIN FETCH p.user u WHERE (:#{#cursor} IS NULL OR p.createdAt < :cursor)")
+  Slice<Playlist> findAllByCursor(LocalDateTime cursor, Pageable attr0);
 }

@@ -158,12 +158,22 @@ public interface PlayListApi {
       Long playListId
   );
 
-  @Operation(summary = "PlayList 목록 조회")
+  @Operation(summary = "PlayList 아이디로 목록 조회")
   @PlaylistSuccessRetrievalResponse
   @PlaylistNotFoundResponse
   ResponseEntity<CursorPageResponsePlayListDto> findAllByUserId(
       @Parameter(description = "조회할 user ID")
       Long userId,
+      @Parameter(description = "페이징 커서 정보")
+      LocalDateTime cursor,
+      @Parameter(description = "페이징 정보", example = "{\"size\": 20, \"sort\": \"createdAt,desc\"}")
+      Pageable pageable
+  );
+
+  @Operation(summary = "PlayList 목록 조회")
+  @PlaylistSuccessRetrievalResponse
+  @PlaylistNotFoundResponse
+  ResponseEntity<CursorPageResponsePlayListDto> findAll(
       @Parameter(description = "페이징 커서 정보")
       LocalDateTime cursor,
       @Parameter(description = "페이징 정보", example = "{\"size\": 20, \"sort\": \"createdAt,desc\"}")
