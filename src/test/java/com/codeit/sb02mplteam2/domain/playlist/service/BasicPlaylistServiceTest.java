@@ -52,7 +52,7 @@ class BasicPlaylistServiceTest {
   private User user;
   private Playlist playlist;
   private Subscribe subscribe;
-  private final String title = "title";
+  private final String title = "summary";
   private final String description = "description";
 
   @BeforeEach
