@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/playlist")
+@RequestMapping("/api/playlists")
 @RequiredArgsConstructor
 public class PlaylistController implements PlayListApi {
 
@@ -66,7 +66,7 @@ public class PlaylistController implements PlayListApi {
   }
 
   @Override
-  @PostMapping("/add")
+  @PostMapping("/items")
   public ResponseEntity<PlaylistDto> addContent(
       @AuthenticationPrincipal MplUserDetails userDetails, @RequestBody PlaylistItemRequest request) {
     PlaylistDto playlistDto = playlistItemService.addContent(userDetails.getUserDto().id(), request.playListId(),
@@ -76,7 +76,7 @@ public class PlaylistController implements PlayListApi {
   }
 
   @Override
-  @PostMapping("/add-list")
+  @PostMapping("/items/bulk")
   public ResponseEntity<PlaylistDto> addContentList(
       @AuthenticationPrincipal MplUserDetails userDetails, @RequestBody PlaylistItemListRequest request) {
     PlaylistDto playlistDto = playlistItemService.addContentList(userDetails.getUserDto().id(), request.playListId(),
@@ -95,7 +95,7 @@ public class PlaylistController implements PlayListApi {
   }
 
   @Override
-  @DeleteMapping("/item")
+  @DeleteMapping("/items")
   public ResponseEntity<Void> deleteItemByContentId(
       @AuthenticationPrincipal MplUserDetails userDetails,
       @RequestBody PlaylistItemRequest request) {
@@ -105,7 +105,7 @@ public class PlaylistController implements PlayListApi {
   }
 
   @Override
-  @DeleteMapping("/item/{playListId}")
+  @DeleteMapping("/{playListId}/items")
   public ResponseEntity<Void> deleteAllItemByPlaylistId(
       @AuthenticationPrincipal MplUserDetails userDetails,
       @PathVariable Long playListId) {
