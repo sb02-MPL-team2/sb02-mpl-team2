@@ -84,8 +84,8 @@ public class BasicReviewService implements ReviewService{
 
   @Override
   @Transactional
-  public void delete(Long userId, Long playlistId) {
-    Review review = reviewRepository.findById(playlistId).orElseThrow(
+  public void delete(Long userId, Long reviewId) {
+    Review review = reviewRepository.findById(reviewId).orElseThrow(
         () -> new ReviewException(ErrorCode.REVIEW_NOT_FOUND));
     if (!review.getUser().getId().equals(userId)) {
       throw new ReviewException(ErrorCode.UNAUTHORIZED);

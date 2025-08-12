@@ -15,7 +15,7 @@ public interface ReviewService {
 
   List<ReviewDto> findAllByContentId(Long contentId);
 
-  void delete(Long userId, Long playlistId);
+  void delete(Long userId, Long reviewId);
 
   ReviewDto update(Long userId, Long reviewId, ReviewUpdateRequest request);
 }
