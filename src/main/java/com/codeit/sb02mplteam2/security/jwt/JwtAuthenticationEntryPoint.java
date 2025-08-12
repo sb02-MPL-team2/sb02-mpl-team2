@@ -30,7 +30,4 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         ErrorCode.UNAUTHORIZED));
     response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
   }
-
-
-
 }

@@ -52,7 +52,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
           UserDetails userDetails = new MplUserDetails(userDto, "");
           setAuthentication(userDetails);
         } else {
-          throw new MplException(ErrorCode.INVALID_TOKEN, Map.of("accessToken", accessToken));
+          log.warn("Invalid JWT token provided: {}", accessToken);
+          sendErrorResponse(response, new MplException(ErrorCode.INVALID_TOKEN, Map.of("accessToken", accessToken)));
+          return;
         }
       } catch (JwtException e) {
         log.warn("Invalid JWT token: {}", e.getMessage());
@@ -85,11 +87,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   }
 
   private void sendErrorResponse(HttpServletResponse response, Exception e) throws IOException {
-    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    ErrorCode errorCode = ErrorCode.UNAUTHORIZED;
+    if(e instanceof MplException mplException) {
+      errorCode = mplException.getErrorCode();
+    }
+
+    response.setStatus(errorCode.getHttpStatus().value());
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
     response.setCharacterEncoding("UTF-8");
-    ErrorResponse errorResponse = ErrorResponse.fromMplException(new MplException(
-        ErrorCode.UNAUTHORIZED));
+    ErrorResponse errorResponse = ErrorResponse.fromMplException(new MplException(errorCode));
     response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
   }
 }
