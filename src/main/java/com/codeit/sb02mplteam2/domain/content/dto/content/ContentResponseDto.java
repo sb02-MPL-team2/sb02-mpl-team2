@@ -12,6 +12,6 @@ public record ContentResponseDto(
     Double totalRating,
     Integer reviewCount,
     Integer watchCount,
-    Long roomdId
+    Long roomId
 ) {
 }
