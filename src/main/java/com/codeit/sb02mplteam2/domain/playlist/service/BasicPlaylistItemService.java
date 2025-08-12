@@ -1,8 +1,8 @@
 package com.codeit.sb02mplteam2.domain.playlist.service;
 
-import static com.codeit.sb02mplteam2.domain.playlist.service.PlaylistUtil.toPlaylistItemDtoList;
-import static com.codeit.sb02mplteam2.domain.playlist.service.PlaylistUtil.toResponseDto;
-import static com.codeit.sb02mplteam2.domain.playlist.service.PlaylistUtil.toUserSlimDto;
+import static com.codeit.sb02mplteam2.domain.playlist.PlaylistUtil.toPlaylistItemDtoList;
+import static com.codeit.sb02mplteam2.domain.playlist.PlaylistUtil.toResponseDto;
+import static com.codeit.sb02mplteam2.domain.playlist.PlaylistUtil.toUserSlimDto;
 
 import com.codeit.sb02mplteam2.domain.content.dto.content.ContentResponseDto;
 import com.codeit.sb02mplteam2.domain.content.entity.Content;
@@ -40,9 +40,13 @@ public class BasicPlaylistItemService implements PlaylistItemService {
 
   @Override
   @Transactional
-  public PlaylistDto addContent(Long playlistId, Long contentId) {
+  public PlaylistDto addContent(Long userId, Long playlistId, Long contentId) {
     Playlist playlist = playlistRepository.findById(playlistId).orElseThrow(
         () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
+
+    if (!playlist.getUser().getId().equals(userId)) {
+      throw new PlaylistException(ErrorCode.UNAUTHORIZED);
+    }
 
     UserSlimDto userSlimDto = toUserSlimDto(playlist);
 
@@ -75,9 +79,13 @@ public class BasicPlaylistItemService implements PlaylistItemService {
 
   @Override
   @Transactional
-  public PlaylistDto addContentList(Long playlistId, List<Long> contentIds) {
+  public PlaylistDto addContentList(Long userId, Long playlistId, List<Long> contentIds) {
     Playlist playlist = playlistRepository.findById(playlistId).orElseThrow(
         () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
+    if (!playlist.getUser().getId().equals(userId)) {
+      throw new PlaylistException(ErrorCode.UNAUTHORIZED);
+    }
+
     List<Content> contentList = new ArrayList<>();
     for (Long contentId : contentIds) {
       contentRepository.findById(contentId).ifPresent(contentList::add);
@@ -105,9 +113,12 @@ public class BasicPlaylistItemService implements PlaylistItemService {
 
   @Override
   @Transactional
-  public void deleteAllByPlaylistId(Long playlistId) {
+  public void deleteAllByPlaylistId(Long userId, Long playlistId) {
     Playlist playlist = playlistRepository.findById(playlistId).orElseThrow(
         () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
+    if (!playlist.getUser().getId().equals(userId)) {
+      throw new PlaylistException(ErrorCode.UNAUTHORIZED);
+    }
 
     playlistItemRepository.deleteAll(playlist.getItems());
     playlist.getItems().clear();
@@ -117,9 +128,13 @@ public class BasicPlaylistItemService implements PlaylistItemService {
   //개인 플레이리스트에서 콘텐츠 삭제
   @Override
   @Transactional
-  public void deleteByContentId(Long playlistId, Long contentId) {
+  public void deleteByContentId(Long userId, Long playlistId, Long contentId) {
     Playlist playlist = playlistRepository.findById(playlistId).orElseThrow(
         () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
+
+    if (!playlist.getUser().getId().equals(userId)) {
+      throw new PlaylistException(ErrorCode.UNAUTHORIZED);
+    }
 
     Optional<PlaylistItem> target = playlist.getItems().stream().filter(
         item -> item.getContent().getId().equals(contentId)

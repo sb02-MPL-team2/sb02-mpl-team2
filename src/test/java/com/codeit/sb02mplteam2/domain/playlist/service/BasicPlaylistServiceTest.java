@@ -26,6 +26,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class BasicPlaylistServiceTest {
@@ -57,6 +58,7 @@ class BasicPlaylistServiceTest {
   @BeforeEach
   void setUp() {
     user = new User();
+    ReflectionTestUtils.setField(user, "id", 1L);
     playlist = new Playlist(user, title, description);
     subscribe = new Subscribe(user, playlist);
     playlist.subscribe(subscribe);
@@ -67,11 +69,11 @@ class BasicPlaylistServiceTest {
   void create() {
     //given
     Long mockUserId = 1L;
-    PlaylistCreateRequest request = new PlaylistCreateRequest(mockUserId, title, description);
+    PlaylistCreateRequest request = new PlaylistCreateRequest(title, description);
     when(userRepository.findById(mockUserId)).thenReturn(Optional.of(user));
 
     //when
-    PlaylistDto playlistDto = playlistService.create(request);
+    PlaylistDto playlistDto = playlistService.create(mockUserId, request);
     //then
     assertAll(
         () -> assertEquals(title, playlistDto.title()),
@@ -85,10 +87,10 @@ class BasicPlaylistServiceTest {
   void createWithEmptyDescription() {
     //given
     when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-    PlaylistCreateRequest request = new PlaylistCreateRequest(1L, title, null);
+    PlaylistCreateRequest request = new PlaylistCreateRequest( title, null);
 
     //when
-    PlaylistDto playlistDto = playlistService.create(request);
+    PlaylistDto playlistDto = playlistService.create(1L, request);
 
     //then
     assertAll(
@@ -105,9 +107,9 @@ class BasicPlaylistServiceTest {
     User newUser = new User();
     when(userRepository.findById(1L)).thenReturn(Optional.of(newUser));
     when(playlistRepository.findById(1L)).thenReturn(Optional.of(playlist));
-    SubscribeRequest request = new SubscribeRequest(1L, 1L);
+    SubscribeRequest request = new SubscribeRequest(1L);
     // when
-    PlaylistDto playlistDto = playlistService.subscribe(request);
+    PlaylistDto playlistDto = playlistService.subscribe(1L, request);
 
     // then
     assertAll(
@@ -130,9 +132,9 @@ class BasicPlaylistServiceTest {
     when(subscribeRepository.findByUserAndPlaylist(newUser, playlist)).thenReturn(
         Optional.of(newSubscribe));
 
-    SubscribeRequest request = new SubscribeRequest(1L, 1L);
+    SubscribeRequest request = new SubscribeRequest( 1L);
     // when
-    PlaylistDto playlistDto = playlistService.unSubscribe(request);
+    PlaylistDto playlistDto = playlistService.unSubscribe(1L, request);
     // then
     assertAll(
         () -> assertEquals(title, playlistDto.title()),
@@ -149,9 +151,9 @@ class BasicPlaylistServiceTest {
     when(playlistRepository.findById(1L)).thenReturn(Optional.of(playlist));
     when(subscribeRepository.findByUserAndPlaylist(user, playlist)).thenReturn(
         Optional.of(subscribe));
-    SubscribeRequest request = new SubscribeRequest(1L, 1L);
+    SubscribeRequest request = new SubscribeRequest(1L);
     // when
-    PlaylistDto playlistDto = playlistService.unSubscribe(request);
+    PlaylistDto playlistDto = playlistService.unSubscribe(1L, request);
     // then
     assertAll(
         () -> assertEquals(title, playlistDto.title()),
@@ -168,7 +170,7 @@ class BasicPlaylistServiceTest {
 
     PlaylistUpdateRequest request = new PlaylistUpdateRequest(newTitle, newDescription);
     when(playlistRepository.findById(1L)).thenReturn(Optional.of(playlist));
-    PlaylistDto playlistDto = playlistService.update(1L, request);
+    PlaylistDto playlistDto = playlistService.update(1L, 1L, request);
 
     assertAll(
         () -> assertEquals(newTitle, playlistDto.title()),
@@ -190,7 +192,7 @@ class BasicPlaylistServiceTest {
   @Test
   void delete() {
     when(playlistRepository.findById(1L)).thenReturn(Optional.of(playlist));
-    playlistService.delete(1L);
+    playlistService.delete(1L, 1L);
 
     verify(playlistRepository).findById(1L);
     verify(playlistRepository).delete(playlist);

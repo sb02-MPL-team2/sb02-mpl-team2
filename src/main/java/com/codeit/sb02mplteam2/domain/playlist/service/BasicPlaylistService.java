@@ -1,8 +1,8 @@
 package com.codeit.sb02mplteam2.domain.playlist.service;
 
-import static com.codeit.sb02mplteam2.domain.playlist.service.PlaylistUtil.toPlaylistItemDtoList;
-import static com.codeit.sb02mplteam2.domain.playlist.service.PlaylistUtil.toResponseDto;
-import static com.codeit.sb02mplteam2.domain.playlist.service.PlaylistUtil.toUserSlimDto;
+import static com.codeit.sb02mplteam2.domain.playlist.PlaylistUtil.toPlaylistItemDtoList;
+import static com.codeit.sb02mplteam2.domain.playlist.PlaylistUtil.toResponseDto;
+import static com.codeit.sb02mplteam2.domain.playlist.PlaylistUtil.toUserSlimDto;
 
 import com.codeit.sb02mplteam2.domain.content.dto.content.ContentResponseDto;
 import com.codeit.sb02mplteam2.domain.notification.entity.NotificationType;
@@ -45,8 +45,7 @@ public class BasicPlaylistService implements PlaylistService {
 
   @Override
   @Transactional
-  public PlaylistDto create(PlaylistCreateRequest request) {
-    Long userId = request.userId();
+  public PlaylistDto create(Long userId, PlaylistCreateRequest request) {
     User user = userRepository.findById(userId).orElseThrow(
         () -> new UserException(ErrorCode.USER_NOT_FOUND));
     Playlist playlist = new Playlist(user, request.title(), request.description());
@@ -78,8 +77,7 @@ public class BasicPlaylistService implements PlaylistService {
 
   @Override
   @Transactional
-  public PlaylistDto subscribe(SubscribeRequest request) {
-    Long userId = request.userId();
+  public PlaylistDto subscribe(Long userId, SubscribeRequest request) {
     User user = userRepository.findById(userId).orElseThrow(
         () -> new UserException(ErrorCode.USER_NOT_FOUND));
 
@@ -124,8 +122,7 @@ public class BasicPlaylistService implements PlaylistService {
 
   @Override
   @Transactional
-  public PlaylistDto unSubscribe(SubscribeRequest request) {
-    Long userId = request.userId();
+  public PlaylistDto unSubscribe(Long userId, SubscribeRequest request) {
     User user = userRepository.findById(userId).orElseThrow(
         () -> new UserException(ErrorCode.USER_NOT_FOUND));
 
@@ -155,17 +152,26 @@ public class BasicPlaylistService implements PlaylistService {
 
   @Override
   @Transactional
-  public void delete(Long id) {
-    Playlist playlist = playlistRepository.findById(id).orElseThrow(
+  public void delete(Long playlistId, Long userId) {
+    Playlist playlist = playlistRepository.findById(playlistId).orElseThrow(
         () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
+
+    if (!playlist.getUser().getId().equals(userId)) {
+      throw new PlaylistException(ErrorCode.UNAUTHORIZED);
+    }
+
     playlistRepository.delete(playlist);
   }
 
   @Override
   @Transactional
-  public PlaylistDto update(Long id, PlaylistUpdateRequest request) {
-    Playlist playlist = playlistRepository.findById(id).orElseThrow(
+  public PlaylistDto update(Long userId,Long playlistId, PlaylistUpdateRequest request) {
+    Playlist playlist = playlistRepository.findById(playlistId).orElseThrow(
         () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
+    //동일인 확인
+    if (!playlist.getUser().getId().equals(userId)) {
+      throw new PlaylistException(ErrorCode.UNAUTHORIZED);
+    }
     playlist.update(request.newTitle(), request.newDescription());
     playlistRepository.save(playlist);
     List<ContentResponseDto> responseDto = toResponseDto(playlist.getItems());

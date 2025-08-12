@@ -1,10 +1,12 @@
 package com.codeit.sb02mplteam2.domain.review.service;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.codeit.sb02mplteam2.domain.content.entity.Content;
+import com.codeit.sb02mplteam2.domain.content.entity.ContentCategory;
 import com.codeit.sb02mplteam2.domain.content.repository.ContentRepository;
 import com.codeit.sb02mplteam2.domain.review.dto.ReviewCreateRequest;
 import com.codeit.sb02mplteam2.domain.review.dto.ReviewDto;
@@ -21,6 +23,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class BasicReviewServiceTest {
@@ -46,8 +49,9 @@ class BasicReviewServiceTest {
   @BeforeEach
   void setUp() {
     user = new User();
+    ReflectionTestUtils.setField(user, "id", 1L);
     userRepository.save(user);
-    content = new Content();
+    content = new Content("test", ContentCategory.MOVIE);
     contentRepository.save(content);
     review = new Review(user, content, rating, comment);
     reviewRepository.save(review);
@@ -56,11 +60,11 @@ class BasicReviewServiceTest {
   @Test
   void create() {
     //given
-    ReviewCreateRequest request = new ReviewCreateRequest(1L, 1L, rating, comment);
+    ReviewCreateRequest request = new ReviewCreateRequest( 1L, rating, comment);
     when(userRepository.findById(1L)).thenReturn(Optional.of(user));
     when(contentRepository.findById(1L)).thenReturn(Optional.of(content));
     //when
-    ReviewDto reviewDto = reviewService.create(request);
+    ReviewDto reviewDto = reviewService.create(1L, request);
     //then
     assertAll(
         () -> assertEquals(rating, reviewDto.rating()),
@@ -114,7 +118,7 @@ class BasicReviewServiceTest {
     //given
     when(reviewRepository.findById(1L)).thenReturn(Optional.of(review));
     //when
-    reviewService.delete(1L);
+    reviewService.delete(1L, 1L);
     //then
     verify(reviewRepository).delete(review);
   }
@@ -125,7 +129,7 @@ class BasicReviewServiceTest {
     ReviewUpdateRequest request = new ReviewUpdateRequest(3, "newComment");
     when(reviewRepository.findById(1L)).thenReturn(Optional.of(review));
     //when
-    ReviewDto reviewDto = reviewService.update(1L, request);
+    ReviewDto reviewDto = reviewService.update(1L, 1L, request);
     //then
     assertAll(
         () -> assertEquals(3, reviewDto.rating()),

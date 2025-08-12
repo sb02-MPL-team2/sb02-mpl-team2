@@ -1,4 +1,4 @@
-package com.codeit.sb02mplteam2.swagger.playlist;
+package com.codeit.sb02mplteam2.swagger.playlist.item;
 
 
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistDto;
