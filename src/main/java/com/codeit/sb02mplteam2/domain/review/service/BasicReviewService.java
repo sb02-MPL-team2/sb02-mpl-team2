@@ -35,8 +35,8 @@ public class BasicReviewService implements ReviewService{
 
   @Override
   @Transactional
-  public ReviewDto create(ReviewCreateRequest request) {
-    User user = userRepository.findById(request.userId()).orElseThrow(
+  public ReviewDto create(Long userId, ReviewCreateRequest request) {
+    User user = userRepository.findById(userId).orElseThrow(
         () -> new UserException(ErrorCode.USER_NOT_FOUND));
     Content content = contentRepository.findById(request.contentId()).orElseThrow(
         () -> new ContentException(ErrorCode.CONTENT_NOT_FOUND));
@@ -84,17 +84,25 @@ public class BasicReviewService implements ReviewService{
 
   @Override
   @Transactional
-  public void delete(Long id) {
-    Review review = reviewRepository.findById(id).orElseThrow(
+  public void delete(Long userId, Long playlistId) {
+    Review review = reviewRepository.findById(playlistId).orElseThrow(
         () -> new ReviewException(ErrorCode.REVIEW_NOT_FOUND));
+    if (!review.getUser().getId().equals(userId)) {
+      throw new ReviewException(ErrorCode.UNAUTHORIZED);
+    }
     reviewRepository.delete(review);
   }
 
   @Override
   @Transactional
-  public ReviewDto update(Long reviewId, ReviewUpdateRequest request) {
+  public ReviewDto update(Long userId, Long reviewId, ReviewUpdateRequest request) {
     Review review = reviewRepository.findById(reviewId).orElseThrow(
         () -> new ReviewException(ErrorCode.REVIEW_NOT_FOUND));
+
+    if (!review.getUser().getId().equals(userId)) {
+      throw new ReviewException(ErrorCode.UNAUTHORIZED);
+    }
+
     review.update(request.newRating(), request.newComment());
     reviewRepository.save(review);
 

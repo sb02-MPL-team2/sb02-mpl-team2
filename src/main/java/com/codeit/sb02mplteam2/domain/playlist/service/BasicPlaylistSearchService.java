@@ -41,7 +41,7 @@ public class BasicPlaylistSearchService implements PlaylistSearchService{
   private CursorPageResponsePlayListDto toCursorPageResponse(Slice<Playlist> slice) {
     List<PlaylistSlimDto> slimDtos = slice.getContent().stream()
         .map(playlist -> {
-          // PlaylistUtil을 사용해 각 플레이리스트의 요약(summary) 생성
+          // PlaylistUtil을 사용해 각 플레이리스트의 요약(title) 생성
           String summary = PlaylistUtil.summary(playlist.getItems());
           // Playlist와 생성된 summary를 사용해 DTO 만들기
           return PlaylistSlimDto.from(playlist, summary);

@@ -10,16 +10,16 @@ public record PlaylistSlimDto(
     LocalDateTime updatedAt,
     int subscribeCount,
     int totalContent,
-    String summary
+    String title
 ) {
 
-  public static PlaylistSlimDto from(Playlist playlist, String summary) {
+  public static PlaylistSlimDto from(Playlist playlist, String title) {
     return PlaylistSlimDto.builder()
         .id(playlist.getId())
         .updatedAt(playlist.getUpdatedAt())
         .subscribeCount(playlist.getSubscribes().size())
         .totalContent(playlist.getItems().size())
-        .summary(summary)
+        .title(title)
         .build();
 
   }

@@ -4,11 +4,13 @@ import com.codeit.sb02mplteam2.domain.review.dto.ReviewCreateRequest;
 import com.codeit.sb02mplteam2.domain.review.dto.ReviewDto;
 import com.codeit.sb02mplteam2.domain.review.dto.ReviewUpdateRequest;
 import com.codeit.sb02mplteam2.domain.review.service.ReviewService;
+import com.codeit.sb02mplteam2.security.MplUserDetails;
 import com.codeit.sb02mplteam2.swagger.ReviewApi;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -27,22 +29,29 @@ public class ReviewController implements ReviewApi {
 
   @Override
   @PostMapping
-  public ResponseEntity<ReviewDto> create(@RequestBody ReviewCreateRequest request) {
-    ReviewDto reviewDto = reviewService.create(request);
+  public ResponseEntity<ReviewDto> create(
+      @AuthenticationPrincipal MplUserDetails userDetails,
+      @RequestBody ReviewCreateRequest request) {
+    ReviewDto reviewDto = reviewService.create(userDetails.getUserDto().id(),request);
     return ResponseEntity.status(HttpStatus.CREATED).body(reviewDto);
   }
 
   @Override
   @DeleteMapping("/{reviewId}")
-  public ResponseEntity<Void> delete(@PathVariable Long reviewId) {
-    reviewService.delete(reviewId);
+  public ResponseEntity<Void> delete(
+      @AuthenticationPrincipal MplUserDetails userDetails,
+      @PathVariable Long reviewId) {
+    reviewService.delete(userDetails.getUserDto().id(), reviewId);
     return ResponseEntity.noContent().build();
   }
 
   @Override
   @PatchMapping("/{reviewId}")
-  public ResponseEntity<ReviewDto> update(@PathVariable Long reviewId, @RequestBody ReviewUpdateRequest request) {
-    ReviewDto reviewDto = reviewService.update(reviewId, request);
+  public ResponseEntity<ReviewDto> update(
+      @AuthenticationPrincipal MplUserDetails userDetails,
+      @PathVariable Long reviewId,
+      @RequestBody ReviewUpdateRequest request) {
+    ReviewDto reviewDto = reviewService.update(userDetails.getUserDto().id(), reviewId, request);
 
     return ResponseEntity.ok(reviewDto);
   }

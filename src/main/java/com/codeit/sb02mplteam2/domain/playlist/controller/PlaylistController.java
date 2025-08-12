@@ -138,6 +138,7 @@ public class PlaylistController implements PlayListApi {
       @PageableDefault(
           size = 20,
           page = 0,
+          //TODO JPA랑 섞여서 오류 발생함, 수정 요망
           sort = "createdAt,desc"
       )
       Pageable pageable) {

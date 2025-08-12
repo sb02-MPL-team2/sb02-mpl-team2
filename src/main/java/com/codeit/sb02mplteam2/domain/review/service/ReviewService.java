@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface ReviewService {
 
-  ReviewDto create(ReviewCreateRequest request);
+  ReviewDto create(Long userId, ReviewCreateRequest request);
 
   ReviewDto findById(Long reviewId);
 
@@ -15,7 +15,7 @@ public interface ReviewService {
 
   List<ReviewDto> findAllByContentId(Long contentId);
 
-  void delete(Long id);
+  void delete(Long userId, Long playlistId);
 
-  ReviewDto update(Long reviewId, ReviewUpdateRequest request);
+  ReviewDto update(Long userId, Long reviewId, ReviewUpdateRequest request);
 }
