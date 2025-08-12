@@ -8,6 +8,7 @@ public record UserDto(
     String username,
     String profileUrl,
     Role role,
+    String createdAt,
     boolean isLocked,
     boolean isDeleted,
     int followerCount,
