@@ -50,6 +50,35 @@ public class BasicReviewService implements ReviewService{
   }
 
   @Override
+  @Transactional
+  public void delete(Long userId, Long reviewId) {
+    Review review = reviewRepository.findById(reviewId).orElseThrow(
+        () -> new ReviewException(ErrorCode.REVIEW_NOT_FOUND));
+    if (!review.getUser().getId().equals(userId)) {
+      throw new ReviewException(ErrorCode.UNAUTHORIZED);
+    }
+    reviewRepository.delete(review);
+  }
+
+  @Override
+  @Transactional
+  public ReviewDto update(Long userId, Long reviewId, ReviewUpdateRequest request) {
+    Review review = reviewRepository.findById(reviewId).orElseThrow(
+        () -> new ReviewException(ErrorCode.REVIEW_NOT_FOUND));
+
+    if (!review.getUser().getId().equals(userId)) {
+      throw new ReviewException(ErrorCode.UNAUTHORIZED);
+    }
+
+    review.update(request.newRating(), request.newComment());
+    reviewRepository.save(review);
+
+    UserSlimDto userSlimDto = toUserSlimDto(review);
+    ContentResponseDto responseDto = toResponseDto(review.getContent());
+    return ReviewDto.from(review, userSlimDto, responseDto);
+  }
+
+  @Override
   @Transactional(readOnly = true)
   public ReviewDto findById(Long reviewId) {
     Review review = reviewRepository.findById(reviewId).orElseThrow(
@@ -80,34 +109,5 @@ public class BasicReviewService implements ReviewService{
       ContentResponseDto responseDto = toResponseDto(review.getContent());
       return ReviewDto.from(review, userSlimDto, responseDto);
     }).toList();
-  }
-
-  @Override
-  @Transactional
-  public void delete(Long userId, Long reviewId) {
-    Review review = reviewRepository.findById(reviewId).orElseThrow(
-        () -> new ReviewException(ErrorCode.REVIEW_NOT_FOUND));
-    if (!review.getUser().getId().equals(userId)) {
-      throw new ReviewException(ErrorCode.UNAUTHORIZED);
-    }
-    reviewRepository.delete(review);
-  }
-
-  @Override
-  @Transactional
-  public ReviewDto update(Long userId, Long reviewId, ReviewUpdateRequest request) {
-    Review review = reviewRepository.findById(reviewId).orElseThrow(
-        () -> new ReviewException(ErrorCode.REVIEW_NOT_FOUND));
-
-    if (!review.getUser().getId().equals(userId)) {
-      throw new ReviewException(ErrorCode.UNAUTHORIZED);
-    }
-
-    review.update(request.newRating(), request.newComment());
-    reviewRepository.save(review);
-
-    UserSlimDto userSlimDto = toUserSlimDto(review);
-    ContentResponseDto responseDto = toResponseDto(review.getContent());
-    return ReviewDto.from(review, userSlimDto, responseDto);
   }
 }
