@@ -48,7 +48,7 @@ public class MplUserDetailsServiceTest {
     email = "test@test.com";
     mockUser = new User(username, email, "password", null);
     userDto = new UserDto(1L, email, username, null,
-        Role.USER, false, false, 0, 0);
+        Role.USER, null,false, false, 0, 0);
   }
 
   @Test
