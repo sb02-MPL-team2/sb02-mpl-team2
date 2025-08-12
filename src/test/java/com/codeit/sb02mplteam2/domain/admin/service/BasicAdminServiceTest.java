@@ -56,7 +56,7 @@ public class BasicAdminServiceTest {
   void updateUserRole_Success() {
     // given
     RoleUpdateRequest request = new RoleUpdateRequest(Role.ADMIN);
-    UserDto expectedDto = new UserDto(userId, "test@test.com", "testUser", null, Role.ADMIN, false, false, 0, 0);
+    UserDto expectedDto = userMapper.toDto(mockUser);
 
     // Mock 객체 행동 정의
     given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));

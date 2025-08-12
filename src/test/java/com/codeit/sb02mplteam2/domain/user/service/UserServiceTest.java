@@ -8,7 +8,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import com.codeit.sb02mplteam2.domain.binary.service.BinaryContentService;
+import com.codeit.sb02mplteam2.domain.binaryContent.service.BinaryContentService;
 import com.codeit.sb02mplteam2.domain.user.dto.UserCreateRequest;
 import com.codeit.sb02mplteam2.domain.user.dto.UserDto;
 import com.codeit.sb02mplteam2.domain.user.dto.UserUpdateRequest;
@@ -28,7 +28,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
@@ -50,8 +49,6 @@ public class UserServiceTest {
   private BinaryContentService binaryContentService;
   @Mock
   private AlarmSettingRepository alarmSettingRepository;
-  @Mock
-  private SessionRegistry sessionRegistry;
 
   private User mockUser;
   private Long userId;
@@ -72,7 +69,8 @@ public class UserServiceTest {
         "new@email.com", "newPassword");
     User newUser =  new User(request.username(), request.email(), "password", null);
     UserDto expectedDto = new UserDto(2L, request.email(), request.username(), null,
-        Role.USER, false, false, 0, 0);
+        Role.USER, null,false, false, 0, 0);
+
 
     given(userRepository.existsByUsername(request.username())).willReturn(false);
     given(userRepository.existsByEmail(request.email())).willReturn(false);
@@ -133,7 +131,7 @@ public class UserServiceTest {
   void findById_Success() {
     // given
     UserDto expectedDto = new UserDto(userId, "test@test.com", "testUser", null,
-        Role.USER, false, false, 0, 0);
+        Role.USER, null,false, false, 0, 0);
     given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
     given(userMapper.toDto(mockUser)).willReturn(expectedDto);
 
@@ -159,6 +157,34 @@ public class UserServiceTest {
     });
     verify(userRepository).findById(nonExistentUserId);
   }
+
+  @Test
+  @DisplayName("실패 - 잠긴 혹은 삭제된 유저 ID로 사용자 조회")
+  void findById_Fail_UserLockedOrDeleted() {
+    // given
+    mockUser.softDelete(); // 삭제 상태로 변경
+    given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
+
+    // when & then
+    UserException exception = assertThrows(UserException.class, () -> {
+      basicUserService.findById(userId);
+    });
+    assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_NOT_FOUND);
+    verify(userRepository).findById(userId);
+
+    // given
+    mockUser = new User("testUser", "test@test.com", "password", null); // 초기화
+    mockUser.lock(); // 잠금 상태로 변경
+    given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
+
+    // when & then
+    exception = assertThrows(UserException.class, () -> {
+      basicUserService.findById(userId);
+    });
+    assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_NOT_FOUND);
+    verify(userRepository, times(2)).findById(userId); // 두 번 호출되었는지 확인
+  }
+
 
   @Test
   @DisplayName("성공 - 모든 사용자 조회")
