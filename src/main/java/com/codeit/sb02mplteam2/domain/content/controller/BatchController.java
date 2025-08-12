@@ -37,7 +37,7 @@ public class BatchController {
               exec.getExitStatus().getExitCode()
           )
       );
-    } catch (Exception e) {
+    } catch (JobExecutionException e) {
       throw new MplException(ErrorCode.INTERNAL_SERVER_ERROR, e);
     }
   }
