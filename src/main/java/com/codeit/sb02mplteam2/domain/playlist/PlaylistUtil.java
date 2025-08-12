@@ -8,6 +8,7 @@ import com.codeit.sb02mplteam2.domain.playlist.entity.PlaylistItem;
 import com.codeit.sb02mplteam2.domain.user.dto.UserSlimDto;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -32,7 +33,7 @@ public final class PlaylistUtil {
   }
 
   //Content DTO 변환 기능
-  public static List<ContentResponseDto> toResponseDto(List<PlaylistItem> items) {
+  public static List<ContentResponseDto> toResponseDto(Set<PlaylistItem> items) {
     return items.stream()
         .map(PlaylistItem::getContent)
         .map(content -> ContentResponseDto.builder()
@@ -46,7 +47,7 @@ public final class PlaylistUtil {
   }
 
   //Summary 기능
-  public static String summary(List<PlaylistItem> items) {
+  public static String summary(Set<PlaylistItem> items) {
     if (items == null || items.isEmpty()) {
       return "";
     }

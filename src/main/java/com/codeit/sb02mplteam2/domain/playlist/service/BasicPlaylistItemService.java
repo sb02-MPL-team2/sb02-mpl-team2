@@ -149,10 +149,10 @@ public class BasicPlaylistItemService implements PlaylistItemService {
     playlist.getItems().remove(itemToRemove);
 
     //순서 재정렬
-    List<PlaylistItem> remainingItems = playlist.getItems();
-    for (int i = 0; i < remainingItems.size(); i++) {
-      remainingItems.get(i).setOrderIndex(i);
-    }
+//    Set<PlaylistItem> remainingItems = playlist.getItems();
+//    for (int i = 0; i < remainingItems.size(); i++) {
+//      remainingItems.get(i).setOrderIndex(i);
+//    }
 
     playlistRepository.save(playlist);
   }
