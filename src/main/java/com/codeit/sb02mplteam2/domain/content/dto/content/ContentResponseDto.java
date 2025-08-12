@@ -11,6 +11,7 @@ public record ContentResponseDto(
     String imageUrl,
     Double totalRating,
     Integer reviewCount,
-    Integer watchCount
+    Integer watchCount,
+    Long roomId
 ) {
 }
