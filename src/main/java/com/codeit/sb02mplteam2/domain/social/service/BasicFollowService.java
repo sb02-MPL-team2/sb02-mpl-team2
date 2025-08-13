@@ -1,26 +1,22 @@
 package com.codeit.sb02mplteam2.domain.social.service;
 
-import static com.codeit.sb02mplteam2.domain.notification.entity.NotificationType.NEW_FOLLOWER;
-
 import com.codeit.sb02mplteam2.domain.notification.service.NotificationService;
 import com.codeit.sb02mplteam2.domain.social.dto.CursorPageResponseFollowDto;
 import com.codeit.sb02mplteam2.domain.social.dto.FollowResponse;
 import com.codeit.sb02mplteam2.domain.social.dto.FollowStatusResponse;
 import com.codeit.sb02mplteam2.domain.social.entity.Follow;
 import com.codeit.sb02mplteam2.domain.social.repository.FollowRepository;
-import com.codeit.sb02mplteam2.domain.user.dto.UserSlimDto;
+import com.codeit.sb02mplteam2.domain.user.dto.UserFollowDto;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
 import com.codeit.sb02mplteam2.exception.ErrorCode;
 import com.codeit.sb02mplteam2.exception.follow.FollowException;
 import com.codeit.sb02mplteam2.exception.user.UserException;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +27,6 @@ public class BasicFollowService implements FollowService {
 
   private final UserRepository userRepository;
   private final FollowRepository followRepository;
-  private final NotificationService notificationService;
 
   @Transactional
   @Override
@@ -50,8 +45,6 @@ public class BasicFollowService implements FollowService {
 
     Follow follow = Follow.of(follower, followee);
     followRepository.save(follow);
-
-//    notificationService.create(followeeId, NEW_FOLLOWER, follow.getId(), followerId);
 
     followee.increaseFollowerCount();
     follower.increaseFollowingCount();
@@ -96,11 +89,14 @@ public class BasicFollowService implements FollowService {
         ? follows.get(follows.size() - 1).getId()
         : null;
 
-    List<UserSlimDto> userList = follows.stream()
-        .map(f -> new UserSlimDto(
+    List<UserFollowDto> userList = follows.stream()
+        .map(f -> new UserFollowDto(
             f.getFromUser().getId(),
             null, //TODO:유저 프로필
-            f.getFromUser().getUsername()
+            f.getFromUser().getUsername(),
+            f.getFromUser().getFollowerCount(),
+            f.getFromUser().getFollowingCount(),
+            f.getFromUser().getRole()
         ))
         .toList();
 
@@ -119,11 +115,14 @@ public class BasicFollowService implements FollowService {
 
     Long nextCursor = hasNext ? follows.get(follows.size() - 1).getId() : null;
 
-    List<UserSlimDto> userList = follows.stream()
-        .map(f -> new UserSlimDto(
+    List<UserFollowDto> userList = follows.stream()
+        .map(f -> new UserFollowDto(
             f.getToUser().getId(),
             null,
-            f.getToUser().getUsername()
+            f.getToUser().getUsername(),
+            f.getToUser().getFollowerCount(),
+            f.getToUser().getFollowingCount(),
+            f.getToUser().getRole()
         ))
         .toList();
 
