@@ -57,7 +57,7 @@ public class Playlist {
   private String description;
   //TODO LinkedHashSet으로 순서 기억하는 Set구조로 바꿀까 생각중
   @OneToMany(mappedBy = "playlist", cascade = CascadeType.ALL, orphanRemoval = true)
-  private Set<PlaylistItem> items = new HashSet<>();
+  private Set<PlaylistItem> items = new LinkedHashSet<>();
 
   public Playlist(User user,String title, String description) {
     this.createdAt = LocalDateTime.now();
