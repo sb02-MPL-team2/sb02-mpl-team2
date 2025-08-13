@@ -1,6 +1,6 @@
 package com.codeit.sb02mplteam2.security.jwt;
 
-import com.codeit.sb02mplteam2.domain.notification.entity.LogoutToSseEvent;
+import com.codeit.sb02mplteam2.domain.notification.event.LogoutToSseEvent;
 import com.codeit.sb02mplteam2.security.MplUserDetails;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
