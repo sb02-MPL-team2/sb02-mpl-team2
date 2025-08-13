@@ -64,7 +64,7 @@ public class SecurityConfig {
       // --- Auth APIs ---
       "/api/auth/**", "/login",
       // --- files/images ---
-      "/files/**"
+      "/files/**",
   };
 
   @Bean
@@ -115,7 +115,8 @@ public class SecurityConfig {
             .requestMatchers(toH2Console()).permitAll() // H2 콘솔은 누구나 접근 가능
             .requestMatchers(PERMIT_ALL_PATTERNS).permitAll()
             .requestMatchers("/api/admin/**").hasRole(Role.ADMIN.name())
-            .anyRequest().authenticated() // 나머지 모든 요청은 인증된 사용자만 접근 가능
+            .requestMatchers("/api/**").authenticated() // /api/** 요청은 모두 인증 필요
+            .anyRequest().permitAll() // 나머지 요청은 모두 인증 없이 접근 가능
         )
 
         .logout(logout -> logout
