@@ -96,7 +96,7 @@ public class BasicNotificationService implements NotificationService {
       return NotificationDto.of(broadcastNotification.get());
     } else {
       log.info("브로드캐스트 알람 생성");
-      String title = notificationType.getTitle();
+      String title = notificationType.getMessageTemplate();
       String content = createContent(targetId, notificationType);
 
       Notification notification = Notification.broadcast(targetId, title, content, notificationType);
