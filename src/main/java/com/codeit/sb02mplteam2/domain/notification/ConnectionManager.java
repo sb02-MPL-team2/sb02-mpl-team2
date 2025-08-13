@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,9 +36,15 @@ public class ConnectionManager {
 
   //열려져 있는 탭마다 Emitters 연결함
   private final Map<Long, ConnectionInfo> connections = new ConcurrentHashMap<>();// SSE 연결 메모리에 저장
-  private final Semaphore connectionSemaphore = new Semaphore(MAX_CONNECTIONS);
+  private Semaphore connectionSemaphore;
 
   private final ApplicationEventPublisher eventPublisher;
+
+  @PostConstruct
+  public void init() {
+    this.connectionSemaphore = new Semaphore(MAX_CONNECTIONS);
+    log.info("ConnectionManager 초기화: 최대 연결 수 = {}", MAX_CONNECTIONS);
+  }
 
   public SseEmitter subscribe(Long userId, String lastEventId) {
     if (!connectionSemaphore.tryAcquire()) {

@@ -14,9 +14,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -57,9 +55,9 @@ public class Playlist {
 
   @Column(name = "description")
   private String description;
-
+  //TODO LinkedHashSet으로 순서 기억하는 Set구조로 바꿀까 생각중
   @OneToMany(mappedBy = "playlist", cascade = CascadeType.ALL, orphanRemoval = true)
-  private List<PlaylistItem> items = new ArrayList<>();
+  private Set<PlaylistItem> items = new LinkedHashSet<>();
 
   public Playlist(User user,String title, String description) {
     this.createdAt = LocalDateTime.now();
