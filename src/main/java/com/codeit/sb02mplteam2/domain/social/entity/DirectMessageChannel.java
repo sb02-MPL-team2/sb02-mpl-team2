@@ -13,8 +13,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import java.util.*;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
