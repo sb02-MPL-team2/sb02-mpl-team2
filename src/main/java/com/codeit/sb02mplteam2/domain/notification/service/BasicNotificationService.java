@@ -55,7 +55,9 @@ public class BasicNotificationService implements NotificationService {
 
   @Override
   public void delete(Long notificationId) {
+    log.info("알람 아이디 {}", notificationId);
     if (notificationId == null) {
+      log.warn("알람 아이디가 Null");
       return;
     }
     notificationRepository.deleteById(notificationId);
@@ -63,7 +65,9 @@ public class BasicNotificationService implements NotificationService {
 
   @Override
   public void deleteAllByUserId(Long userId) {
+    log.info("알람 전체 삭제할 유저 아이디 {}", userId);
     if (userId == null) {
+      log.warn("유저 아이디가 null");
       return;
     }
     notificationRepository.deleteAllByReceiverId(userId);
