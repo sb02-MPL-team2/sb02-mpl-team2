@@ -90,5 +90,5 @@ external-api:
 
 jwt:
   secret: ${JWT_SECRET_KEY:this-is-a-default-secret-key-for-local-dev-only-and-is-not-secure}
-  access-token-expiration: 600000 # 10 분
-  refresh-token-expiration: 604800000 # 7일
+  access-token-expiration: 600 # 10 분
+  refresh-token-expiration: 604800 # 7일
