@@ -29,6 +29,7 @@ public class AdminController {
       @RequestBody RoleUpdateRequest request
   )
   {
+    log.info("사용자 권한 수정 요청: {}, {}", userId, request);
     UserDto response = adminService.updateUserRole(userId, request);
     return ResponseEntity
         .status(HttpStatus.OK)
@@ -37,12 +38,14 @@ public class AdminController {
 
   @PostMapping("/users/{userId}/lock")
   public ResponseEntity<Void> lockUser(@PathVariable Long userId){
+    log.info("사용자 잠금 요청: {}", userId);
     adminService.lockUser(userId);
     return ResponseEntity.ok().build();
   }
 
   @PostMapping("/users/{userId}/unlock")
   public ResponseEntity<Void> unlockUser(@PathVariable Long userId){
+    log.info("사용자 잠금 해제 요청: {}", userId);
     adminService.unlockUser(userId);
     return ResponseEntity.ok().build();
   }
