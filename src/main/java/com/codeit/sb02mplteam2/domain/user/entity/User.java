@@ -109,6 +109,12 @@ public class User {
     }
   }
 
+  public void updatePassword(String newPassword) {
+   if (newPassword != null) {
+     this.password = newPassword;
+   }
+  }
+
   public void lock() {
     this.isLocked = true;
   }

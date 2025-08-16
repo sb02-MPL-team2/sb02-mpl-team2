@@ -1,5 +1,7 @@
 package com.codeit.sb02mplteam2.domain.auth.controller;
 
+import com.codeit.sb02mplteam2.domain.auth.dto.PasswordForgotRequest;
+import com.codeit.sb02mplteam2.domain.auth.dto.PasswordResetRequest;
 import com.codeit.sb02mplteam2.domain.user.dto.UserCreateRequest;
 import com.codeit.sb02mplteam2.domain.user.dto.UserDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,10 +13,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -71,4 +75,21 @@ public interface AuthApi {
       ) @CookieValue(name = "refreshToken", required = false) String refreshToken,
       @Parameter(hidden = true) HttpServletResponse response
   );
+
+  @Operation(summary = "비밀번호 재설정 토큰 요청", description = "사용자 이메일로 비밀번호 재설정 토큰을 발송합니다.")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "요청 성공(이메일 존재 여부와 무관하게 항상 200을 반환하여 사용자 정보 노출 방지"),
+      @ApiResponse(responseCode = "400", description = "입력된 이메일 형식이 올바르지 않음"  )
+  })
+  @PostMapping("/auth/forgot-password")
+  ResponseEntity<Void> forgotPassword(@Valid @RequestBody PasswordForgotRequest request);
+
+  @Operation(summary = "비밀번호 재설정", description = "유효한 토큰을 사용하여 새 비밀번호로 변경합니다.")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "비밀번호 재설정 성공"),
+      @ApiResponse(responseCode = "400", description = "요청 데이터가 유효하지 않음"),
+      @ApiResponse(responseCode = "404", description = "토큰이 유효하지 않거나 만료됨")
+  })
+  @PostMapping("/auth/reset-password")
+  ResponseEntity<Void> resetPassword(@Valid @RequestBody PasswordResetRequest request);
 }
