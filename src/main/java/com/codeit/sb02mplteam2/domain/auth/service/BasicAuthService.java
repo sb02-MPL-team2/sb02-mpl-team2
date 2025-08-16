@@ -57,7 +57,8 @@ public class BasicAuthService implements AuthService {
     userRepository.save(admin);
     alarmSettingRepository.save(new AlarmSetting(admin));
     UserDto adminDto = userMapper.toDto(admin);
-    log.info("어드민이 초기화되었습니다. {}", adminDto);
+    log.info("어드민이 초기화되었습니다. username={}", adminDto.getUsername());
+    log.debug("어드민 초기화 상세 정보: {}", adminDto);
     return adminDto;
   }
 
