@@ -61,7 +61,7 @@ public class BasicAuthServiceTest {
 
 //    @Value 로 주입되는 필드 값을 테스트 환경에서 수동 설정
     ReflectionTestUtils.setField(authService, "resetPasswordUrl",
-        "http://localhost/reset-password?tokne=");
+        "http://localhost/reset-password?token=");
   }
 
   @Nested
