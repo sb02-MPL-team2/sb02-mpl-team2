@@ -144,7 +144,7 @@ public class BasicAuthServiceTest {
     }
 
     @Test
-    @DisplayName("실패 - 조재하지 않는 토큰으로 요청 시 INVALID_TOKEN 예외 발생한다.")
+    @DisplayName("실패 - 존재하지 않는 토큰으로 요청 시 INVALID_TOKEN 예외 발생한다.")
     void resetPassword_Fail_InvalidToken() {
       // given
       String invalidToken = "invalid-token-value";
