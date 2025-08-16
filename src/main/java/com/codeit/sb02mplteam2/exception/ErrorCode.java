@@ -40,6 +40,10 @@ public enum ErrorCode {
   UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증에 실패했습니다."),
   BLACKLIST_TOKEN(HttpStatus.FORBIDDEN, "블랙리스트에 있는 토큰입니다."),
   NO_ACCESS_RIGHT(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
+  EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "만료된 토큰입니다."),
+
+  // Email
+  EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이메일 발송에 실패했습니다."),
 
   //Review
   REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND,"리뷰를 찾을 수 없습니다."),

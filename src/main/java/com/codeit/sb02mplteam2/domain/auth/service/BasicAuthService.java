@@ -1,5 +1,8 @@
 package com.codeit.sb02mplteam2.domain.auth.service;
 
+import com.codeit.sb02mplteam2.domain.auth.entity.PasswordResetToken;
+import com.codeit.sb02mplteam2.domain.auth.repository.PasswordResetTokenRepository;
+import com.codeit.sb02mplteam2.domain.mail.service.EmailService;
 import com.codeit.sb02mplteam2.domain.user.dto.UserDto;
 import com.codeit.sb02mplteam2.domain.user.entity.AlarmSetting;
 import com.codeit.sb02mplteam2.domain.user.entity.Role;
@@ -7,6 +10,9 @@ import com.codeit.sb02mplteam2.domain.user.entity.User;
 import com.codeit.sb02mplteam2.domain.user.mapper.UserMapper;
 import com.codeit.sb02mplteam2.domain.user.repository.AlarmSettingRepository;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
+import com.codeit.sb02mplteam2.exception.ErrorCode;
+import com.codeit.sb02mplteam2.exception.MplException;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,10 +31,17 @@ public class BasicAuthService implements AuthService {
   private String email;
   @Value("${mpl.admin.password}")
   private String password;
+  // 프론트엔드의 비밀번호 재설정 페이지 URL (토큰 파라미터 제외)
+  @Value("${mpl.reset-password.url}")
+  private String resetPasswordUrl;
+
   private final UserRepository userRepository;
   private final UserMapper userMapper;
   private final PasswordEncoder passwordEncoder;
   private final AlarmSettingRepository alarmSettingRepository;
+  private final PasswordResetTokenRepository passwordResetTokenRepository;
+  private final EmailService emailService;
+
   // 서버가 실행되면 initAdmin() 실행 -> admin이 없는 경우 admin 등록
   @Transactional
   @Override
@@ -46,5 +59,51 @@ public class BasicAuthService implements AuthService {
     UserDto adminDto = userMapper.toDto(admin);
     log.info("어드민이 초기화되었습니다. {}", adminDto);
     return adminDto;
+  }
+
+  @Override
+  @Transactional
+  public void createPasswordResetTokenForUser(String userEmail) {
+    log.info("비밀번호 재설정 토큰 생성 요청: {}", userEmail);
+
+    User user = userRepository.findByEmail(userEmail)
+        .orElseThrow(() -> new MplException(ErrorCode.USER_NOT_FOUND));
+
+    // 해당 사용자에게 이미 발급된 토큰이 있다면 삭제하여 이전 요청 무효화
+    passwordResetTokenRepository.findByUserId(user.getId())
+        .ifPresent(token -> {
+          passwordResetTokenRepository.delete(token);
+          passwordResetTokenRepository.flush();
+          log.info("기존 토큰 삭제 userId={}", user.getId());
+        });
+
+    // 토큰 생성(JWT 아님 그냥 UUID)
+    String token = UUID.randomUUID().toString();
+    PasswordResetToken myToken = new PasswordResetToken(token, user);
+    passwordResetTokenRepository.save(myToken);
+
+    String resetLink = resetPasswordUrl + token;
+    emailService.sendEmail(user.getEmail(), "[모두의 플리] 비밀번호 재설정 링크",
+        "아래 링크를 클릭하여 비밀번호를 재설정하세요: " + resetLink);
+  }
+
+  @Override
+  @Transactional
+  public void resetPassword(String token, String newPassword) {
+    log.info("비밀번호 재설정 요청: 토큰 = {}, 새 비밀번호 길이 = {}", token, newPassword.length());
+
+    PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(token)
+        .orElseThrow(() -> new MplException(ErrorCode.INVALID_TOKEN));
+
+    if (resetToken.isExpired()) {
+      passwordResetTokenRepository.delete(resetToken);
+      throw new MplException(ErrorCode.EXPIRED_TOKEN);
+    }
+
+    User user = resetToken.getUser();
+    String encodedPassword = passwordEncoder.encode(newPassword);
+    user.updatePassword(encodedPassword);
+
+    passwordResetTokenRepository.delete(resetToken);
   }
 }

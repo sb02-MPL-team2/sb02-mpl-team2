@@ -1,5 +1,8 @@
 package com.codeit.sb02mplteam2.domain.auth.controller;
 
+import com.codeit.sb02mplteam2.domain.auth.dto.PasswordForgotRequest;
+import com.codeit.sb02mplteam2.domain.auth.dto.PasswordResetRequest;
+import com.codeit.sb02mplteam2.domain.auth.service.AuthService;
 import com.codeit.sb02mplteam2.domain.user.dto.UserCreateRequest;
 import com.codeit.sb02mplteam2.domain.user.dto.UserDto;
 import com.codeit.sb02mplteam2.domain.user.service.UserService;
@@ -19,6 +22,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,6 +36,7 @@ public class AuthController implements AuthApi{
 
   private final UserService userService;
   private final JwtService jwtService;
+  private final AuthService authService;
 
   @PostMapping(value = "/auth/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @Override
@@ -51,6 +56,7 @@ public class AuthController implements AuthApi{
     if (refreshToken == null || refreshToken.isBlank()) {
       throw new MplException(ErrorCode.INVALID_TOKEN, Map.of("refreshToken", refreshToken));
     }
+    log.debug("리프레시 토큰 확인: {}", refreshToken);
 
     // Refresh Token 으로 새로운 세션 발급
     JwtSession newJwtSession = jwtService.refreshJwtSession(refreshToken);
@@ -61,6 +67,22 @@ public class AuthController implements AuthApi{
     response.addCookie(newRefreshTokenCookie);
 
     return ResponseEntity.ok(newJwtSession.getAccessToken());
+  }
+
+  @PostMapping("/auth/forgot-password")
+  @Override
+  public ResponseEntity<Void> forgotPassword(@Valid @RequestBody PasswordForgotRequest request) {
+    log.info("비밀번호 재설정 요청 이메일: {}", request.email());
+    authService.createPasswordResetTokenForUser(request.email());
+    return ResponseEntity.ok().build();
+  }
+
+  @PostMapping("/auth/reset-password")
+  @Override
+  public ResponseEntity<Void> resetPassword(@Valid @RequestBody PasswordResetRequest request) {
+    log.info("비밀번호 재설정 요청: {}", request);
+    authService.resetPassword(request.token(), request.newPassword());
+    return ResponseEntity.ok().build();
   }
 
 }
