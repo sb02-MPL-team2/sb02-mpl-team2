@@ -1,7 +1,9 @@
 package com.codeit.sb02mplteam2.domain.notification;
 
 import com.codeit.sb02mplteam2.domain.notification.entity.ConnectionInfo;
+import com.codeit.sb02mplteam2.domain.notification.event.LogoutToSseEvent;
 import com.codeit.sb02mplteam2.domain.notification.event.LostNotificationEvent;
+import jakarta.annotation.PostConstruct;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -11,11 +13,11 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -51,8 +53,9 @@ public class ConnectionManager {
       log.warn("SSE 연결이 최대가 되었습니다.");
       return null;
     }
-
-    SseEmitter sseEmitter = new SseEmitter(DEFAULT_TIME_UNIT * DEFAULT_TIMEOUT);
+    long TIMEOUT = DEFAULT_TIME_UNIT * DEFAULT_TIMEOUT;
+    log.info("연결 최대 시간 {}ms",TIMEOUT);
+    SseEmitter sseEmitter = new SseEmitter(TIMEOUT);
 
     try {
       ConnectionInfo connectionInfo = new ConnectionInfo(userId, sseEmitter);
@@ -129,6 +132,7 @@ public class ConnectionManager {
       ConnectionInfo connectionInfo = entry.getValue();
       if (connectionInfo.getLastActiveAt().isBefore(cutoff)) {
         try {
+          log.info("SSE 하트비트 전송");
           connectionInfo.getSseEmitter().send(SseEmitter.event()
               .name("heartbeat")
               .data("ping"));
@@ -143,4 +147,12 @@ public class ConnectionManager {
       return false;
     });
   }
+
+  @EventListener
+  private void logout(LogoutToSseEvent event) {
+    Long userId = event.getUserId();
+    log.info("로그아웃 이벤트 수신: userId={}", userId);
+    removeConnection(userId, "Logout");
+  }
+
 }

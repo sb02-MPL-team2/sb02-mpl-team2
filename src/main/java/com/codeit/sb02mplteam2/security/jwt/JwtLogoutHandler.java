@@ -1,11 +1,14 @@
 package com.codeit.sb02mplteam2.security.jwt;
 
+import com.codeit.sb02mplteam2.domain.notification.event.LogoutToSseEvent;
+import com.codeit.sb02mplteam2.security.MplUserDetails;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 
@@ -13,6 +16,7 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
 public class JwtLogoutHandler implements LogoutHandler {
 
   private final JwtService jwtService;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Override
   public void logout(HttpServletRequest request, HttpServletResponse response,
@@ -22,6 +26,12 @@ public class JwtLogoutHandler implements LogoutHandler {
           jwtService.invalidateJwtSession(refreshToken);
           invalidateRefreshTokenCookie(response);
         });
+
+    if(authentication != null &&
+        authentication.getPrincipal() instanceof MplUserDetails userDetails) {
+      eventPublisher.publishEvent(new LogoutToSseEvent(this, userDetails.getId()));
+    }
+
   }
 
   private Optional<String> resolveRefreshToken(HttpServletRequest request) {

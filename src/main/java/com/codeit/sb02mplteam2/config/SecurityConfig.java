@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -55,6 +56,7 @@ public class SecurityConfig {
   private final JwtService jwtService;
   private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
   private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+  private final ApplicationEventPublisher applicationEventPublisher;
 
   public static final String[] PERMIT_ALL_PATTERNS = {
       // --- Static Resources ---
@@ -161,7 +163,7 @@ public class SecurityConfig {
 
   @Bean
   public JwtLogoutHandler jwtLogoutHandler() {
-    return new JwtLogoutHandler(jwtService);
+    return new JwtLogoutHandler(jwtService, applicationEventPublisher);
   }
 
   @Bean
