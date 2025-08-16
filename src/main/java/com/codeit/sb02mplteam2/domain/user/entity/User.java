@@ -110,7 +110,7 @@ public class User {
   }
 
   public void updatePassword(String newPassword) {
-   if(newPassword != null) {
+   if (newPassword != null) {
      this.password = newPassword;
    }
   }

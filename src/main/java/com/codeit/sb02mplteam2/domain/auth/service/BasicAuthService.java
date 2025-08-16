@@ -57,7 +57,8 @@ public class BasicAuthService implements AuthService {
     userRepository.save(admin);
     alarmSettingRepository.save(new AlarmSetting(admin));
     UserDto adminDto = userMapper.toDto(admin);
-    log.info("어드민이 초기화되었습니다. {}", adminDto.username());
+    log.info("어드민이 초기화되었습니다. username={}", adminDto.username());
+    log.debug("어드민 초기화 상세 정보: {}", adminDto);
     return adminDto;
   }
 
@@ -90,7 +91,7 @@ public class BasicAuthService implements AuthService {
   @Override
   @Transactional
   public void resetPassword(String token, String newPassword) {
-    log.info("비밀번호 재설정 요청: 토큰 = {}, 새 비밀번호 길이 = {}", token, newPassword.length());
+    log.info("비밀번호 재설정 요청: 토큰(앞 6자리) = {}, 새 비밀번호 길이 = {}", token.substring(0, Math.min(token.length(), 6)), newPassword.length());
 
     PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(token)
         .orElseThrow(() -> new MplException(ErrorCode.INVALID_TOKEN));
