@@ -91,7 +91,7 @@ public class BasicAuthService implements AuthService {
   @Override
   @Transactional
   public void resetPassword(String token, String newPassword) {
-    log.info("비밀번호 재설정 요청: 토큰 = {}, 새 비밀번호 길이 = {}", token, newPassword.length());
+    log.info("비밀번호 재설정 요청: 토큰(앞 6자리) = {}, 새 비밀번호 길이 = {}", token.substring(0, Math.min(token.length(), 6)), newPassword.length());
 
     PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(token)
         .orElseThrow(() -> new MplException(ErrorCode.INVALID_TOKEN));
