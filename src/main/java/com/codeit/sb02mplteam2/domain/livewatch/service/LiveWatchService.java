@@ -11,6 +11,8 @@ public interface LiveWatchService {
 
   LiveWatchRoom createRoom(Long contentId, String title);
 
+  RoomJoinResponse getOrCreateRoomByContentAndJoin(Long contentId, Long userId);
+
   void sendMessage(SendMessageRequest request, Long userId);
 
   ChatMessagePageResponse getMessages(Long roomId, String cursor, Integer size);
