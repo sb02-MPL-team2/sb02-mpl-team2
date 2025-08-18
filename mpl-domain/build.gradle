@@ -1,3 +1,5 @@
+apply plugin: 'org.springframework.boot'
+
 bootJar {
     enabled = true
 }
@@ -12,4 +14,7 @@ dependencies {
 
     // 만약 다른 모듈(예: 'core' 모듈)이 있다면 이런 식으로 의존성을 추가할 수 있습니다.
     // implementation project(':core')
+
+    //파일 변경 감지하고 자동으로 애플리케이션 재시작
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
 }
