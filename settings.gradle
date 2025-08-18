@@ -1,1 +1,3 @@
 rootProject.name = 'sb02-mpl-team2'
+
+include 'mpl-domain'

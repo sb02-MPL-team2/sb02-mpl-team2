@@ -12,7 +12,7 @@ java {
         languageVersion = JavaLanguageVersion.of(17)
     }
 }
-
+//코드 중복 방지
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
@@ -20,73 +20,82 @@ configurations {
     developmentOnly
 }
 
-repositories {
-    mavenCentral()
+//저장소 설정을 루트 프로젝트를 포함한 모든 프로젝트에 적용되도록 allprojects 블록으로 옮김
+allprojects {
+    repositories {
+        mavenCentral()
+    }
 }
 
-dependencies {
-    //캐시
-    implementation 'org.springframework.boot:spring-boot-starter-cache'
-    //카페인
-    implementation 'com.github.ben-manes.caffeine:caffeine:3.1.8'
-    //카프카
-    implementation 'org.springframework.kafka:spring-kafka'
-    //레디스
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'org.springframework.boot'
 
-    //파일 인풋 아웃풋 유틸 라이브러리
-    implementation 'commons-io:commons-io:2.16.1'
+    dependencies {
+        //캐시
+        implementation 'org.springframework.boot:spring-boot-starter-cache'
+        //카페인
+        implementation 'com.github.ben-manes.caffeine:caffeine:3.1.8'
+        //카프카
+        implementation 'org.springframework.kafka:spring-kafka'
+        //레디스
+        implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
-    //Swagger UI
-    //3.5.x 버전은 2.7.0 이상부터 됨
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
+        //파일 인풋 아웃풋 유틸 라이브러리
+        implementation 'commons-io:commons-io:2.16.1'
 
-    //jwt 토큰
-    implementation 'com.nimbusds:nimbus-jose-jwt:10.3'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
+        //Swagger UI
+        //3.5.x 버전은 2.7.0 이상부터 됨
+        implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
 
-    //db
-    runtimeOnly 'com.h2database:h2'
-    runtimeOnly 'org.postgresql:postgresql'
+        //jwt 토큰
+        implementation 'com.nimbusds:nimbus-jose-jwt:10.3'
+        implementation 'org.springframework.boot:spring-boot-starter-security'
 
-    //웹 소캣
-    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+        //db
+        runtimeOnly 'com.h2database:h2'
+        runtimeOnly 'org.postgresql:postgresql'
 
-    //AWS SDK 설치
-    implementation 'software.amazon.awssdk:s3:2.31.7'
+        //웹 소캣
+        implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
-    //비동기 작업을 위한 micrometer 설치
-    implementation 'org.springframework.retry:spring-retry'
-    implementation 'io.micrometer:context-propagation:1.1.3'
+        //AWS SDK 설치
+        implementation 'software.amazon.awssdk:s3:2.31.7'
 
-    //웹 클라이언트
-    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+        //비동기 작업을 위한 micrometer 설치
+        implementation 'org.springframework.retry:spring-retry'
+        implementation 'io.micrometer:context-propagation:1.1.3'
 
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    implementation 'org.springframework.boot:spring-boot-starter-batch'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-mail'
-    compileOnly 'org.projectlombok:lombok'
-    //파일 변경 감지하고 자동으로 애플리케이션 재시작
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
-    // MapStruct for DTO mapping
-    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+        //웹 클라이언트
+        implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
-    annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
-    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.batch:spring-batch-test'
-    testImplementation 'org.springframework.kafka:spring-kafka-test'
-    testImplementation 'org.springframework.security:spring-security-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    // 비동기 테스트 용
-    testImplementation 'org.awaitility:awaitility:4.3.0'
-}
+        implementation 'org.springframework.boot:spring-boot-starter-actuator'
+        implementation 'org.springframework.boot:spring-boot-starter-batch'
+        implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+        implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+        implementation 'org.springframework.boot:spring-boot-starter-validation'
+        implementation 'org.springframework.boot:spring-boot-starter-web'
+        implementation 'org.springframework.boot:spring-boot-starter-mail'
+        compileOnly 'org.projectlombok:lombok'
+        //파일 변경 감지하고 자동으로 애플리케이션 재시작
+        developmentOnly 'org.springframework.boot:spring-boot-devtools'
+        // MapStruct for DTO mapping
+        implementation 'org.mapstruct:mapstruct:1.5.5.Final'
 
-tasks.named('test') {
-    useJUnitPlatform()
+        annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+        annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+        annotationProcessor 'org.projectlombok:lombok'
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testImplementation 'org.springframework.batch:spring-batch-test'
+        testImplementation 'org.springframework.kafka:spring-kafka-test'
+        testImplementation 'org.springframework.security:spring-security-test'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+        // 비동기 테스트 용
+        testImplementation 'org.awaitility:awaitility:4.3.0'
+    }
+
+    tasks.named('test') {
+        useJUnitPlatform()
+    }
 }
