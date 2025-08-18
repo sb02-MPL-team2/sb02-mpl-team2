@@ -1,0 +1,14 @@
+version: "3"
+services:
+  application:
+    build:
+      context: ../../../.. # Spring 프로젝트 경로, 현재 컨트롤러까지 죄다 domain에 있어서 일단 domain으로 함
+      dockerfile: mpl-domain/Dockerfile  # ⬅️ 루트 기준 Dockerfile 경로 지정
+    image: mpl-api:local-dev # 추후에 AWS에 배포할 경우, AWS계정번호.dkr.ecr.ap-northeast-2.amazonaws.com/mpl-domain:develop 으로 해야함
+    ports:
+      - 7070:8080
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
