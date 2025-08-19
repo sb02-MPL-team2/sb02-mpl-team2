@@ -5,9 +5,10 @@ import com.codeit.sb02mplteam2.domain.content.dto.content.SaveResultDto;
 import com.codeit.sb02mplteam2.domain.content.entity.ContentCategory;
 import com.codeit.sb02mplteam2.domain.content.service.ContentService;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -27,12 +28,16 @@ public class ContentController {
 
   @GetMapping
   public ResponseEntity<List<ContentResponseDto>> findAll(
-      @RequestParam(value = "category", required = false) ContentCategory category
+      @RequestParam(value = "category", required = false) ContentCategory category,
+      @PageableDefault(size = 20) Pageable pageable
   ) {
+    List<ContentResponseDto> list;
     if (category == null) {
-      return ResponseEntity.ok(contentService.findAll());
+      list = contentService.findAll(pageable);
+    } else {
+      list = contentService.findByCategory(category, pageable);
     }
-    return ResponseEntity.ok(contentService.findByCategory(category));
+    return ResponseEntity.ok(list);
   }
 
   @DeleteMapping("/{id}")
