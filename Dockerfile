@@ -1,5 +1,7 @@
 # 빌드 스테이지
 FROM amazoncorretto:17 AS builder
+# 타임존 설정: 서울
+ENV TZ=Asia/Seoul
 
 # 작업 디렉토리 설정
 WORKDIR /app

@@ -1,7 +1,6 @@
 package com.codeit.sb02mplteam2.domain.livewatch.controller.websocket;
 
 import com.codeit.sb02mplteam2.domain.livewatch.service.LiveWatchService;
-import com.codeit.sb02mplteam2.security.MplUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -33,23 +32,18 @@ public class LiveWebSocketEventHandler {
     log.info("WebSocket 연결 해제됨: sessionId={}", sessionId);
 
     try {
-      java.security.Principal principal = event.getUser();
-      if (principal == null) {
-        log.warn("WebSocket 연결 해제 - Principal이 null입니다: sessionId={}", sessionId);
-        return;
-      }
-
-      Long userId = extractUserId(principal);
+      Long userId = extractUserIdFromSession(event.getMessage());
+      
       if (userId == null) {
-        log.warn("WebSocket 연결 해제 - userId 추출 실패: sessionId={}", sessionId);
+        log.warn("[WebSocket] 연결 해제 - 인증되지 않은 세션: sessionId={}", sessionId);
         return;
       }
 
       liveWatchService.handleUserDisconnect(userId);
-      log.info("사용자 {} WebSocket 비정상 종료 처리 위임 완료", userId);
+      log.info("[WebSocket] 사용자 {} WebSocket 연결 해제 처리 완료", userId);
 
     } catch (Exception e) {
-      log.error("WebSocket 연결 해제 처리 중 오류 발생: sessionId={}", sessionId, e);
+      log.error("[WebSocket] 연결 해제 처리 중 오류 발생: sessionId={}", sessionId, e);
     }
   }
 
@@ -59,22 +53,22 @@ public class LiveWebSocketEventHandler {
     return sessionId;
   }
 
-  private Long extractUserId(java.security.Principal principal) {
+  private Long extractUserIdFromSession(Message<byte[]> message) {
     try {
-      if (principal instanceof MplUserDetails userDetails) {
-        return userDetails.getId();
+      SimpMessageHeaderAccessor headerAccessor = SimpMessageHeaderAccessor.wrap(message);
+      Object userId = headerAccessor.getSessionAttributes().get("userId");
+      
+      if (userId instanceof Long) {
+        return (Long) userId;
+      } else if (userId != null) {
+        return Long.valueOf(userId.toString());
       }
-
-      // MplUserDetails가 아닌 경우 principal.getName()에서 ID 파싱 시도
-      String principalName = principal.getName();
-      if (principalName != null && !principalName.isEmpty()) {
-        return Long.parseLong(principalName);
-      }
-
+      
       return null;
-    } catch (NumberFormatException e) {
-      log.error("MplUserDetails외의 Principal에서 userId 추출 실패: {}", principal.getName(), e);
+    } catch (Exception e) {
+      log.debug("[WebSocket] 세션 속성에서 userId 추출 실패", e);
       return null;
     }
   }
+
 }
