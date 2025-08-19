@@ -14,15 +14,14 @@ java {
 }
 
 configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
     developmentOnly
 }
 
 repositories {
     mavenCentral()
 }
+
+def generated = "src/main/generated"
 
 dependencies {
     //캐시
@@ -62,6 +61,9 @@ dependencies {
     //웹 클라이언트
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
+    // QueryDSL
+    implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-batch'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -75,9 +77,14 @@ dependencies {
     // MapStruct for DTO mapping
     implementation 'org.mapstruct:mapstruct:1.5.5.Final'
 
-    annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
-    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
     annotationProcessor 'org.projectlombok:lombok'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+    annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+
+    annotationProcessor 'com.querydsl:querydsl-apt:5.0.0:jakarta'
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.batch:spring-batch-test'
     testImplementation 'org.springframework.kafka:spring-kafka-test'
@@ -85,6 +92,22 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     // 비동기 테스트 용
     testImplementation 'org.awaitility:awaitility:4.3.0'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs += [generated]
+        }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.getGeneratedSourceOutputDirectory().set(file(generated))
+}
+
+clean {
+    delete file(generated)
 }
 
 tasks.named('test') {
