@@ -1,5 +1,6 @@
 package com.codeit.sb02mplteam2.domain.content.dto.content;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 
 @Builder
@@ -10,8 +11,16 @@ public record ContentResponseDto(
     String category,
     String imageUrl,
     Double totalRating,
-    Integer reviewCount,
-    Integer watchCount,
+    Long reviewCount,
+    Long watchCount,
+    Integer runtime,
     Long roomId
 ) {
+  @JsonProperty("runtime_in_seconds")
+  public int getRuntimeInSeconds() {
+    if (runtime == null) {
+      return 0;
+    }
+    return runtime * 60;
+  }
 }

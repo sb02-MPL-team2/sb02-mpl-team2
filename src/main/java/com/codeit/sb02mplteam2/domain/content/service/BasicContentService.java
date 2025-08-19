@@ -16,6 +16,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class BasicContentService implements ContentService{
 
   private final ContentRepository contentRepository;
-  private final ContentMapper contentMapper;
   private final TmdbService tmdbService;
   private final TmdbContentMapper tmdbContentMapper;
   private final TmdbBatchMetrics tmdbBatchMetrics;
@@ -34,25 +35,23 @@ public class BasicContentService implements ContentService{
   @Override
   @Transactional(readOnly = true)
   public ContentResponseDto findById(Long id) {
-    Content content = contentRepository.findById(id)
+    return contentRepository.findByIdWithRoom(id)
         .orElseThrow(() -> new MplException(ErrorCode.CONTENT_NOT_FOUND));
-    return contentMapper.toDto(content);
   }
 
   @Override
   @Transactional(readOnly = true)
-  public List<ContentResponseDto> findAll() {
-    return contentRepository.findAll().stream()
-        .map(contentMapper::toDto)
-        .collect(Collectors.toList());
+  public List<ContentResponseDto> findAll(Pageable pageable) {
+    Page<ContentResponseDto> page = contentRepository.findAllWithRoom(pageable);
+    return page.getContent();
   }
 
   @Override
   @Transactional(readOnly = true)
-  public List<ContentResponseDto> findByCategory(ContentCategory category) {
-    return contentRepository.findByCategory(category).stream()
-        .map(contentMapper::toDto)
-        .collect(Collectors.toList());
+  public List<ContentResponseDto> findByCategory(ContentCategory category, Pageable pageable) {
+    Page<ContentResponseDto> page =
+        contentRepository.findByCategoryWithRoom(category, Pageable.unpaged());
+    return page.getContent();
   }
 
   @Override

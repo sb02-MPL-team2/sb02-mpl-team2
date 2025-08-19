@@ -50,6 +50,8 @@ public class Content {
   @Column(name = "imageUrl", columnDefinition = "TEXT")
   private String imageUrl;
 
+  private Integer runtime;
+
   @OneToMany(mappedBy = "content")
   private List<Review> reviews = new ArrayList<>();
 

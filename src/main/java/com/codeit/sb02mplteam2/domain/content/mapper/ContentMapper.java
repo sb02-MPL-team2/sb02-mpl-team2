@@ -9,10 +9,10 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface ContentMapper {
 
-  @Mapping(target = "totalRating", expression = "java(0.0)")
-  @Mapping(target = "reviewCount", expression = "java(0)")
-  @Mapping(target = "watchCount", expression = "java(0)")
-  @Mapping(target = "roomId", ignore = true)
+  @Mapping(target="totalRating", ignore = true)
+  @Mapping(target="reviewCount", ignore = true)
+  @Mapping(target="watchCount", ignore = true)
+  @Mapping(target="roomId", ignore = true)
   ContentResponseDto toDto(Content content);
 
   @Mapping(target = "id", ignore = true)
