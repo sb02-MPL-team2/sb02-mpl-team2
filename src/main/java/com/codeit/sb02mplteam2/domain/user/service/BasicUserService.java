@@ -4,7 +4,11 @@ import com.codeit.sb02mplteam2.domain.binaryContent.entity.BinaryContent;
 import com.codeit.sb02mplteam2.domain.binaryContent.repository.BinaryContentRepository;
 import com.codeit.sb02mplteam2.domain.binaryContent.service.BinaryContentService;
 import com.codeit.sb02mplteam2.domain.user.dto.UserCreateRequest;
+import com.codeit.sb02mplteam2.domain.user.dto.UserCursorPageResponse;
 import com.codeit.sb02mplteam2.domain.user.dto.UserDto;
+import com.codeit.sb02mplteam2.domain.user.dto.UserSearchDto;
+import com.codeit.sb02mplteam2.domain.user.dto.UserSearchFilter;
+import com.codeit.sb02mplteam2.domain.user.dto.UserSearchRequest;
 import com.codeit.sb02mplteam2.domain.user.dto.UserUpdateRequest;
 import com.codeit.sb02mplteam2.domain.user.entity.AlarmSetting;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
@@ -15,7 +19,6 @@ import com.codeit.sb02mplteam2.exception.ErrorCode;
 import com.codeit.sb02mplteam2.exception.MplException;
 import com.codeit.sb02mplteam2.exception.user.UserException;
 import com.codeit.sb02mplteam2.exception.user.UserNotFoundException;
-import com.codeit.sb02mplteam2.security.jwt.JwtBlacklist;
 import com.codeit.sb02mplteam2.security.jwt.JwtService;
 import java.io.IOException;
 import java.util.List;
@@ -144,6 +147,30 @@ public class BasicUserService implements UserService{
 
     log.info("유저 조회 완료: {}", user);
     return userMapper.toDto(user);
+  }
+
+  @Transactional
+  @Override
+  public UserCursorPageResponse<UserSearchDto> searchUsers(
+      Long currentUserId,
+      UserSearchRequest request
+  ) {
+    int queryPageSize = request.pageSize() + 1;
+
+    List<UserSearchDto> users = userRepository.searchByFilter(
+        currentUserId, request.keyword(), request.filter(), request.cursorId(), queryPageSize
+    );
+
+    boolean hasNext = users.size() > request.pageSize();
+
+    Long nextCursor = null;
+    if(hasNext) {
+      // 마지막 아이템의 ID를 다음 커서로 설정 후 리스트에서 제거
+      nextCursor = users.get(request.pageSize() - 1).id();
+      users.remove(request.pageSize());
+    }
+
+    return new UserCursorPageResponse<>(users, nextCursor, hasNext);
   }
 
   @Transactional(readOnly = true)

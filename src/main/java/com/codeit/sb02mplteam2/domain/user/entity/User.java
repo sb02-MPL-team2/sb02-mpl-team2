@@ -86,6 +86,8 @@ public class User {
    this.password = password;
    this.profile = profile;
    this.role = Role.USER;
+   this.createdAt = LocalDateTime.now();
+   this.updatedAt = LocalDateTime.now();
  }
 
  public void update(String newUsername, String newEmail, String newPassword, BinaryContent newProfile) {
