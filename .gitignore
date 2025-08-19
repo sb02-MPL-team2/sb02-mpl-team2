@@ -35,6 +35,7 @@ out/
 
 ### VS Code ###
 .vscode/
+/mpl-domain/src/main/generated/
 
 ### env ###
 .env

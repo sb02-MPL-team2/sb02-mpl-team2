@@ -80,3 +80,4 @@ docker-compose -p ${APP_NAME}-${TERMINATE_CONTAINER} -f docker-compose.${TERMINA
 echo "exit ${APP_NAME}-${TERMINATE_CONTAINER} success!"
 
 echo " ========== [end] change ${APP_NAME}-${TERMINATE_CONTAINER} to ${APP_NAME}-${START_CONTAINER} =========="
+
