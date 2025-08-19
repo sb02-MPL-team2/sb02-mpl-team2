@@ -1,7 +1,10 @@
 package com.codeit.sb02mplteam2.domain.user.service;
 
 import com.codeit.sb02mplteam2.domain.user.dto.UserCreateRequest;
+import com.codeit.sb02mplteam2.domain.user.dto.UserCursorPageResponse;
 import com.codeit.sb02mplteam2.domain.user.dto.UserDto;
+import com.codeit.sb02mplteam2.domain.user.dto.UserSearchDto;
+import com.codeit.sb02mplteam2.domain.user.dto.UserSearchRequest;
 import com.codeit.sb02mplteam2.domain.user.dto.UserUpdateRequest;
 import java.util.List;
 import java.util.Optional;
@@ -13,6 +16,8 @@ public interface UserService {
   UserDto findById(Long userId);
 
   List<UserDto> findAll();
+
+  UserCursorPageResponse<UserSearchDto> searchUsers(Long currentUserId, UserSearchRequest request);
 
   UserDto update(Long userId, UserUpdateRequest request,
       Optional<MultipartFile> optionalMultipartFile);

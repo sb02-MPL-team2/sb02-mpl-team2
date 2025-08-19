@@ -1,6 +1,10 @@
 package com.codeit.sb02mplteam2.domain.user.controller;
 
+import com.codeit.sb02mplteam2.domain.user.dto.UserCursorPageResponse;
 import com.codeit.sb02mplteam2.domain.user.dto.UserDto;
+import com.codeit.sb02mplteam2.domain.user.dto.UserSearchDto;
+import com.codeit.sb02mplteam2.domain.user.dto.UserSearchFilter;
+import com.codeit.sb02mplteam2.domain.user.dto.UserSearchRequest;
 import com.codeit.sb02mplteam2.domain.user.dto.UserUpdateRequest;
 import com.codeit.sb02mplteam2.domain.user.service.UserService;
 import com.codeit.sb02mplteam2.security.MplUserDetails;
@@ -19,7 +23,9 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -56,6 +62,22 @@ public class UserController implements UserApi {
     log.info("유저 목록 조회 요청");
     List<UserDto> users = userService.findAll();
     return ResponseEntity.status(HttpStatus.OK).body(users);
+  }
+
+  @GetMapping("/users/search")
+  public ResponseEntity<UserCursorPageResponse<UserSearchDto>> searchUsers(
+      @RequestParam(required = false) String keyword,
+      @RequestParam(defaultValue = "ALL") UserSearchFilter filter,
+      @RequestParam(required = false) Long cursorId,
+      @RequestParam(defaultValue = "10") int size,
+      @AuthenticationPrincipal MplUserDetails userDetails
+  ) {
+    log.info("유저 검색 요청: keyword={}, filter={}, cursorId={}, size={}", keyword, filter, cursorId, size);
+    UserSearchRequest request = new UserSearchRequest(keyword, filter, cursorId, size);
+    UserCursorPageResponse<UserSearchDto> response =
+        userService.searchUsers(userDetails.getId(), request);
+
+    return ResponseEntity.ok(response);
   }
 
   @PreAuthorize("hasRole('ADMIN')")
