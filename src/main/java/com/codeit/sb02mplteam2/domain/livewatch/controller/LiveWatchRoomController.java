@@ -16,6 +16,16 @@ public class LiveWatchRoomController {
 
   private final LiveWatchService liveWatchService;
 
+  @GetMapping("/content/{contentId}")
+  public ResponseEntity<RoomJoinResponse> getOrCreateRoomByContent(@PathVariable Long contentId,
+      @AuthenticationPrincipal MplUserDetails userDetails) {
+    Long userId = userDetails.getId();
+    
+    // 콘텐츠별 방을 찾거나 생성하고 자동으로 참여
+    RoomJoinResponse response = liveWatchService.getOrCreateRoomByContentAndJoin(contentId, userId);
+    return ResponseEntity.ok(response);
+  }
+
   @PostMapping("/{roomId}/join")
   public ResponseEntity<RoomJoinResponse> joinRoom(@PathVariable Long roomId,
       @AuthenticationPrincipal MplUserDetails userDetails) {

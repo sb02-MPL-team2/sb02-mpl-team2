@@ -60,6 +60,31 @@ public class BasicLiveWatchService implements LiveWatchService {
     return roomRepository.save(room);
   }
 
+  @Override
+  @Transactional
+  public RoomJoinResponse getOrCreateRoomByContentAndJoin(Long contentId, Long userId) {
+    Content content = contentRepository.findById(contentId)
+        .orElseThrow(() -> new LiveWatchException(ErrorCode.CONTENT_NOT_FOUND));
+
+    // 해당 콘텐츠의 기존 방을 찾음
+    Optional<LiveWatchRoom> existingRoom = roomRepository.findByContentId(contentId);
+    
+    LiveWatchRoom room;
+    if (existingRoom.isPresent()) {
+      room = existingRoom.get();
+    } else {
+      // 새 방 생성
+      room = LiveWatchRoom.builder()
+          .content(content)
+          .user(null)  // 현재 로직 상 채팅방 소유자 없음
+          .title(content.getTitle() + " 같이보기")
+          .build();
+      room = roomRepository.save(room);
+    }
+
+    // 자동으로 방에 참여
+    return joinAndGetRoomInfo(room.getId(), userId);
+  }
 
   @Override
   @Transactional
@@ -258,7 +283,7 @@ public class BasicLiveWatchService implements LiveWatchService {
   private void broadcastJoinMessage(Long roomId, User user) {
     ChatMessageDto joinMessage = new ChatMessageDto(
         null,
-        user.getUsername() + "님이 입장하셨습니다.",
+        user.getUsername() + "님이 입장했습니다.",
         LocalDateTime.now(),
         user.getId(),
         user.getUsername(),
@@ -266,6 +291,7 @@ public class BasicLiveWatchService implements LiveWatchService {
     );
 
     broadcastService.broadcastParticipantEvent(roomId, joinMessage);
+    broadcastService.broadcastMessage(roomId, joinMessage);
   }
 
   private void processLeaveRoom(Long roomId, User user) {
@@ -273,12 +299,13 @@ public class BasicLiveWatchService implements LiveWatchService {
 
     ChatMessageDto leaveMessage = createLeaveMessage(user);
     broadcastService.broadcastParticipantEvent(roomId, leaveMessage);
+    broadcastService.broadcastMessage(roomId, leaveMessage);
   }
 
   private ChatMessageDto createLeaveMessage(User user) {
     return new ChatMessageDto(
         null,
-        user.getUsername() + "님이 퇴장하셨습니다.",
+        user.getUsername() + "님이 나갔습니다.",
         LocalDateTime.now(),
         user.getId(),
         user.getUsername(),

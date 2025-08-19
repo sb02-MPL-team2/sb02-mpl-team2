@@ -1,0 +1,15 @@
+# nginx/docker-compose.yml
+version: "3"
+services:
+  nginx:
+    container_name: 'nginx'
+    image: nginx
+    ports:
+      - 8080:8080
+    #      - 80:80
+    #      - 443:443
+    environment:
+      - TZ=Asia/Seoul  # <-- timezone 설정 추가
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ../../src/main/resources/static:/usr/share/nginx/html:ro # 프론트엔드 빌드 결과물 마운트
