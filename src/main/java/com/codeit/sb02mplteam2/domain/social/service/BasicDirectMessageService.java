@@ -100,4 +100,14 @@ public class BasicDirectMessageService implements DirectMessageService {
         endCursor
     );
   }
+
+  public Long findReceiverId(Long channelId, Long senderId) {
+    DirectMessageChannel channel = directMessageChannelRepository.findById(channelId)
+        .orElseThrow(() -> new DirectMessageChannelException(ErrorCode.DIRECT_MESSAGE_CHANNEL_NOT_FOUND));
+
+    if (channel.getFromUser().getId().equals(senderId)) return channel.getToUser().getId();
+    if (channel.getToUser().getId().equals(senderId)) return channel.getFromUser().getId();
+
+    throw new DirectMessageChannelException(ErrorCode.DIRECT_MESSAGE_CHANNEL_NOT_FOUND);
+  }
 }

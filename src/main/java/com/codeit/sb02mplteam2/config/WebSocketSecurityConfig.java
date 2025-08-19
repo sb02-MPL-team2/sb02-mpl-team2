@@ -17,8 +17,12 @@ public class WebSocketSecurityConfig extends AbstractSecurityWebSocketMessageBro
         .simpTypeMatchers(SimpMessageType.DISCONNECT).permitAll()
         .simpDestMatchers("/app/livewatch/**").authenticated()
         .simpSubscribeDestMatchers("/topic/livewatch/**").authenticated()
-        .simpSubscribeDestMatchers("/queue/livewatch/**").hasRole("USER").anyMessage()
-        .authenticated();
+        .simpSubscribeDestMatchers("/queue/livewatch/**").hasRole("USER")
+
+//        .simpDestMatchers("/app/dm/**").authenticated()
+//        .simpSubscribeDestMatchers("/user/queue/dm/**").authenticated()
+
+        .anyMessage().authenticated();
   }
 
   @Override

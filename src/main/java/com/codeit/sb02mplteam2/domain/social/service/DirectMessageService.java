@@ -11,4 +11,6 @@ public interface DirectMessageService {
 
   CursorPageResponseDirectMessageDto findAll(Long channelId, Long after, Long before, int limit);
 
+  Long findReceiverId(Long channelId, Long senderId);
+
 }
