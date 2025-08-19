@@ -12,4 +12,4 @@ services:
       - TZ=Asia/Seoul  # <-- timezone 설정 추가
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
-      - ../../src/main/resources/static:/usr/share/nginx/html:ro # 프론트엔드 빌드 결과물 마운트
+      - ../../mpl-domain/src/main/resources/static:/usr/share/nginx/html:ro # 프론트엔드 빌드 결과물 마운트

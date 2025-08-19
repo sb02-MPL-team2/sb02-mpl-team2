@@ -4,7 +4,7 @@ services:
   backend:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: mpl-domain/Dockerfile
       # 개발 시에는 소스코드와 빌드 도구가 모두 포함된 'builder' 스테이지를 타겟으로 지정합니다.
       target: builder
     container_name: backend
