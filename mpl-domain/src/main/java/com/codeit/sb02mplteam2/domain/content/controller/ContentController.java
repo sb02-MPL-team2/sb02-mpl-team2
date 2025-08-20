@@ -52,15 +52,15 @@ public class ContentController {
     return ResponseEntity.noContent().build();
   }
 
-  @PostMapping("/tmdb/movies")
-  public ResponseEntity<SaveResultDto> saveTmdbMovies() {
-    int saved = contentService.saveTmdbMovies(ContentCategory.MOVIE);
-    return ResponseEntity.ok(new SaveResultDto(ContentCategory.MOVIE, saved));
-  }
-
-  @PostMapping("/tmdb/tvs")
-  public ResponseEntity<SaveResultDto> saveTmdbTvs() {
-    int saved = contentService.saveTmdbTvs(ContentCategory.TV);
-    return ResponseEntity.ok(new SaveResultDto(ContentCategory.TV, saved));
-  }
+//  @PostMapping("/tmdb/movies")
+//  public ResponseEntity<SaveResultDto> saveTmdbMovies() {
+//    int saved = contentService.saveTmdbMovies(ContentCategory.MOVIE);
+//    return ResponseEntity.ok(new SaveResultDto(ContentCategory.MOVIE, saved));
+//  }
+//
+//  @PostMapping("/tmdb/tvs")
+//  public ResponseEntity<SaveResultDto> saveTmdbTvs() {
+//    int saved = contentService.saveTmdbTvs(ContentCategory.TV);
+//    return ResponseEntity.ok(new SaveResultDto(ContentCategory.TV, saved));
+//  }
 }

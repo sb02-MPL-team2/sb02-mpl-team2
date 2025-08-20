@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class BatchController {
 
   private final JobLauncher jobLauncher;
-  private final Job tmdbContentUpdateJob;
+  private final Job importTmdbJob;
 
   @PostMapping("/tmdb/update")
   public ResponseEntity<BatchResponseDto> runTmdbUpdate() {
@@ -30,7 +30,7 @@ public class BatchController {
           .addLong("time", System.currentTimeMillis())
           .toJobParameters();
 
-      JobExecution exec = jobLauncher.run(tmdbContentUpdateJob, params);
+      JobExecution exec = jobLauncher.run(importTmdbJob, params);
 
       return ResponseEntity.ok(
           new BatchResponseDto(
