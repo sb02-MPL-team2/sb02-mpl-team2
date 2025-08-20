@@ -1,0 +1,25 @@
+# ======================== Filebeat inputs =========================
+filebeat.inputs:
+  - type: container
+    stream: all
+    paths:
+      - /var/lib/docker/containers/*/*.log
+    multiline:
+      pattern: '^\d{2}-\d{2}-\d{2}'
+      negate: true
+      match: after
+
+# ======================= Processors ===============================
+processors:
+  - decode_json_fields:
+      fields: ["message"]
+      target: ""
+      overwrite_keys: true
+  - add_docker_metadata: ~
+
+# ======================= Elasticsearch Output =====================
+output.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+  username: "${ES_USERNAME}"
+  password: "${ES_PASSWORD}"
+  pipeline: "team-spring-boot-pipeline"

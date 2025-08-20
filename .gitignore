@@ -38,7 +38,7 @@ out/
 /mpl-domain/src/main/generated/
 
 ### env ###
-.env
+*.env
 
 ### http ###
 .http
