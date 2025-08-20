@@ -1,4 +1,4 @@
-package com.codeit.sb02mplteam2.domain.content.batch;
+package com.codeit.sb02mplteam2.domain.content.batch.monitoring;
 
 import com.codeit.sb02mplteam2.domain.content.entity.ContentCategory;
 import io.micrometer.core.instrument.MeterRegistry;
