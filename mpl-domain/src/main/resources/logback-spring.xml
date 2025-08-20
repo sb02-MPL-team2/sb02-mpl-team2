@@ -27,9 +27,30 @@
     </rollingPolicy>
   </appender>
 
-  <!-- 루트 로거 설정 - 레벨은 application.yaml에서 관리 -->
-  <root>
-    <appender-ref ref="CONSOLE"/>
+<!--  비동기 로깅 설정-->
+  <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
     <appender-ref ref="FILE"/>
-  </root>
+  </appender>
+<!--  프로필 prod 아님-->
+  <springProfile name="!prod">
+<!--   기본 셋팅 디버그 로그 이상-->
+    <root level="debug">
+<!--      콘솔만 INFO 수준에서 -->
+      <appender-ref ref="CONSOLE">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+          <level>INFO</level>
+        </filter>
+      </appender-ref>
+<!--      비동기로 파일 작업 진행-->
+      <appender-ref ref="ASYNC_FILE"/>
+    </root>
+  </springProfile>
+
+<!--  프로필 prod-->
+  <springProfile name="prod">
+<!--    기본 셋팅 info 로그 이상-->
+    <root level="info">
+      <appender-ref ref="CONSOLE"/>
+    </root>
+  </springProfile>
 </configuration>
