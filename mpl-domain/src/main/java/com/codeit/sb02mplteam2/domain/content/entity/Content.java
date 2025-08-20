@@ -47,10 +47,17 @@ public class Content {
 //  @JoinColumn(name = "binary_content_id")
 //  private BinaryContent binaryContent;
 
-  @Column(name = "imageUrl", columnDefinition = "TEXT")
+  @Column(name = "image_url", columnDefinition = "TEXT")
   private String imageUrl;
 
+  @Column(name="runtime")
   private Integer runtime;
+
+  @Column(name="provider")
+  private String provider;
+
+  @Column(name="external_id")
+  private String externalId;
 
   @OneToMany(mappedBy = "content")
   private List<Review> reviews = new ArrayList<>();
