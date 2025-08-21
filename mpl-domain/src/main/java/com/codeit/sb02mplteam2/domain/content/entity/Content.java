@@ -50,12 +50,6 @@ public class Content {
   @Column(name = "image_url", columnDefinition = "TEXT")
   private String imageUrl;
 
-  @Column(name="runtime")
-  private Integer runtime;
-
-  @Column(name="provider")
-  private String provider;
-
   @Column(name = "runtime")
   private Integer runtime;
 
