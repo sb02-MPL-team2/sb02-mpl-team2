@@ -1,4 +1,4 @@
-package com.codeit.sb02mplteam2.domain.content.batch;
+package com.codeit.sb02mplteam2.domain.content.batch.monitoring;
 
 import com.codeit.sb02mplteam2.domain.content.entity.ContentCategory;
 import java.time.Duration;
@@ -8,13 +8,13 @@ import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.stereotype.Component;
 
-@Component("tvBatchHealthIndicator")
+@Component("movieBatchHealthIndicator")
 @RequiredArgsConstructor
-public class TvBatchHealthIndicator implements HealthIndicator {
+public class MovieBatchHealthIndicator implements HealthIndicator {
 
   private final BatchFailureTracker batchFailureTracker;
 
-  private static final ContentCategory CATEGORY = ContentCategory.TV;
+  private static final ContentCategory CATEGORY = ContentCategory.MOVIE;
   private static final long WINDOW_MINUTES = 30;
 
   @Override

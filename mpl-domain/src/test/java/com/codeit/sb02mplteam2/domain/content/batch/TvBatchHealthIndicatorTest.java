@@ -3,6 +3,8 @@ package com.codeit.sb02mplteam2.domain.content.batch;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import com.codeit.sb02mplteam2.domain.content.batch.monitoring.BatchFailureTracker;
+import com.codeit.sb02mplteam2.domain.content.batch.monitoring.TvBatchHealthIndicator;
 import com.codeit.sb02mplteam2.domain.content.entity.ContentCategory;
 import java.time.Duration;
 import java.time.Instant;
