@@ -27,3 +27,15 @@ output.cloudwatch:
   # 로그 그룹 내의 로그 스트림 이름
   # {beat.name}-{event.agent.id} 와 같은 변수를 사용해 동적으로 생성 가능함
   log_stream_name: "filebeat-stream"
+
+# ======================= Console Output for Test =====================
+output.console: # TODO 테스트를 위해서 콘솔에 올림
+  pretty: true
+  enabled: true
+
+# ======================= Elasticsearch Output =========================
+output.elasticsearch:
+  enabled: false
+  hosts: [ "elasticsearch:9200" ]
+  username: "test"
+  password: "test_password"
