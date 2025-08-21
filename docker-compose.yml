@@ -58,7 +58,6 @@ volumes:
   db_mpl_data:
   gradle_cache: # Gradle 캐시 볼륨 정의
   binary-content-storage:
-  redis-data:
 
 networks:
   mpl-network:

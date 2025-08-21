@@ -13,3 +13,56 @@ services:
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ../../mpl-domain/src/main/resources/static:/usr/share/nginx/html:ro # 프론트엔드 빌드 결과물 마운트
+    networks:
+      - infra-net
+
+  # 중앙 로그 수집
+  filebeat:
+    build: ./filebeat
+    container_name: filebeat
+    user: root # 호스트 파일 접근 권한을 위해 root로 실행
+    volumes:
+      # 컨테이너 메타데이터 수집을 위해 Docker 소켓 연결
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Docker가 로그를 저장하는 호스트의 디렉터리를 Filebeat 컨테이너에 연결
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      # filebeat가 마지막으로 읽은 위치를 기억하기 위한 데이터 볼륨
+      - filebeat-data:/usr/share/filebeat/data
+    networks:
+      - infra-net
+
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"  # AMQP 프로토콜 포트
+      - "15672:15672" # 관리자 웹 UI 포트
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq/
+      - rabbitmq-log:/var/log/rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=myuser #TODO 나중에 수정해야함
+      - RABBITMQ_DEFAULT_PASS=mypassword #TODO 나중에 수정해야함
+    networks:
+      - infra-net
+
+  redis:
+    image: redis:8.2.1-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - infra-net
+
+volumes:
+  filebeat-data:
+  rabbitmq-data:
+  rabbitmq-log:
+  redis-data:
+
+networks:
+  infra-net:
+    driver: bridge
