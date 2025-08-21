@@ -49,8 +49,12 @@ public class TmdbBatchConfig {
       @Qualifier("tmdbTvProcessor") ItemProcessor<TmdbTvDto, ContentRow> tvProcessor,
       @Qualifier("tmdbContentWriter") ItemWriter<ContentRow> contentWriter
   ) {
+    var txAttr = new DefaultTransactionAttribute(TransactionDefinition.PROPAGATION_REQUIRED);
+    txAttr.setTimeout(30);
+
     return new StepBuilder("importTmdbTvStep", jobRepository)
         .<TmdbTvDto, ContentRow>chunk(200, transactionManager)
+        .transactionAttribute(txAttr)
         .reader(tvReader)
         .processor(tvProcessor)
         .writer(contentWriter)
