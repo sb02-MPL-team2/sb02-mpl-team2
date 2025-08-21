@@ -21,14 +21,15 @@ public class TmdbReadersConfig {
       @Value("#{jobParameters['maxPages']}") Integer maxPagesParam,
       @Value("#{jobParameters['rateLimitMs']}") Integer rateLimitMsParam
   ) {
-    if (categoryParam == null) {
-      throw new IllegalArgumentException("jobParameter 'category' 필요");
+    boolean runThisStep = (categoryParam == null) || "MOVIE".equalsIgnoreCase(categoryParam);
+    if (!runThisStep) {
+      return new BatchApiItemReader<>(p -> java.util.Collections.emptyList(), "tmdb.movies.skip");
     }
-    ContentCategory category = ContentCategory.valueOf(categoryParam);
 
-    BatchApiItemReader<TmdbMovieDto> reader =
-        new BatchApiItemReader<>(page -> tmdbService.getTmdbMovies(category, page),
-            "tmdb.movies." + category.name().toLowerCase() + ".page");
+    var reader = new BatchApiItemReader<TmdbMovieDto>(
+        page -> tmdbService.getTmdbMovies(ContentCategory.MOVIE, page),
+        "tmdb.movies.page"
+    );
 
     int defaultMaxPages = 10;
     int defaultRateLimit = 250;
@@ -55,14 +56,15 @@ public class TmdbReadersConfig {
       @Value("#{jobParameters['maxPages']}") Integer maxPagesParam,
       @Value("#{jobParameters['rateLimitMs']}") Integer rateLimitMsParam
   ) {
-    if (categoryParam == null) {
-      throw new IllegalArgumentException("jobParameter 'category' 필요");
+    boolean runThisStep = (categoryParam == null) || "TV".equalsIgnoreCase(categoryParam);
+    if (!runThisStep) {
+      return new BatchApiItemReader<>(p -> java.util.Collections.emptyList(), "tmdb.tv.skip");
     }
-    ContentCategory category = ContentCategory.valueOf(categoryParam);
 
-    BatchApiItemReader<TmdbTvDto> reader =
-        new BatchApiItemReader<>(page -> tmdbService.getTmdbTvs(category, page),
-            "tmdb.tvs." + category.name().toLowerCase() + ".page");
+    var reader = new BatchApiItemReader<TmdbTvDto>(
+        page -> tmdbService.getTmdbTvs(ContentCategory.TV, page),
+        "tmdb.tv.page"
+    );
 
     int defaultMaxPages = 10;
     int defaultRateLimit = 250;

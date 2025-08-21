@@ -30,7 +30,9 @@ public class TmdbBatchScheduler {
 
     try {
       JobParameters params = new JobParametersBuilder()
-          .addLong("timestamp", System.currentTimeMillis())
+          .addLong("runId", System.currentTimeMillis())
+          .addLong("maxPages", 10L)
+          .addLong("rateLimitMs", 250L)
           .toJobParameters();
 
       JobExecution exec = jobLauncher.run(importTmdbJob, params);
