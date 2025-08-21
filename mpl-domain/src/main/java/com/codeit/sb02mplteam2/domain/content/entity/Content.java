@@ -56,7 +56,13 @@ public class Content {
   @Column(name="provider")
   private String provider;
 
-  @Column(name="external_id")
+  @Column(name = "runtime")
+  private Integer runtime;
+
+  @Column(name = "provider")
+  private String provider;
+
+  @Column(name = "external_id")
   private String externalId;
 
   @OneToMany(mappedBy = "content")
