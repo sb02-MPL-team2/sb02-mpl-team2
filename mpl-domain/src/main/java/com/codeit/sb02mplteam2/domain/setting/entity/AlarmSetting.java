@@ -1,5 +1,6 @@
-package com.codeit.sb02mplteam2.domain.user.entity;
+package com.codeit.sb02mplteam2.domain.setting.entity;
 
+import com.codeit.sb02mplteam2.domain.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
