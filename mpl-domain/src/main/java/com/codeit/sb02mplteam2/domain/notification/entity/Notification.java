@@ -1,6 +1,5 @@
 package com.codeit.sb02mplteam2.domain.notification.entity;
 
-import com.codeit.sb02mplteam2.domain.user.entity.AlarmSetting;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -59,12 +58,7 @@ public class Notification {
         .build();
   }
 
-  //TODO 인수타입이 너무 많음, 줄이는 방법 강구해야함
-  public static Notification of(Long receiverId, Long publisherId, Long targetId,String title, String content, NotificationType type, AlarmSetting alarmSetting) {
-    if (alarmSetting != null && !isAlarmEnabled(type, alarmSetting)) {
-      return null;
-    }
-
+  public static Notification of(Long receiverId, Long publisherId, Long targetId,String title, String content, NotificationType type) {
     return Notification.builder()
         .receiverId(receiverId)
         .publisherId(publisherId)
@@ -74,20 +68,4 @@ public class Notification {
         .type(type)
         .build();
   }
-
-  private static boolean isAlarmEnabled(NotificationType type, AlarmSetting alarmSetting) {
-    if (type == NotificationType.ASYNC_FAILED) {
-      return true;
-    }
-
-    return switch (type) {
-      case NEW_MESSAGE -> alarmSetting.getDmAlarmEnabled();
-      case NEW_PLAYLIST_BY_FOLLOWING -> alarmSetting.getNewPlaylistFromFollowingAlarmEnabled();
-      case PLAYLIST_SUBSCRIBED -> alarmSetting.getSubscribePlaylistAlarmEnable();
-      case NEW_FOLLOWER -> alarmSetting.getFollowAlarmEnabled();
-      case ROLE_CHANGED -> alarmSetting.getPermissionChangeAlarmEnabled();
-      default -> false; // 모르는 타입은 false
-    };
-  }
-
 }
