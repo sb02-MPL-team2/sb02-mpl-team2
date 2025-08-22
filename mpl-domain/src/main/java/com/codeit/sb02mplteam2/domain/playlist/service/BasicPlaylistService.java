@@ -28,6 +28,9 @@ import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -77,6 +80,7 @@ public class BasicPlaylistService implements PlaylistService {
 
   @Override
   @Transactional
+  @CachePut(value = "playlists", key = "#request.playlistId")
   public PlaylistDto subscribe(Long userId, SubscribeRequest request) {
     User user = userRepository.findById(userId).orElseThrow(
         () -> new UserException(ErrorCode.USER_NOT_FOUND));
@@ -122,6 +126,7 @@ public class BasicPlaylistService implements PlaylistService {
 
   @Override
   @Transactional
+  @CachePut(value = "playlists", key = "#request.playlistId")
   public PlaylistDto unSubscribe(Long userId, SubscribeRequest request) {
     User user = userRepository.findById(userId).orElseThrow(
         () -> new UserException(ErrorCode.USER_NOT_FOUND));
@@ -152,6 +157,7 @@ public class BasicPlaylistService implements PlaylistService {
 
   @Override
   @Transactional
+  @CacheEvict(value = "playlists", key = "#playlistId")
   public void delete(Long playlistId, Long userId) {
     Playlist playlist = playlistRepository.findById(playlistId).orElseThrow(
         () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
@@ -165,6 +171,7 @@ public class BasicPlaylistService implements PlaylistService {
 
   @Override
   @Transactional
+  @CachePut(value = "playlists", key = "#playlistId")
   public PlaylistDto update(Long userId,Long playlistId, PlaylistUpdateRequest request) {
     Playlist playlist = playlistRepository.findById(playlistId).orElseThrow(
         () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
@@ -182,7 +189,19 @@ public class BasicPlaylistService implements PlaylistService {
 
   @Override
   @Transactional(readOnly = true)
+  @Cacheable(value = "playlists", key = "#id")
   public PlaylistDto findById(Long id) {
+    Playlist playlist = playlistRepository.findById(id).orElseThrow(
+        () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
+    List<ContentResponseDto> responseDto = toResponseDto(playlist.getItems());
+    UserSlimDto userSlimDto = toUserSlimDto(playlist);
+    List<PlaylistItemDto> playlistItemDtoList = toPlaylistItemDtoList(playlist);
+    return PlaylistDto.of(playlist, userSlimDto, playlistItemDtoList, responseDto);
+  }
+
+  @Transactional(readOnly = true)
+  @CachePut(value = "playlists", key = "#id")
+  public PlaylistDto refreshAndFindById(Long id) {
     Playlist playlist = playlistRepository.findById(id).orElseThrow(
         () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
     List<ContentResponseDto> responseDto = toResponseDto(playlist.getItems());
