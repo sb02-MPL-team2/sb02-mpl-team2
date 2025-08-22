@@ -26,6 +26,7 @@ public class BasicContentService implements ContentService{
   @Override
   @Transactional(readOnly = true)
   public ContentResponseDto findById(Long id) {
+    // TODO: watchCount는 현재 0으로 반환됨. 실제 참가자 수는 RedisLiveWatchParticipantService에서 조회 필요
     return contentRepository.findByIdWithRoom(id)
         .orElseThrow(() -> new MplException(ErrorCode.CONTENT_NOT_FOUND));
   }
@@ -33,6 +34,7 @@ public class BasicContentService implements ContentService{
   @Override
   @Transactional(readOnly = true)
   public List<ContentResponseDto> findAll(Pageable pageable) {
+    // TODO: watchCount는 현재 0으로 반환됨. 실제 참가자 수는 RedisLiveWatchParticipantService에서 조회 필요
     Page<ContentResponseDto> page = contentRepository.findAllWithRoom(pageable);
     return page.getContent();
   }
@@ -40,6 +42,7 @@ public class BasicContentService implements ContentService{
   @Override
   @Transactional(readOnly = true)
   public List<ContentResponseDto> findByCategory(ContentCategory category, Pageable pageable) {
+    // TODO: watchCount는 현재 0으로 반환됨. 실제 참가자 수는 RedisLiveWatchParticipantService에서 조회 필요
     Page<ContentResponseDto> page =
         contentRepository.findByCategoryWithRoom(category, pageable);
     return page.getContent();

@@ -8,11 +8,10 @@ import com.codeit.sb02mplteam2.domain.livewatch.dto.response.ParticipantResponse
 import com.codeit.sb02mplteam2.domain.livewatch.dto.response.RoomJoinResponse;
 import com.codeit.sb02mplteam2.domain.livewatch.dto.websocket.ChatMessageDto;
 import com.codeit.sb02mplteam2.domain.livewatch.entity.LiveWatchMessage;
-import com.codeit.sb02mplteam2.domain.livewatch.entity.LiveWatchParticipant;
 import com.codeit.sb02mplteam2.domain.livewatch.entity.LiveWatchRoom;
+import com.codeit.sb02mplteam2.domain.livewatch.redis.RedisLiveWatchParticipantService;
 import com.codeit.sb02mplteam2.domain.livewatch.entity.MessageType;
 import com.codeit.sb02mplteam2.domain.livewatch.repository.LiveWatchMessageRepository;
-import com.codeit.sb02mplteam2.domain.livewatch.repository.LiveWatchParticipantRepository;
 import com.codeit.sb02mplteam2.domain.livewatch.repository.LiveWatchRoomRepository;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
@@ -38,11 +37,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class BasicLiveWatchService implements LiveWatchService {
 
   private final LiveWatchRoomRepository roomRepository;
-  private final LiveWatchParticipantRepository participantRepository;
   private final LiveWatchMessageRepository messageRepository;
   private final UserRepository userRepository;
   private final ContentRepository contentRepository;
   private final LiveWatchBroadcastService broadcastService;
+
+  private final RedisLiveWatchParticipantService redisParticipantService;
 
   @Override
   @Transactional
@@ -67,7 +67,7 @@ public class BasicLiveWatchService implements LiveWatchService {
 
     // 해당 콘텐츠의 기존 방을 찾음
     Optional<LiveWatchRoom> existingRoom = roomRepository.findByContentId(contentId);
-    
+
     LiveWatchRoom room;
     if (existingRoom.isPresent()) {
       room = existingRoom.get();
@@ -88,12 +88,12 @@ public class BasicLiveWatchService implements LiveWatchService {
   @Override
   @Transactional
   public void sendMessage(SendMessageRequest request, Long userId) {
-    LiveWatchParticipant participant = participantRepository
-        .findByLiveWatchRoomIdAndUserIdWithFetchJoins(request.liveWatchRoomId(), userId)
-        .orElseThrow(() -> new LiveWatchException(ErrorCode.LIVE_WATCH_USER_NOT_IN_ROOM));
+    if (!redisParticipantService.isAlreadyParticipating(request.liveWatchRoomId(), userId)) {
+      throw new LiveWatchException(ErrorCode.LIVE_WATCH_USER_NOT_IN_ROOM);
+    }
 
-    LiveWatchRoom room = participant.getLiveWatchRoom();
-    User user = participant.getUser();
+    LiveWatchRoom room = getValidatedRoom(request.liveWatchRoomId());
+    User user = getValidatedUser(userId);
 
     LiveWatchMessage message = LiveWatchMessage.builder()
         .liveWatchRoom(room)
@@ -102,18 +102,23 @@ public class BasicLiveWatchService implements LiveWatchService {
         .messageType(MessageType.CHAT)
         .build();
 
-    messageRepository.save(message);
+    LiveWatchMessage savedMessage = messageRepository.save(message);
 
     ChatMessageDto dto = new ChatMessageDto(
-        message.getId(),
-        message.getContent(),
-        message.getSentAt(),
+        savedMessage.getId(),
+        savedMessage.getContent(),
+        savedMessage.getSentAt(),
         user.getId(),
         user.getUsername(),
         MessageType.CHAT
     );
 
-    broadcastService.broadcastMessage(request.liveWatchRoomId(), dto);
+    try {
+      broadcastService.broadcastMessage(request.liveWatchRoomId(), dto);
+    } catch (Exception e) {
+      log.warn("메시지 브로드캐스트 실패 (RDB는 저장됨): roomId={}, messageId={}",
+          request.liveWatchRoomId(), savedMessage.getId(), e);
+    }
   }
 
   @Override
@@ -195,28 +200,21 @@ public class BasicLiveWatchService implements LiveWatchService {
 
   @Override
   public Integer getParticipantCount(Long roomId) {
-    // TODO: @Cacheable(value = "participantCount", key = "#roomId") 캐시 적용 고려
-    return participantRepository.countByLiveWatchRoomId(roomId);
+    return redisParticipantService.getParticipantCount(roomId);
   }
 
   private List<ParticipantResponseDto> getParticipants(Long roomId) {
-    List<LiveWatchParticipant> participants = participantRepository.findByLiveWatchRoomIdWithUserFetchJoin(roomId);
-
-    return participants.stream()
-        .map(p -> new ParticipantResponseDto(
-            p.getUser().getId(),
-            p.getUser().getUsername(),
-            p.getUser().getProfile() != null ? p.getUser().getProfile().getUrl() : null,
-            p.getParticipatedAt()
-        ))
-        .collect(Collectors.toList());
+    return redisParticipantService.getParticipants(roomId);
   }
 
   @Override
   @Transactional
   public void removeParticipantFromRoom(Long roomId, Long userId) {
-    // TODO: @CacheEvict(value = "participantCount", key = "#roomId") 캐시 무효화 적용 고려
-    participantRepository.deleteByLiveWatchRoomIdAndUserId(roomId, userId);
+    try {
+      redisParticipantService.leaveRoom(roomId, userId);
+    } catch (Exception e) {
+      log.warn("Redis 참가자 제거 실패: roomId={}, userId={}", roomId, userId, e);
+    }
   }
 
   @Override
@@ -228,18 +226,14 @@ public class BasicLiveWatchService implements LiveWatchService {
     }
 
     try {
-      Optional<LiveWatchParticipant> participantOpt = participantRepository.findFirstByUserId(
-          userId);
+      Long roomId = redisParticipantService.getCurrentRoom(userId);
 
-      if (participantOpt.isEmpty()) {
+      if (roomId == null) {
         log.info("사용자 {}는 참여 중인 채팅방이 없습니다", userId);
         return;
       }
 
       User user = getValidatedUser(userId);
-
-      LiveWatchParticipant participant = participantOpt.get();
-      Long roomId = participant.getLiveWatchRoom().getId();
 
       try {
         processLeaveRoom(roomId, user);
@@ -253,43 +247,63 @@ public class BasicLiveWatchService implements LiveWatchService {
   }
 
   private boolean isAlreadyParticipating(Long roomId, Long userId) {
-    return participantRepository.existsByLiveWatchRoomIdAndUserId(roomId, userId);
+    return redisParticipantService.isAlreadyParticipating(roomId, userId);
   }
 
   private void leaveOtherRooms(Long userId) {
-    Optional<LiveWatchParticipant> participantOpt = participantRepository.findFirstByUserId(userId);
+    Long existingRoomId = redisParticipantService.getCurrentRoom(userId);
 
-    if (participantOpt.isPresent()) {
+    if (existingRoomId != null) {
       User user = getValidatedUser(userId);
-      LiveWatchParticipant participant = participantOpt.get();
-      Long existingRoomId = participant.getLiveWatchRoom().getId();
-
+      // 트랜잭션 내에서 이전 방 퇴장 처리
       processLeaveRoom(existingRoomId, user);
     }
   }
 
   private void addParticipantToRoom(LiveWatchRoom room, User user) {
-    // TODO: @CacheEvict(value = "participantCount", key = "#room.id") 캐시 무효화 적용 고려
-    LiveWatchParticipant participant = LiveWatchParticipant.builder()
-        .liveWatchRoom(room)
-        .user(user)
-        .participatedAt(LocalDateTime.now())
-        .build();
+    boolean redisSuccess = false;
+    try {
+      redisParticipantService.joinRoom(
+          room.getId(),
+          user.getId(),
+          user.getUsername(),
+          user.getProfile() != null ? user.getProfile().getUrl() : null
+      );
+      redisSuccess = true;
 
-    participantRepository.save(participant);
+      broadcastJoinMessage(room.getId(), user);
+
+    } catch (Exception e) {
+      log.error("참가자 추가 실패: roomId={}, userId={}", room.getId(), user.getId(), e);
+
+      if (redisSuccess) {
+        try {
+          redisParticipantService.leaveRoom(room.getId(), user.getId());
+          log.info("참가자 추가 실패로 인한 Redis 롤백 완료: roomId={}, userId={}", room.getId(), user.getId());
+        } catch (Exception rollbackException) {
+          log.error("참가자 추가 롤백 실패: roomId={}, userId={}", room.getId(), user.getId(),
+              rollbackException);
+        }
+      }
+      throw e; // 원래 예외 재전파
+    }
   }
 
   private void broadcastJoinMessage(Long roomId, User user) {
-    ChatMessageDto joinMessage = new ChatMessageDto(
-        null,
-        user.getUsername() + "님이 입장했습니다.",
-        LocalDateTime.now(),
-        user.getId(),
-        user.getUsername(),
-        MessageType.JOIN
-    );
+    try {
+      ChatMessageDto joinMessage = new ChatMessageDto(
+          null,
+          user.getUsername() + "님이 입장했습니다.",
+          LocalDateTime.now(),
+          user.getId(),
+          user.getUsername(),
+          MessageType.JOIN
+      );
 
-    broadcastService.broadcastParticipantEvent(roomId, joinMessage);
+      broadcastService.broadcastParticipantEvent(roomId, joinMessage);
+    } catch (Exception e) {
+      log.warn("입장 메시지 브로드캐스트 실패: roomId={}, userId={}", roomId, user.getId(), e);
+    }
   }
 
   private void processLeaveRoom(Long roomId, User user) {
@@ -346,8 +360,7 @@ public class BasicLiveWatchService implements LiveWatchService {
     }
 
     leaveOtherRooms(userId);
-    addParticipantToRoom(room, user);
-    broadcastJoinMessage(roomId, user);
+    addParticipantToRoom(room, user); // 이 안에서 브로드캐스트도 처리됨
   }
 
   private User getValidatedUser(Long userId) {

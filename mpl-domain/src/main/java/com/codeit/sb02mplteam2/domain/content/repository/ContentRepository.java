@@ -21,18 +21,19 @@ public interface ContentRepository extends JpaRepository<Content, Long> {
     c.imageUrl,
     coalesce(cast(avg(r.rating) as double), cast(0 as double)),
     count(r),
-    count(distinct v.id),
+    cast(0 as long),
     c.runtime,
     lwr.id
   )
   from Content c
   left join LiveWatchRoom lwr on lwr.content.id = c.id
   left join Review r on r.content.id = c.id
-  left join LiveWatchParticipant v on v.liveWatchRoom.id = lwr.id
   where c.id = :id
   group by c.id, c.title, c.description, c.category, c.imageUrl, lwr.id, c.runtime
   """)
   Optional<ContentResponseDto> findByIdWithRoom(@Param("id") Long id);
+
+  // TODO: watchCount는 현재 0으로 설정됨. 실제 참가자 수는 RedisLiveWatchParticipantService에서 조회 필요
 
   @Query(
       value = """
@@ -44,14 +45,13 @@ public interface ContentRepository extends JpaRepository<Content, Long> {
       c.imageUrl,
       coalesce(cast(avg(r.rating) as double), cast(0 as double)),
       count(r),
-      count(distinct v.id),
+      cast(0 as long),
       c.runtime,
       lwr.id
     )
     from Content c
     left join LiveWatchRoom lwr on lwr.content.id = c.id
     left join Review r on r.content.id = c.id
-    left join LiveWatchParticipant v on v.liveWatchRoom.id = lwr.id
     group by c.id, c.title, c.description, c.category, c.imageUrl, lwr.id, c.runtime
     """,
       countQuery = """
@@ -61,6 +61,8 @@ public interface ContentRepository extends JpaRepository<Content, Long> {
   )
   Page<ContentResponseDto> findAllWithRoom(Pageable pageable);
 
+  // TODO: watchCount는 현재 0으로 설정됨. 실제 참가자 수는 RedisLiveWatchParticipantService에서 조회 필요
+
   @Query(
       value = """
     select new com.codeit.sb02mplteam2.domain.content.dto.content.ContentResponseDto(
@@ -71,14 +73,13 @@ public interface ContentRepository extends JpaRepository<Content, Long> {
       c.imageUrl,
       coalesce(cast(avg(r.rating) as double), cast(0 as double)),
       count(r),
-      count(distinct v.id),
+      cast(0 as long),
       c.runtime,
       lwr.id
     )
     from Content c
     left join LiveWatchRoom lwr on lwr.content.id = c.id
     left join Review r on r.content.id = c.id
-    left join LiveWatchParticipant v on v.liveWatchRoom.id = lwr.id
     where c.category = :category
     group by c.id, c.title, c.description, c.category, c.imageUrl, lwr.id, c.runtime
     """,
@@ -90,4 +91,6 @@ public interface ContentRepository extends JpaRepository<Content, Long> {
   )
   Page<ContentResponseDto> findByCategoryWithRoom(@Param("category") ContentCategory category,
       Pageable pageable);
+
+  // TODO: watchCount는 현재 0으로 설정됨. 실제 참가자 수는 RedisLiveWatchParticipantService에서 조회 필요
 }

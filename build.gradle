@@ -101,6 +101,9 @@ subprojects {
         testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
         // 비동기 테스트 용
         testImplementation 'org.awaitility:awaitility:4.3.0'
+        // 통합 테스트용 Testcontainers
+        testImplementation 'org.testcontainers:junit-jupiter:1.19.1'
+        testImplementation 'org.testcontainers:testcontainers:1.19.1'
 
         tasks.named('test') {
             useJUnitPlatform()
