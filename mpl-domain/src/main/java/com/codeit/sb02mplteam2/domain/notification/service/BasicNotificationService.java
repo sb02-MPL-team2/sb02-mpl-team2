@@ -11,7 +11,9 @@ import com.codeit.sb02mplteam2.domain.social.dto.DirectMessageDto;
 import com.codeit.sb02mplteam2.domain.user.dto.UserDto;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -67,10 +69,12 @@ public class BasicNotificationService implements NotificationService {
     log.info("오래된 알림 데이터 삭제 완료.");
   }
 
-  /** 모든 값이 캐시에 존재할 경우
+  /**
+   * 모든 값이 캐시에 존재할 경우
    */
   @Override
-  public <T> NotificationDto save(UserDto receiver, UserDto publisher, NotificationType type, T target) {
+  public <T> NotificationDto save(UserDto receiver, UserDto publisher, NotificationType type,
+      T target) {
     String title = NotificationType.toTitle(publisher.username(), type.getMessageTemplate());
     String content = createContent(target, type);
     Long targetId = null;
@@ -83,5 +87,16 @@ public class BasicNotificationService implements NotificationService {
 
     return NotificationDto.of(Notification.of(receiver.id(), publisher.id(), targetId,
         title, content, type));
+  }
+
+  @Override
+  public <T> List<NotificationDto> saveAll(Set<UserDto> receivers, UserDto publisher,
+      NotificationType type, T target) {
+    List<NotificationDto> notificationDtoList = new ArrayList<>();
+    for (UserDto receiver : receivers) {
+         NotificationDto notificationDto = save(receiver, publisher, type, target);
+      notificationDtoList.add(notificationDto);
+    }
+    return notificationDtoList;
   }
 }

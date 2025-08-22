@@ -51,7 +51,7 @@ public class RecommendTasklet implements Tasklet {
       Set<Long> userIds = userRepository.findAllIds();
       BulkNotificationEvent event = new BulkNotificationEvent(this, userIds,
           NotificationType.BROADCAST_TODAY_PLAYLIST, playlistId,
-          null);
+          1L);
       //TODO RabbitMQ, 혹은 이벤트 퍼블리셔로 연결해야함
 
     });

@@ -5,10 +5,12 @@ import static com.codeit.sb02mplteam2.util.CommonUtil.retrieveCache;
 import static com.codeit.sb02mplteam2.util.NotificationUtil.typeFiltering;
 
 import com.codeit.sb02mplteam2.domain.notification.dto.NotificationDto;
+import com.codeit.sb02mplteam2.domain.notification.entity.Notification;
 import com.codeit.sb02mplteam2.domain.notification.entity.NotificationType;
 import com.codeit.sb02mplteam2.domain.notification.event.BulkNotificationEvent;
 import com.codeit.sb02mplteam2.domain.notification.event.LostNotificationEvent;
 import com.codeit.sb02mplteam2.domain.notification.event.NotificationEvent;
+import com.codeit.sb02mplteam2.domain.notification.service.DeliveryService;
 import com.codeit.sb02mplteam2.domain.notification.service.NotificationService;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistDto;
 import com.codeit.sb02mplteam2.domain.playlist.entity.Playlist;
@@ -17,9 +19,10 @@ import com.codeit.sb02mplteam2.domain.setting.service.AlarmSettingService;
 import com.codeit.sb02mplteam2.domain.social.entity.DirectMessage;
 import com.codeit.sb02mplteam2.domain.task.service.NotificationTaskService;
 import com.codeit.sb02mplteam2.domain.user.dto.UserDto;
-import com.codeit.sb02mplteam2.domain.user.entity.User;
 import jakarta.annotation.PostConstruct;
+import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +40,7 @@ public class NotificationEventListener implements NotificationListener {
   private final NotificationTaskService notificationTaskService;
   private final AlarmSettingService alarmSettingService;
   private final NotificationService notificationService;
+  private final DeliveryService deliveryService;
   private final CacheManager cacheManager;
 
   private Cache alarmCache;
@@ -140,7 +144,7 @@ public class NotificationEventListener implements NotificationListener {
     log.info("실시간 대규모 큐 메시지 수신. Type: {}", type);
 
     // 공통 데이터(Publisher, Target) 우선 조회
-    User publisher = retrieveCache(userCache, event.getPublisherId(), User.class);
+    UserDto publisher = retrieveCache(userCache, event.getPublisherId(), UserDto.class);
 
     Object targetEntity = switch (type) {
       case NEW_PLAYLIST_BY_FOLLOWING, PLAYLIST_SUBSCRIBED, BROADCAST_TODAY_PLAYLIST:
@@ -159,15 +163,15 @@ public class NotificationEventListener implements NotificationListener {
     // 모든 수신자 정보를 '벌크'로 캐시에서 조회
     Set<Long> receiverIds = event.getReceiverIds();
     // 가정: retrieveAllFromCache는 Map<ID, 객체>를 반환. 조회 실패 시 해당 ID는 Map에 포함되지 않음.
-    Map<Long, User> cachedUsers = retrieveAllFromCache(userCache, receiverIds, User.class);
+    Map<Long, UserDto> cachedUsers = retrieveAllFromCache(userCache, receiverIds, UserDto.class);
     Map<Long, AlarmSetting> cachedAlarmSettings = retrieveAllFromCache(alarmCache, receiverIds, AlarmSetting.class);
 
     // Fast Path와 Slow Path로 작업 분리
-    Set<User> fastPathReceivers = new HashSet<>();
+    Set<UserDto> fastPathReceivers = new HashSet<>();
     Set<Long> slowPathReceiverIds = new HashSet<>();
 
     for (Long receiverId : receiverIds) {
-      User receiver = cachedUsers.get(receiverId);
+      UserDto receiver = cachedUsers.get(receiverId);
       AlarmSetting setting = cachedAlarmSettings.get(receiverId);
 
       // User와 AlarmSetting이 모두 캐시에 존재하는 경우
@@ -191,16 +195,29 @@ public class NotificationEventListener implements NotificationListener {
     // DB 조회가 필요한 대상이 있다면 Task Service로 위임
     if (!slowPathReceiverIds.isEmpty()) {
       log.warn("[Slow Path] {}명의 사용자에 대한 처리를 Task Service로 위임합니다.", slowPathReceiverIds.size());
-      BulkNotificationEvent slowPathEvent = new BulkNotificationEvent(this,
+      BulkNotificationEvent bulkEvent = new BulkNotificationEvent(this,
           slowPathReceiverIds, event.getNotificationType(), event.getTargetId(), event.getPublisherId()
       );
-      delegateBulkTaskToService(slowPathEvent);
+      delegateBulkTaskToService(bulkEvent);
     }
   }
 
   @Override
   public void handleLostNotificationEvent(LostNotificationEvent event) {
+    Long receiverId = event.getUserId();
+    LocalDateTime lastEventTime = event.getLastEventTime();
+    log.info("마지막 알람 전송 이후 미전송된 알람 전송 : 유저 아이디 {}, 마지막 전송 시각 {}", receiverId, lastEventTime);
+    List<NotificationDto> lostNotificationList = notificationService.findByLastEventTime(receiverId,
+        event.getLastEventTime());
 
+    if (lostNotificationList.isEmpty()) {
+      log.warn("미전송된 알람이 존재하지 않습니다.");
+      return;
+    }
+
+    for (NotificationDto notificationDto : lostNotificationList) {
+      deliveryService.deliverToClient(notificationDto);
+    }
   }
 
   private boolean isTargetRequired(NotificationType type) {
@@ -219,9 +236,8 @@ public class NotificationEventListener implements NotificationListener {
     // 직접 SSE 서비스를 호출하는 로직을 구현합니다.
     log.info("[Fast Path] receiver: {}, publisher: {}, target: {}, type: {}", receiver.id(),
         publisher.id(), targetEntity, type);
-    // TODO: DTO 생성 및 SSE 전송 로직 구현
-    NotificationDto save = notificationService.save(receiver, publisher, type, targetEntity);
-
+    NotificationDto notificationDto = notificationService.save(receiver, publisher, type, targetEntity);
+    deliveryService.deliverToClient(notificationDto);
   }
 
   /**
@@ -230,26 +246,31 @@ public class NotificationEventListener implements NotificationListener {
   private void delegateToTaskService(NotificationEvent originalEvent) {
     // DB 조회가 필요한 작업을 처리하는 별도의 큐로 메시지를 보냅니다.
     log.info("[Slow Path] Event를 notification.task.queue로 전달합니다: {}", originalEvent);
-    // TODO: RabbitMQ Template을 사용하여 Task 처리 큐로 메시지 전송 로직 구현
-
+    // TODO 일단 RabbitMQ를 사용하지 않고 작업 서버 거쳐서 던지는 로직 구현함
+    Notification notification = notificationTaskService.create(originalEvent);
+    NotificationDto notificationDto = NotificationDto.of(notification);
+    deliveryService.deliverToClient(notificationDto);
   }
   /**
    * 캐시된 데이터로 대규모 알림을 처리하고 전송하는 메서드
    */
-  private void processBulkNotificationsWithCachedData(Set<User> receivers, User publisher, Object targetEntity, NotificationType type) {
+  private void processBulkNotificationsWithCachedData(Set<UserDto> receivers, UserDto publisher, Object targetEntity, NotificationType type) {
     // receivers Set을 순회하며 각 사용자에게 보낼 NotificationDto를 생성하고,
     log.info("{}명에게 알림 DTO 생성 및 전송 로직 실행", receivers.size());
-    // TODO: 여러 수신자에게 SSE 알림을 보내는 로직 구현
-
+    List<NotificationDto> notificationDtoList = notificationService.saveAll(receivers, publisher,
+        type, targetEntity);
+    notificationDtoList.forEach(deliveryService::deliverToClient);
   }
 
   /**
    * Task Service가 Bulk 이벤트를 처리하도록 메시지를 전달하는 메서드
    */
-  private void delegateBulkTaskToService(BulkNotificationEvent eventToDelegate) {
+  private void delegateBulkTaskToService(BulkNotificationEvent bulkEvent) {
     // DB 조회가 필요한 작업을 처리하는 별도의 벌크 작업 큐로 메시지를 보냅니다.
-    log.info("Bulk Event를 notification.bulk-task.queue로 전달합니다: {}명의 수신자", eventToDelegate.getReceiverIds().size());
-    // TODO: RabbitMQ Template을 사용하여 Bulk Task 처리 큐로 메시지 전송 로직 구현
-
+    log.info("Bulk Event를 notification.bulk-task.queue로 전달합니다: {}명의 수신자", bulkEvent.getReceiverIds().size());
+    // TODO 일단 RabbitMQ를 사용하지 않고 작업 서버 거쳐서 던지는 로직 구현함
+    List<Notification> notificationList = notificationTaskService.create(bulkEvent);
+    notificationList.forEach(
+        notification -> deliveryService.deliverToClient(NotificationDto.of(notification)));
   }
 }
