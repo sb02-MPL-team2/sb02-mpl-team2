@@ -290,15 +290,14 @@ public class BasicLiveWatchService implements LiveWatchService {
     );
 
     broadcastService.broadcastParticipantEvent(roomId, joinMessage);
-    broadcastService.broadcastMessage(roomId, joinMessage);
   }
 
   private void processLeaveRoom(Long roomId, User user) {
     removeParticipantFromRoom(roomId, user.getId());
 
     ChatMessageDto leaveMessage = createLeaveMessage(user);
+
     broadcastService.broadcastParticipantEvent(roomId, leaveMessage);
-    broadcastService.broadcastMessage(roomId, leaveMessage);
   }
 
   private ChatMessageDto createLeaveMessage(User user) {
