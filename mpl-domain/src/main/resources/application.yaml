@@ -10,7 +10,13 @@ spring:
       initialize-schema: always
   config:
     import: optional:file:.env[.properties]
-
+  cache:
+    type: caffeine
+    cache-names:
+      - users
+      - alarms
+      - messages
+      - playlists
 logging:
   level:
     # ??????? ?? ?? ?? ??? INFO? ??
