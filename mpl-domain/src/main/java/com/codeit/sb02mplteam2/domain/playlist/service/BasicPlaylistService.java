@@ -199,6 +199,7 @@ public class BasicPlaylistService implements PlaylistService {
     return PlaylistDto.of(playlist, userSlimDto, playlistItemDtoList, responseDto);
   }
 
+  @Override
   @Transactional(readOnly = true)
   @CachePut(value = "playlists", key = "#id")
   public PlaylistDto refreshAndFindById(Long id) {
