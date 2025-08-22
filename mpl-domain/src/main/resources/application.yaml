@@ -15,7 +15,7 @@ spring:
     cache-names:
       - users
       - alarms
-      - messages
+      - directMessages
       - playlists
 logging:
   level:
