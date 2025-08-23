@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +33,7 @@ public class BasicNotificationService implements NotificationService {
   protected final NotificationRepository notificationRepository;
 
   @Override
+  @Transactional(readOnly = true)
   public List<NotificationDto> findByLastEventTime(Long userId, LocalDateTime lastEventTime) {
     log.info("알람 찾기 서비스 실행중");
     return notificationRepository.findUserNotificationAfter(userId,
@@ -40,6 +42,7 @@ public class BasicNotificationService implements NotificationService {
   }
 
   @Override
+  @Transactional
   public void delete(Long notificationId) {
     log.info("알람 아이디 {}", notificationId);
     if (notificationId == null) {
@@ -50,6 +53,7 @@ public class BasicNotificationService implements NotificationService {
   }
 
   @Override
+  @Transactional
   public void deleteAllByUserId(Long userId) {
     log.info("알람 전체 삭제할 유저 아이디 {}", userId);
     if (userId == null) {
@@ -59,8 +63,9 @@ public class BasicNotificationService implements NotificationService {
     notificationRepository.deleteAllByReceiverId(userId);
   }
 
+  @Transactional
   @Scheduled(cron = "0 0 0 * * *")
-  private void deleteOldNotification() {
+  protected void deleteOldNotification() {
     //현재보다 ?일 이전의 알람 싸그리 삭제함
     LocalDateTime cutoffDateTime = LocalDateTime.now().minusDays(notificationRetentionPeriodInDays);
     log.info("{}일 이전의 오래된 알림 데이터 삭제를 시작합니다. (기준 시각: {})", notificationRetentionPeriodInDays,
@@ -73,30 +78,39 @@ public class BasicNotificationService implements NotificationService {
    * 모든 값이 캐시에 존재할 경우
    */
   @Override
+  @Transactional
   public <T> NotificationDto save(UserDto receiver, UserDto publisher, NotificationType type,
+      T target) {
+    Notification notification = createNotification(receiver, publisher, type, target);
+    notificationRepository.save(notification);
+    return NotificationDto.of(notification);
+  }
+
+  @Override
+  @Transactional
+  public <T> List<NotificationDto> saveAll(Set<UserDto> receivers, UserDto publisher,
+      NotificationType type, T target) {
+    List<Notification> notificationList = new ArrayList<>();
+    for (UserDto receiver : receivers) {
+      Notification notification = createNotification(receiver, publisher, type, target);
+      notificationList.add(notification);
+    }
+    return notificationList.stream().map(NotificationDto::of).toList();
+  }
+
+  private <T> Notification createNotification(UserDto receiver, UserDto publisher, NotificationType type,
       T target) {
     String title = NotificationType.toTitle(publisher.username(), type.getMessageTemplate());
     String content = createContent(target, type);
     Long targetId = null;
-
+    log.info("저장중");
     if (target instanceof PlaylistDto playlistDto) {
       targetId = playlistDto.id();
     } else if (target instanceof DirectMessageDto directMessageDto) {
       targetId = directMessageDto.id();
     }
-
-    return NotificationDto.of(Notification.of(receiver.id(), publisher.id(), targetId,
-        title, content, type));
-  }
-
-  @Override
-  public <T> List<NotificationDto> saveAll(Set<UserDto> receivers, UserDto publisher,
-      NotificationType type, T target) {
-    List<NotificationDto> notificationDtoList = new ArrayList<>();
-    for (UserDto receiver : receivers) {
-         NotificationDto notificationDto = save(receiver, publisher, type, target);
-      notificationDtoList.add(notificationDto);
-    }
-    return notificationDtoList;
+    log.info("targetId {}", targetId);
+    return Notification.of(receiver.id(), publisher.id(), targetId,
+        title, content, type);
   }
 }

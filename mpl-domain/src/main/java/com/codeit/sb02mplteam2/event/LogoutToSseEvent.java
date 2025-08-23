@@ -1,4 +1,4 @@
-package com.codeit.sb02mplteam2.domain.notification.event;
+package com.codeit.sb02mplteam2.event;
 
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;

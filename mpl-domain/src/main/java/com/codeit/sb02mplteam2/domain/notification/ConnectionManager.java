@@ -1,8 +1,8 @@
 package com.codeit.sb02mplteam2.domain.notification;
 
 import com.codeit.sb02mplteam2.domain.notification.entity.ConnectionInfo;
-import com.codeit.sb02mplteam2.domain.notification.event.LogoutToSseEvent;
-import com.codeit.sb02mplteam2.domain.notification.event.LostNotificationEvent;
+import com.codeit.sb02mplteam2.event.LogoutToSseEvent;
+import com.codeit.sb02mplteam2.event.LostNotificationEvent;
 import jakarta.annotation.PostConstruct;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -83,8 +83,9 @@ public class ConnectionManager {
         long timestamp = Long.parseLong(lastEventId.split("_")[0]);
         LocalDateTime lastEventTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp),
             ZoneId.systemDefault());
-        eventPublisher.publishEvent(
-            new LostNotificationEvent(this, userId, lastEventTime, connectionInfo));
+        LostNotificationEvent event = new LostNotificationEvent(this, userId,
+            lastEventTime, connectionInfo);
+        eventPublisher.publishEvent(event);
       }
     } catch (Exception e) {
       connectionSemaphore.release();
