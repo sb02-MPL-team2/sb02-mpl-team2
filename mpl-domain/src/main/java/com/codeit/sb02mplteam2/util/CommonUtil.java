@@ -1,5 +1,6 @@
 package com.codeit.sb02mplteam2.util;
 
+import com.codeit.sb02mplteam2.domain.notification.entity.NotificationType;
 import java.util.Map;
 import java.util.Set;
 import lombok.AccessLevel;
@@ -31,6 +32,14 @@ public final class CommonUtil {
       return caffeineCache.getAllPresent(ids);
     }
     return null;
+  }
+
+  public static boolean isTargetRequired(NotificationType type) {
+    return switch (type) {
+      case NEW_PLAYLIST_BY_FOLLOWING, PLAYLIST_SUBSCRIBED, BROADCAST_TODAY_PLAYLIST, NEW_MESSAGE ->
+          true;
+      default -> false;
+    };
   }
 
 }

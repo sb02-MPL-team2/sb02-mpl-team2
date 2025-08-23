@@ -53,6 +53,9 @@ subprojects {
         //파일 인풋 아웃풋 유틸 라이브러리
         implementation 'commons-io:commons-io:2.16.1'
 
+        //직렬화, 역직렬화
+        implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
         //Swagger UI
         //3.5.x 버전은 2.7.0 이상부터 됨
         implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'

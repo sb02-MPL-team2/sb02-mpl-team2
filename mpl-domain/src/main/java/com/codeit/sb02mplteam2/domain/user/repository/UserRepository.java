@@ -19,5 +19,6 @@ public interface UserRepository extends JpaRepository<User, Long>, UserRepositor
   @Query("select u from User u left join fetch u.profile where u.email = :email")
   Optional<User> findByEmailWithProfile(@Param("email") String email);
 
+  @Query("SELECT u.id FROM User u")
   Set<Long> findAllIds();
 }
