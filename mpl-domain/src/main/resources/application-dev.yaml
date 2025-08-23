@@ -88,7 +88,7 @@ mpl:
     max-connections: ${SSE_MAX_CONNECTIONS:100}
   scheduler:
     # 테스트 모드 활성화 플래그 (true로 바꾸면 테스트용 cron이 적용됩니다)
-    test-mode: true
+    test-mode: ${SCHEDULER_TEST_MODE:false}
     # 테스트용 cron (매 1분마다 실행)
     # 테스트용 cron
     # 매 30초마다 실행
