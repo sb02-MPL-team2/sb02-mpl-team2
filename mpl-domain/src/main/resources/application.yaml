@@ -40,6 +40,11 @@ mpl:
     inactive-timeout-minutes: ${SSE_INACTIVE_TIMEOUT_MINUTES:10}
     default-timeout: ${SSE_DEFAULT_TIMEOUT:30}
     max-connections: ${SSE_MAX_CONNECTIONS:100}
+  livewatch:
+    redis:
+      streams:
+        stream-key: ${LIVEWATCH_STREAM_KEY:livewatch:broadcast}
+        consumer-id: ${LIVEWATCH_REDIS_STREAMS_CONSUMER_ID:}
   scheduler:
     # 테스트 모드 활성화 플래그 (true로 바꾸면 테스트용 cron이 적용됩니다)
     test-mode: true
