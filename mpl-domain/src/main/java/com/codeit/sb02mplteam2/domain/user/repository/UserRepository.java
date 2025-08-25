@@ -1,6 +1,7 @@
 package com.codeit.sb02mplteam2.domain.user.repository;
 
 import com.codeit.sb02mplteam2.domain.user.entity.User;
+import com.codeit.sb02mplteam2.security.Provider;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -17,4 +18,6 @@ public interface UserRepository extends JpaRepository<User, Long>, UserRepositor
 
   @Query("select u from User u left join fetch u.profile where u.email = :email")
   Optional<User> findByEmailWithProfile(@Param("email") String email);
+
+  Optional<User> findByProviderIdAndProvider(String providerId, Provider provider);
 }
