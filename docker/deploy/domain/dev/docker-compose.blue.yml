@@ -7,6 +7,8 @@ services:
     image: mpl-domain:local-dev # 추후에 AWS에 배포할 경우, AWS계정번호.dkr.ecr.ap-northeast-2.amazonaws.com/mpl-domain:develop 으로 해야함
     ports:
       - 7070:8080
+    env_file:
+      - ./.env
     environment:
       - SPRING_PROFILES_ACTIVE=dev
       - TZ=Asia/Seoul  # <-- timezone 설정 추가
