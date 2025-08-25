@@ -112,18 +112,16 @@ public class BasicPlaylistService implements PlaylistService {
       if (success) {
         log.info("구독 성공 user id = {}, name = {}, playlist id = {}, playlist Title = {}", userId,
             user.getUsername(), playlistId, playlist.getTitle());
-
+        //이벤트 발행
+        NotificationEvent event = new NotificationEvent(playlist.getUser().getId(),
+            NotificationType.PLAYLIST_SUBSCRIBED,
+            playlist.getId(), userId);
+//      eventPublisher.publishEvent(event);
+        rabbitTemplate.convertAndSend(RabbitConst.notificationExchange,RabbitConst.Playlist_Send_Notification_RoutingKey,event);
       } else {
         log.warn("구독 실패 user id = {}, name = {}, playlist id = {}, playlist Title = {}", userId,
             user.getUsername(), playlistId, playlist.getTitle());
       }
-      //이벤트 발행
-      NotificationEvent event = new NotificationEvent(playlist.getUser().getId(),
-          NotificationType.PLAYLIST_SUBSCRIBED,
-          playlist.getId(), userId);
-//      eventPublisher.publishEvent(event);
-      rabbitTemplate.convertAndSend(RabbitConst.notificationExchange,RabbitConst.Playlist_Send_Notification_RoutingKey,event);
-
     }
     playlistRepository.save(playlist);
 
