@@ -10,17 +10,15 @@ import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistDto;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistItemDto;
 import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistCreateRequest;
 import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistUpdateRequest;
-import com.codeit.sb02mplteam2.domain.playlist.dto.request.SubscribeRequest;
 import com.codeit.sb02mplteam2.domain.playlist.entity.Playlist;
-import com.codeit.sb02mplteam2.domain.playlist.entity.Subscribe;
 import com.codeit.sb02mplteam2.domain.playlist.repository.PlaylistRepository;
-import com.codeit.sb02mplteam2.domain.playlist.repository.SubscribeRepository;
 import com.codeit.sb02mplteam2.domain.social.repository.FollowRepository;
+import com.codeit.sb02mplteam2.domain.subscribe.entity.Subscribe;
+import com.codeit.sb02mplteam2.domain.subscribe.repository.SubscribeRepository;
 import com.codeit.sb02mplteam2.domain.user.dto.UserSlimDto;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
 import com.codeit.sb02mplteam2.event.BulkNotificationEvent;
-import com.codeit.sb02mplteam2.event.NotificationEvent;
 import com.codeit.sb02mplteam2.exception.ErrorCode;
 import com.codeit.sb02mplteam2.exception.playlist.PlaylistException;
 import com.codeit.sb02mplteam2.exception.user.UserException;
@@ -82,84 +80,6 @@ public class BasicPlaylistService implements PlaylistService {
     UserSlimDto userSlimDto = toUserSlimDto(playlist);
     List<PlaylistItemDto> playlistItemDtoList = toPlaylistItemDtoList(playlist);
     return PlaylistDto.of(playlist, userSlimDto, playlistItemDtoList);
-  }
-
-  @Override
-  @Transactional
-  @CachePut(value = "playlists", key = "#request.playlistId")
-  public PlaylistDto subscribe(Long userId, SubscribeRequest request) {
-    User user = userRepository.findById(userId).orElseThrow(
-        () -> new UserException(ErrorCode.USER_NOT_FOUND));
-
-    Long playlistId = request.playlistId();
-    Playlist playlist = playlistRepository.findById(playlistId).orElseThrow(
-        () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
-
-    // 구독 중복 체크
-    Subscribe existingSubscribe = subscribeRepository.findByUserAndPlaylist(user, playlist)
-        .orElse(null);
-    if (existingSubscribe != null) {
-      log.warn("이미 구독된 플레이리스트입니다. user id = {}, name = {}, playlist id = {}, playlist Title = {}",
-          userId,
-          user.getUsername(), playlistId, playlist.getTitle());
-    } else {
-      //구독 생성
-      Subscribe subscribe = new Subscribe(user, playlist);
-      subscribeRepository.save(subscribe);
-
-      //구독 추가
-      boolean success = playlist.subscribe(subscribe);
-      if (success) {
-        log.info("구독 성공 user id = {}, name = {}, playlist id = {}, playlist Title = {}", userId,
-            user.getUsername(), playlistId, playlist.getTitle());
-        //이벤트 발행
-        NotificationEvent event = new NotificationEvent(playlist.getUser().getId(),
-            NotificationType.PLAYLIST_SUBSCRIBED,
-            playlist.getId(), userId);
-//      eventPublisher.publishEvent(event);
-        rabbitTemplate.convertAndSend(RabbitConst.notificationExchange,RabbitConst.Playlist_Send_Notification_RoutingKey,event);
-      } else {
-        log.warn("구독 실패 user id = {}, name = {}, playlist id = {}, playlist Title = {}", userId,
-            user.getUsername(), playlistId, playlist.getTitle());
-      }
-    }
-    playlistRepository.save(playlist);
-
-    List<ContentResponseDto> responseDto = toResponseDto(playlist.getItems());
-    UserSlimDto userSlimDto = toUserSlimDto(playlist);
-    List<PlaylistItemDto> playlistItemDtoList = toPlaylistItemDtoList(playlist);
-    return PlaylistDto.of(playlist, userSlimDto, playlistItemDtoList, responseDto);
-  }
-
-  @Override
-  @Transactional
-  @CachePut(value = "playlists", key = "#request.playlistId")
-  public PlaylistDto unSubscribe(Long userId, SubscribeRequest request) {
-    User user = userRepository.findById(userId).orElseThrow(
-        () -> new UserException(ErrorCode.USER_NOT_FOUND));
-
-    Long playlistId = request.playlistId();
-    Playlist playlist = playlistRepository.findById(playlistId).orElseThrow(
-        () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
-
-    Subscribe subscribe = subscribeRepository.findByUserAndPlaylist(user, playlist).orElseThrow(
-        () -> new PlaylistException(ErrorCode.SUBSCRIBE_NOT_FOUND)
-    );
-
-    boolean success = playlist.unSubscribe(subscribe);
-    if (success) {
-      log.info("구독 취소 성공 user id = {}, name = {}, playlist id = {}, playlist Title = {}", userId,
-          user.getUsername(), playlistId, playlist.getTitle());
-      subscribeRepository.delete(subscribe);
-      playlistRepository.save(playlist);
-    } else {
-      log.warn("구독 취소 실패 user id = {}, name = {}, playlist id = {}, playlist Title = {}", userId,
-          user.getUsername(), playlistId, playlist.getTitle());
-    }
-    List<ContentResponseDto> responseDto = toResponseDto(playlist.getItems());
-    UserSlimDto userSlimDto = toUserSlimDto(playlist);
-    List<PlaylistItemDto> playlistItemDtoList = toPlaylistItemDtoList(playlist);
-    return PlaylistDto.of(playlist, userSlimDto, playlistItemDtoList, responseDto);
   }
 
   @Override

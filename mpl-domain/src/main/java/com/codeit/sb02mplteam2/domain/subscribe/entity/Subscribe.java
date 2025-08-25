@@ -1,5 +1,6 @@
-package com.codeit.sb02mplteam2.domain.playlist.entity;
+package com.codeit.sb02mplteam2.domain.subscribe.entity;
 
+import com.codeit.sb02mplteam2.domain.playlist.entity.Playlist;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
