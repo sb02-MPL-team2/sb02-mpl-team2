@@ -1,35 +1,25 @@
 package com.codeit.sb02mplteam2.domain.notification.service;
 
+import static com.codeit.sb02mplteam2.util.NotificationUtil.createContent;
+
 import com.codeit.sb02mplteam2.domain.notification.dto.NotificationDto;
 import com.codeit.sb02mplteam2.domain.notification.entity.Notification;
 import com.codeit.sb02mplteam2.domain.notification.entity.NotificationType;
-import com.codeit.sb02mplteam2.domain.notification.event.BroadcastEvent;
 import com.codeit.sb02mplteam2.domain.notification.repository.NotificationRepository;
-import com.codeit.sb02mplteam2.domain.playlist.entity.Playlist;
-import com.codeit.sb02mplteam2.domain.playlist.repository.PlaylistRepository;
-import com.codeit.sb02mplteam2.domain.social.entity.DirectMessage;
-import com.codeit.sb02mplteam2.domain.social.repository.DirectMessageRepository;
-import com.codeit.sb02mplteam2.domain.user.entity.AlarmSetting;
-import com.codeit.sb02mplteam2.domain.user.entity.User;
-import com.codeit.sb02mplteam2.domain.user.repository.AlarmSettingRepository;
+import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistDto;
+import com.codeit.sb02mplteam2.domain.social.dto.DirectMessageDto;
+import com.codeit.sb02mplteam2.domain.user.dto.UserDto;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
-import com.codeit.sb02mplteam2.exception.ErrorCode;
-import com.codeit.sb02mplteam2.exception.MplException;
-import com.codeit.sb02mplteam2.exception.directmessage.DirectMessageException;
-import com.codeit.sb02mplteam2.exception.playlist.PlaylistException;
-import com.codeit.sb02mplteam2.exception.user.UserException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -39,13 +29,11 @@ public class BasicNotificationService implements NotificationService {
   @Value("${mpl.notification.retention-period-in-days}")
   private long notificationRetentionPeriodInDays;
 
-  private final UserRepository userRepository;
-  private final NotificationRepository notificationRepository;
-  private final DirectMessageRepository directMessageRepository;
-  private final AlarmSettingRepository alarmSettingRepository;
-  private final PlaylistRepository playlistRepository;
+  protected final UserRepository userRepository;
+  protected final NotificationRepository notificationRepository;
 
   @Override
+  @Transactional(readOnly = true)
   public List<NotificationDto> findByLastEventTime(Long userId, LocalDateTime lastEventTime) {
     log.info("알람 찾기 서비스 실행중");
     return notificationRepository.findUserNotificationAfter(userId,
@@ -54,6 +42,7 @@ public class BasicNotificationService implements NotificationService {
   }
 
   @Override
+  @Transactional
   public void delete(Long notificationId) {
     log.info("알람 아이디 {}", notificationId);
     if (notificationId == null) {
@@ -64,6 +53,7 @@ public class BasicNotificationService implements NotificationService {
   }
 
   @Override
+  @Transactional
   public void deleteAllByUserId(Long userId) {
     log.info("알람 전체 삭제할 유저 아이디 {}", userId);
     if (userId == null) {
@@ -73,8 +63,9 @@ public class BasicNotificationService implements NotificationService {
     notificationRepository.deleteAllByReceiverId(userId);
   }
 
+  @Transactional
   @Scheduled(cron = "0 0 0 * * *")
-  private void deleteOldNotification() {
+  protected void deleteOldNotification() {
     //현재보다 ?일 이전의 알람 싸그리 삭제함
     LocalDateTime cutoffDateTime = LocalDateTime.now().minusDays(notificationRetentionPeriodInDays);
     log.info("{}일 이전의 오래된 알림 데이터 삭제를 시작합니다. (기준 시각: {})", notificationRetentionPeriodInDays,
@@ -83,118 +74,43 @@ public class BasicNotificationService implements NotificationService {
     log.info("오래된 알림 데이터 삭제 완료.");
   }
 
+  /**
+   * 모든 값이 캐시에 존재할 경우
+   */
   @Override
-  public NotificationDto broadcast(BroadcastEvent event) {
-    NotificationType notificationType = event.getNotificationType();
-    Long targetId = event.getTargetId();
-    LocalDateTime twelveHoursAgo = LocalDateTime.now().minusHours(12);
-
-    Optional<Notification> broadcastNotification = notificationRepository.findByTypeAndTargetIdAndCreatedAtAfter(
-        notificationType, targetId, twelveHoursAgo);
-
-    if (broadcastNotification.isPresent()) {
-      return NotificationDto.of(broadcastNotification.get());
-    } else {
-      log.info("브로드캐스트 알람 생성");
-      String title = notificationType.getMessageTemplate();
-      String content = createContent(targetId, notificationType);
-
-      Notification notification = Notification.broadcast(targetId, title, content, notificationType);
-      notificationRepository.save(notification);
-
-      return NotificationDto.of(notification);
-    }
-  }
-
-  @Override
-  public NotificationDto create(Long receiverId, NotificationType type, Long targetId,
-      Long publisherId) {
-    Notification notification = of(receiverId, publisherId, type, targetId);
-
-    if (notification == null) {
-      return null;
-    }
-
+  @Transactional
+  public <T> NotificationDto save(UserDto receiver, UserDto publisher, NotificationType type,
+      T target) {
+    Notification notification = createNotification(receiver, publisher, type, target);
     notificationRepository.save(notification);
     return NotificationDto.of(notification);
   }
 
   @Override
-  public List<NotificationDto> createAll(Set<Long> receiverIds, NotificationType type,
-      Long targetId,
-      Long publisherId) {
-
-    User publisher = userRepository.findById(publisherId)
-        .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
-
-    List<User> receivers = userRepository.findAllById(receiverIds);
-
-    // Map<userId, AlarmSetting> 형태로 변환하여 O(1) 시간 복잡도로 조회를 가능하게 함
-    Map<Long, AlarmSetting> alarmSettingsMap = alarmSettingRepository.findAllByUserIn(receivers)
-        .stream()
-        .collect(Collectors.toMap(setting -> setting.getUser().getId(), setting -> setting));
-
-    List<Notification> notificationsToSave = new ArrayList<>();
-    String titleTemplate = type.getMessageTemplate();
-    String content = createContent(targetId, type);
-
-    for (User receiver : receivers) {
-      AlarmSetting alarmSetting = alarmSettingsMap.get(receiver.getId());
-
-      if (alarmSetting == null) {
-        continue;
-      }
-
-      String title = NotificationType.toTitle(publisher.getUsername(), titleTemplate);
-
-      Notification notification = Notification.of(receiver.getId(), publisherId, targetId,title, content,
-          type, alarmSetting);
-      if (notification != null) {
-        notificationsToSave.add(notification);
-      }
+  @Transactional
+  public <T> List<NotificationDto> saveAll(Set<UserDto> receivers, UserDto publisher,
+      NotificationType type, T target) {
+    List<Notification> notificationList = new ArrayList<>();
+    for (UserDto receiver : receivers) {
+      Notification notification = createNotification(receiver, publisher, type, target);
+      notificationList.add(notification);
     }
-
-    List<Notification> savedNotifications = notificationRepository.saveAll(notificationsToSave);
-
-    return savedNotifications.stream()
-        .map(NotificationDto::of)
-        .toList();
+    return notificationList.stream().map(NotificationDto::of).toList();
   }
 
-  private Notification of(Long receiverId, Long publisherId, NotificationType type, Long targetId) {
-    User receiver = userRepository.findById(receiverId).orElseThrow(
-        () -> new UserException(ErrorCode.USER_NOT_FOUND)
-    );
-
-    //TODO 유저에 알람 설정 파일을 가져올 수 있으면 좋을듯
-    AlarmSetting alarmSetting = alarmSettingRepository.findByUser(receiver).orElseThrow(
-        () -> new MplException(ErrorCode.USER_NOT_FOUND)
-    );
-
-    User publisher = userRepository.findById(publisherId).orElseThrow(
-        () -> new UserException(ErrorCode.USER_NOT_FOUND)
-    );
-
-    String title = NotificationType.toTitle(publisher.getUsername(), type.getMessageTemplate());
-    String content = createContent(targetId, type);
-
-    return Notification.of(receiverId, publisherId, targetId, title, content, type, alarmSetting);
-  }
-
-  private String createContent(Long targetId, NotificationType type) {
-    return switch (type) {
-      case NEW_MESSAGE -> {
-        DirectMessage directMessage = directMessageRepository.findById(targetId)
-            //TODO ErrorCode에 DM Not found 넣어야함
-            .orElseThrow(() -> new DirectMessageException(ErrorCode.INTERNAL_SERVER_ERROR));
-        yield directMessage.getContent();
-      }
-      case NEW_PLAYLIST_BY_FOLLOWING, PLAYLIST_SUBSCRIBED, BROADCAST_TODAY_PLAYLIST -> {
-        Playlist playlist = playlistRepository.findById(targetId)
-            .orElseThrow(() -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
-        yield playlist.getTitle();
-      }
-      default -> null;
-    };
+  private <T> Notification createNotification(UserDto receiver, UserDto publisher, NotificationType type,
+      T target) {
+    String title = NotificationType.toTitle(publisher.username(), type.getMessageTemplate());
+    String content = createContent(target, type);
+    Long targetId = null;
+    log.info("저장중");
+    if (target instanceof PlaylistDto playlistDto) {
+      targetId = playlistDto.id();
+    } else if (target instanceof DirectMessageDto directMessageDto) {
+      targetId = directMessageDto.id();
+    }
+    log.info("targetId {}", targetId);
+    return Notification.of(receiver.id(), publisher.id(), targetId,
+        title, content, type);
   }
 }

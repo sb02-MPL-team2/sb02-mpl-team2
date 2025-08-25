@@ -1,4 +1,4 @@
-version: "3"
+version: "3.8"
 services:
   application:
     build:
@@ -9,8 +9,10 @@ services:
       - 7070:8080
     environment:
       - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_RABBITMQ_HOST=rabbitmq
       - TZ=Asia/Seoul  # <-- timezone 설정 추가
-      - JAVA_TOOL_OPTIONS=-Duser.timezone=Asia/Seoul # <-- JVM timezone 설정 추가
+      # JVM timezone 설정 추가 및 JVM 힙 메모리 설정 추가
+      - JAVA_TOOL_OPTIONS=-Duser.timezone=Asia/Seoul  -Xms512m -Xmx1g
       - TMDB_API_KEY=${TMDB_API_KEY}
       - TMDB_BASE_URL=https://api.themoviedb.org/3
     logging:
@@ -18,3 +20,18 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+    networks:
+      - infra-net
+    # 컨테이너 메모리 제한 설정 ▼▼▼
+    deploy:
+      resources:
+        limits:
+          memory: 1g # 최대 1g 메모리 사용
+          cpus: '4.0' # 최대 4코어
+        reservations:
+          memory: 512m # 최대 512mb 메모리 사용
+          cpus: '0.5' # 최대 0.5코어 사용
+
+networks:
+  infra-net:
+    external: true

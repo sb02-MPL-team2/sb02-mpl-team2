@@ -1,13 +1,11 @@
 package com.codeit.sb02mplteam2.domain.playlist.service;
 
-import static com.codeit.sb02mplteam2.domain.playlist.PlaylistUtil.toPlaylistItemDtoList;
-import static com.codeit.sb02mplteam2.domain.playlist.PlaylistUtil.toResponseDto;
-import static com.codeit.sb02mplteam2.domain.playlist.PlaylistUtil.toUserSlimDto;
+import static com.codeit.sb02mplteam2.util.PlaylistUtil.toPlaylistItemDtoList;
+import static com.codeit.sb02mplteam2.util.PlaylistUtil.toResponseDto;
+import static com.codeit.sb02mplteam2.util.PlaylistUtil.toUserSlimDto;
 
 import com.codeit.sb02mplteam2.domain.content.dto.content.ContentResponseDto;
 import com.codeit.sb02mplteam2.domain.notification.entity.NotificationType;
-import com.codeit.sb02mplteam2.domain.notification.event.BulkNotificationEvent;
-import com.codeit.sb02mplteam2.domain.notification.event.NotificationEvent;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistDto;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistItemDto;
 import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistCreateRequest;
@@ -21,13 +19,20 @@ import com.codeit.sb02mplteam2.domain.social.repository.FollowRepository;
 import com.codeit.sb02mplteam2.domain.user.dto.UserSlimDto;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
+import com.codeit.sb02mplteam2.event.BulkNotificationEvent;
+import com.codeit.sb02mplteam2.event.NotificationEvent;
 import com.codeit.sb02mplteam2.exception.ErrorCode;
 import com.codeit.sb02mplteam2.exception.playlist.PlaylistException;
 import com.codeit.sb02mplteam2.exception.user.UserException;
+import com.codeit.sb02mplteam2.util.RabbitConst;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +47,8 @@ public class BasicPlaylistService implements PlaylistService {
   private final SubscribeRepository subscribeRepository;
   private final FollowRepository followRepository;
   private final ApplicationEventPublisher eventPublisher;
+
+  private final RabbitTemplate rabbitTemplate;
 
   @Override
   @Transactional
@@ -66,10 +73,12 @@ public class BasicPlaylistService implements PlaylistService {
     //이벤트 발행
     Set<Long> followersId = followRepository.findAllFollowersIdByToUserId(userId);
     log.info("{}의 팔로워에게 알람 전송 ", followersId.size());
-    eventPublisher.publishEvent(new BulkNotificationEvent(this, followersId,
+    BulkNotificationEvent event = new BulkNotificationEvent(followersId,
         NotificationType.NEW_PLAYLIST_BY_FOLLOWING,
-        playlist.getId(), userId));
-
+        playlist.getId(), userId);
+//    eventPublisher.publishEvent();
+    rabbitTemplate.convertAndSend(RabbitConst.notificationExchange,RabbitConst.Notification_Bulk_Send_RoutingKey,event);
+    log.info("전송 완료");
     UserSlimDto userSlimDto = toUserSlimDto(playlist);
     List<PlaylistItemDto> playlistItemDtoList = toPlaylistItemDtoList(playlist);
     return PlaylistDto.of(playlist, userSlimDto, playlistItemDtoList);
@@ -77,6 +86,7 @@ public class BasicPlaylistService implements PlaylistService {
 
   @Override
   @Transactional
+  @CachePut(value = "playlists", key = "#request.playlistId")
   public PlaylistDto subscribe(Long userId, SubscribeRequest request) {
     User user = userRepository.findById(userId).orElseThrow(
         () -> new UserException(ErrorCode.USER_NOT_FOUND));
@@ -108,9 +118,12 @@ public class BasicPlaylistService implements PlaylistService {
             user.getUsername(), playlistId, playlist.getTitle());
       }
       //이벤트 발행
-      eventPublisher.publishEvent(
-          new NotificationEvent(this, playlist.getUser().getId(), NotificationType.PLAYLIST_SUBSCRIBED,
-              playlist.getId(), userId));
+      NotificationEvent event = new NotificationEvent(playlist.getUser().getId(),
+          NotificationType.PLAYLIST_SUBSCRIBED,
+          playlist.getId(), userId);
+//      eventPublisher.publishEvent(event);
+      rabbitTemplate.convertAndSend(RabbitConst.notificationExchange,RabbitConst.Playlist_Send_Notification_RoutingKey,event);
+
     }
     playlistRepository.save(playlist);
 
@@ -122,6 +135,7 @@ public class BasicPlaylistService implements PlaylistService {
 
   @Override
   @Transactional
+  @CachePut(value = "playlists", key = "#request.playlistId")
   public PlaylistDto unSubscribe(Long userId, SubscribeRequest request) {
     User user = userRepository.findById(userId).orElseThrow(
         () -> new UserException(ErrorCode.USER_NOT_FOUND));
@@ -152,6 +166,7 @@ public class BasicPlaylistService implements PlaylistService {
 
   @Override
   @Transactional
+  @CacheEvict(value = "playlists", key = "#playlistId")
   public void delete(Long playlistId, Long userId) {
     Playlist playlist = playlistRepository.findById(playlistId).orElseThrow(
         () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
@@ -165,6 +180,7 @@ public class BasicPlaylistService implements PlaylistService {
 
   @Override
   @Transactional
+  @CachePut(value = "playlists", key = "#playlistId")
   public PlaylistDto update(Long userId,Long playlistId, PlaylistUpdateRequest request) {
     Playlist playlist = playlistRepository.findById(playlistId).orElseThrow(
         () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
@@ -182,7 +198,20 @@ public class BasicPlaylistService implements PlaylistService {
 
   @Override
   @Transactional(readOnly = true)
+  @Cacheable(value = "playlists", key = "#id")
   public PlaylistDto findById(Long id) {
+    Playlist playlist = playlistRepository.findById(id).orElseThrow(
+        () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
+    List<ContentResponseDto> responseDto = toResponseDto(playlist.getItems());
+    UserSlimDto userSlimDto = toUserSlimDto(playlist);
+    List<PlaylistItemDto> playlistItemDtoList = toPlaylistItemDtoList(playlist);
+    return PlaylistDto.of(playlist, userSlimDto, playlistItemDtoList, responseDto);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  @CachePut(value = "playlists", key = "#id")
+  public PlaylistDto refreshAndFindById(Long id) {
     Playlist playlist = playlistRepository.findById(id).orElseThrow(
         () -> new PlaylistException(ErrorCode.PLAYLIST_NOT_FOUND));
     List<ContentResponseDto> responseDto = toResponseDto(playlist.getItems());

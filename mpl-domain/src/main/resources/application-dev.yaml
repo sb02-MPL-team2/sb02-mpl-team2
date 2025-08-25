@@ -2,6 +2,13 @@ spring:
   config:
     activate:
       on-profile: dev
+  cache:
+    type: caffeine
+    cache-names:
+      - users
+      - alarms
+      - directMessages
+      - playlists
   datasource:
     url: jdbc:h2:file:~/testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;NON_KEYWORDS=USER;AUTO_SERVER=TRUE
     username: sa
@@ -49,6 +56,12 @@ spring:
           starttls:
             enable: true
 
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: myuser  # docker-compose에서 설정한 사용자 이름
+    password: mypassword # docker-compose에서 설정한 비밀번호
+
 logging:
   level:
     org:
@@ -86,7 +99,7 @@ mpl:
     max-connections: ${SSE_MAX_CONNECTIONS:100}
   scheduler:
     # 테스트 모드 활성화 플래그 (true로 바꾸면 테스트용 cron이 적용됩니다)
-    test-mode: true
+    test-mode: ${SCHEDULER_TEST_MODE:false}
     # 테스트용 cron (매 1분마다 실행)
     # 테스트용 cron
     # 매 30초마다 실행

@@ -12,7 +12,8 @@ public enum ErrorCode {
   EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 사용 중인 이메일입니다."),
   USERNAME_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 사용 중인 유저 이름입니다."),
   ADMIN_USER_NOT_FOUND(HttpStatus.FORBIDDEN, "관리자 정보를 찾을 수 없습니다."),
-
+  //Alarm
+  ALARM_NOT_FOUND(HttpStatus.NOT_FOUND, "알람을 찾을 수 없습니다."),
   // Server Error
   INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"서버 내부 오류가 발생했습니다."),
 

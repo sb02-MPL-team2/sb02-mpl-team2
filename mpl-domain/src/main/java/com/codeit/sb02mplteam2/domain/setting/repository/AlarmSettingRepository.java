@@ -1,6 +1,6 @@
-package com.codeit.sb02mplteam2.domain.user.repository;
+package com.codeit.sb02mplteam2.domain.setting.repository;
 
-import com.codeit.sb02mplteam2.domain.user.entity.AlarmSetting;
+import com.codeit.sb02mplteam2.domain.setting.entity.AlarmSetting;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import java.util.List;
 import java.util.Optional;

@@ -1,4 +1,4 @@
-package com.codeit.sb02mplteam2.domain.notification.event;
+package com.codeit.sb02mplteam2.event;
 
 import com.codeit.sb02mplteam2.domain.notification.entity.ConnectionInfo;
 import java.time.LocalDateTime;
