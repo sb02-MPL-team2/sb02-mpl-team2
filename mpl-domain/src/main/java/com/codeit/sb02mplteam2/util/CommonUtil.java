@@ -6,6 +6,7 @@ import java.util.Set;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.springframework.cache.Cache;
+import org.springframework.data.redis.cache.RedisCache;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CommonUtil {
@@ -17,6 +18,8 @@ public final class CommonUtil {
       com.github.benmanes.caffeine.cache.Cache<Long, T> caffeineCache
           = (com.github.benmanes.caffeine.cache.Cache<Long, T>) nativeCache;
       return caffeineCache.getIfPresent(id);
+    } else if (cache instanceof RedisCache redisCache) {
+      return redisCache.get(id, tClass);
     }
     return null;
   }

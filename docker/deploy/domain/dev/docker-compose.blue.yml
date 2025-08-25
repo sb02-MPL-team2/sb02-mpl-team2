@@ -10,6 +10,7 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=dev
       - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_DATA_REDIS_HOST=redis
       - TZ=Asia/Seoul  # <-- timezone 설정 추가
       # JVM timezone 설정 추가 및 JVM 힙 메모리 설정 추가
       - JAVA_TOOL_OPTIONS=-Duser.timezone=Asia/Seoul  -Xms512m -Xmx1g
