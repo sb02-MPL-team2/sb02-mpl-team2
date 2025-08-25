@@ -71,12 +71,12 @@ public class NotificationEventListener implements NotificationListener {
       throw new IllegalStateException("필수 캐시 'playlists'가 존재하지 않습니다.");
     }
 
-    this.messageCache = cacheManager.getCache("messages");
+    this.messageCache = cacheManager.getCache("directMessages");
     if (messageCache == null) {
-      throw new IllegalStateException("필수 캐시 'messages'가 존재하지 않습니다.");
+      throw new IllegalStateException("필수 캐시 'directMessages'가 존재하지 않습니다.");
     }
 
-    log.info("모든 필수 캐시(users, playlists, messages)가 성공적으로 로드되었습니다.");
+    log.info("모든 필수 캐시(users, playlists, directMessages)가 성공적으로 로드되었습니다.");
   }
 
   // All or Nothing
