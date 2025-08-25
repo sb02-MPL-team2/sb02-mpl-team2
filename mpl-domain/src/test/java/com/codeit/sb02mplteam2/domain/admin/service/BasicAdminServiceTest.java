@@ -70,7 +70,7 @@ public class BasicAdminServiceTest {
         Role.ADMIN, null, false, false, 0, 0);
 
     Long adminId = 100L;
-    MplUserDetails adminDetails = new MplUserDetails(
+    MplUserDetails adminDetails = MplUserDetails.forLocalUser(
         new UserDto(adminId, "admin@mpl.com", "admin", null, Role.ADMIN,
             null, false, false, 0, 0), "");
 
