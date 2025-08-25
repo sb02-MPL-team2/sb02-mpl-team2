@@ -18,8 +18,8 @@ public final class CommonUtil {
       com.github.benmanes.caffeine.cache.Cache<Long, T> caffeineCache
           = (com.github.benmanes.caffeine.cache.Cache<Long, T>) nativeCache;
       return caffeineCache.getIfPresent(id);
-    } else if (cache instanceof RedisCache redisCache) {
-      return redisCache.get(id, tClass);
+      Cache.ValueWrapper valueWrapper = redisCache.get(id, tClass);
+      return valueWrapper != null ? (T) valueWrapper.get() : null;
     }
     return null;
   }
