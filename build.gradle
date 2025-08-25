@@ -100,6 +100,8 @@ subprojects {
         testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
         // 비동기 테스트 용
         testImplementation 'org.awaitility:awaitility:4.3.0'
+        testCompileOnly 'org.projectlombok:lombok'
+        testAnnotationProcessor 'org.projectlombok:lombok'
 
         tasks.named('test') {
             useJUnitPlatform()
