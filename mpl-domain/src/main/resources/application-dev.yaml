@@ -2,11 +2,13 @@ spring:
   config:
     activate:
       on-profile: dev
-#  레디스 지금 당장 사용 안 할 예정이라서 아래 내용 추가함
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
-      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+  cache:
+    type: caffeine
+    cache-names:
+      - users
+      - alarms
+      - directMessages
+      - playlists
   datasource:
     url: jdbc:h2:file:~/testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;NON_KEYWORDS=USER;AUTO_SERVER=TRUE
     username: sa
@@ -30,6 +32,17 @@ spring:
     init:
       mode: always
       continue-on-error: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 10
+          max-idle: 10
+          min-idle: 1
+          max-wait: -1ms
 
   mail:
     host: smtp.gmail.com
@@ -53,6 +66,12 @@ spring:
               - profile
               - email
             redirect-uri: http://localhost:8080/login/oauth2/code/google
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: myuser  # docker-compose에서 설정한 사용자 이름
+    password: mypassword # docker-compose에서 설정한 비밀번호
 
 logging:
   level:
@@ -92,7 +111,7 @@ mpl:
     max-connections: ${SSE_MAX_CONNECTIONS:100}
   scheduler:
     # 테스트 모드 활성화 플래그 (true로 바꾸면 테스트용 cron이 적용됩니다)
-    test-mode: true
+    test-mode: ${SCHEDULER_TEST_MODE:false}
     # 테스트용 cron (매 1분마다 실행)
     # 테스트용 cron
     # 매 30초마다 실행

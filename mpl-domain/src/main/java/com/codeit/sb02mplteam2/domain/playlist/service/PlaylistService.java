@@ -17,6 +17,8 @@ public interface PlaylistService {
 
   PlaylistDto findById(Long id);
 
+  PlaylistDto refreshAndFindById(Long id);
+
   void delete(Long playlistId, Long userId);
 
 }

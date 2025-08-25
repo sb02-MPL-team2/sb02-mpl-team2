@@ -10,6 +10,6 @@ public interface ContentService {
   List<ContentResponseDto> findAll(Pageable pageable);
   List<ContentResponseDto> findByCategory(ContentCategory category, Pageable pageable);
   void delete(Long id);
-  int saveTmdbMovies(ContentCategory category);
-  int saveTmdbTvs(ContentCategory category);
+//  int saveTmdbMovies(ContentCategory category);
+//  int saveTmdbTvs(ContentCategory category);
 }

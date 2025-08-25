@@ -9,6 +9,13 @@ spring:
       enabled: false
     jdbc:
       initialize-schema: always
+  cache:
+    type: caffeine
+    cache-names:
+      - users
+      - alarms
+      - directMessages
+      - playlists
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/mpl_db}
     username: ${SPRING_DATASOURCE_USERNAME:mpl}
@@ -33,6 +40,17 @@ spring:
     init:
       mode: always
       continue-on-error: true
+  data:
+    redis:
+      host: redis
+      port: 6379
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 10
+          max-idle: 10
+          min-idle: 1
+          max-wait: -1ms
   mail:
     host: smtp.gmail.com
     port: 587

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.codeit.sb02mplteam2.domain.content.batch.monitoring.BatchFailureTracker;
 import com.codeit.sb02mplteam2.domain.content.entity.ContentCategory;
 import java.time.Duration;
 import java.time.Instant;

@@ -1,5 +1,6 @@
 package com.codeit.sb02mplteam2.domain.notification.service;
 
+import com.codeit.sb02mplteam2.domain.notification.ConnectionManager;
 import com.codeit.sb02mplteam2.domain.notification.dto.NotificationDto;
 import com.codeit.sb02mplteam2.domain.notification.entity.ConnectionInfo;
 import java.io.IOException;
@@ -15,6 +16,18 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @Slf4j
 public class DeliveryService {
 
+  private final ConnectionManager connectionManager;
+
+  public void deliverToClient(NotificationDto notificationDto) {
+    Long userId = notificationDto.receiverId();
+    ConnectionInfo connectionInfo = connectionManager.getConnection(userId);
+    if (connectionInfo == null) {
+      log.warn("연결 정보가 없습니다. userId : {}", userId);
+      return;
+    }
+    deliverToClient(connectionInfo, notificationDto);
+  }
+
   public void deliverToClient(ConnectionInfo connectionInfo, NotificationDto notificationDto) {
     long timestamp = notificationDto.createdAt().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
 
@@ -28,10 +41,10 @@ public class DeliveryService {
           .name(eventName)
           .data(notificationDto, MediaType.APPLICATION_JSON));
       log.info("SSE 이벤트 전송완료...");
+      connectionInfo.updateLastActiveAt();
     } catch (IOException e) {
       log.error("SSE 이벤트 전송 실패: eventId={}, eventName={}, error={}", eventId, eventName,
           e.getMessage());
     }
-    connectionInfo.updateLastActiveAt();
   }
 }

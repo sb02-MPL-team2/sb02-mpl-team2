@@ -1,17 +1,10 @@
 package com.codeit.sb02mplteam2.domain.content.service;
 
-import com.codeit.sb02mplteam2.domain.content.batch.TmdbBatchMetrics;
 import com.codeit.sb02mplteam2.domain.content.dto.content.ContentResponseDto;
-import com.codeit.sb02mplteam2.domain.content.dto.tmdb.TmdbMovieDto;
-import com.codeit.sb02mplteam2.domain.content.dto.tmdb.TmdbTvDto;
-import com.codeit.sb02mplteam2.domain.content.entity.Content;
 import com.codeit.sb02mplteam2.domain.content.entity.ContentCategory;
-import com.codeit.sb02mplteam2.domain.content.mapper.TmdbContentMapper;
 import com.codeit.sb02mplteam2.domain.content.repository.ContentRepository;
-import com.codeit.sb02mplteam2.domain.livewatch.service.LiveWatchService;
 import com.codeit.sb02mplteam2.exception.ErrorCode;
 import com.codeit.sb02mplteam2.exception.MplException;
-import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -25,14 +18,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class BasicContentService implements ContentService{
 
   private final ContentRepository contentRepository;
-  private final TmdbService tmdbService;
-  private final TmdbContentMapper tmdbContentMapper;
-  private final TmdbBatchMetrics tmdbBatchMetrics;
-  private final LiveWatchService liveWatchService;
+//  private final TmdbService tmdbService;
+//  private final TmdbContentMapper tmdbContentMapper;
+//  private final TmdbBatchMetrics tmdbBatchMetrics;
+//  private final LiveWatchService liveWatchService;
 
   @Override
   @Transactional(readOnly = true)
   public ContentResponseDto findById(Long id) {
+    // TODO: watchCount는 현재 0으로 반환됨. 실제 참가자 수는 RedisLiveWatchParticipantService에서 조회 필요
     return contentRepository.findByIdWithRoom(id)
         .orElseThrow(() -> new MplException(ErrorCode.CONTENT_NOT_FOUND));
   }
@@ -40,6 +34,7 @@ public class BasicContentService implements ContentService{
   @Override
   @Transactional(readOnly = true)
   public List<ContentResponseDto> findAll(Pageable pageable) {
+    // TODO: watchCount는 현재 0으로 반환됨. 실제 참가자 수는 RedisLiveWatchParticipantService에서 조회 필요
     Page<ContentResponseDto> page = contentRepository.findAllWithRoom(pageable);
     return page.getContent();
   }
@@ -47,8 +42,9 @@ public class BasicContentService implements ContentService{
   @Override
   @Transactional(readOnly = true)
   public List<ContentResponseDto> findByCategory(ContentCategory category, Pageable pageable) {
+    // TODO: watchCount는 현재 0으로 반환됨. 실제 참가자 수는 RedisLiveWatchParticipantService에서 조회 필요
     Page<ContentResponseDto> page =
-        contentRepository.findByCategoryWithRoom(category, Pageable.unpaged());
+        contentRepository.findByCategoryWithRoom(category, pageable);
     return page.getContent();
   }
 
@@ -62,49 +58,49 @@ public class BasicContentService implements ContentService{
     contentRepository.deleteById(id);
   }
 
-  @Override
-  @Transactional
-  public int saveTmdbMovies(ContentCategory category) {
-    List<TmdbMovieDto> movies = tmdbService.getTmdbMovies(category);
-    if (movies == null || movies.isEmpty()) {
-      tmdbBatchMetrics.recordItemCount(category, 0);
-      return 0;
-    }
-
-    LocalDateTime now = LocalDateTime.now();
-    List<Content> contents = movies.stream()
-        .map(dto -> tmdbContentMapper.toEntity(dto, category, now))
-        .toList();
-
-    contentRepository.saveAll(contents);
-
-    contents.forEach(c -> liveWatchService.createRoom(c.getId(), c.getTitle()));
-
-    int saved = contents.size();
-    tmdbBatchMetrics.recordItemCount(category, saved);
-    return saved;
-  }
-
-  @Override
-  @Transactional
-  public int saveTmdbTvs(ContentCategory category) {
-    List<TmdbTvDto> tvs = tmdbService.getTmdbTvs(category);
-    if (tvs == null || tvs.isEmpty()) {
-      tmdbBatchMetrics.recordItemCount(category, 0);
-      return 0;
-    }
-
-    LocalDateTime now = LocalDateTime.now();
-    List<Content> contents = tvs.stream()
-        .map(dto -> tmdbContentMapper.toEntity(dto, category, now))
-        .toList();
-
-    contentRepository.saveAll(contents);
-
-    contents.forEach(c -> liveWatchService.createRoom(c.getId(), c.getTitle()));
-
-    int saved = contents.size();
-    tmdbBatchMetrics.recordItemCount(category, saved);
-    return saved;
-  }
+//  @Override
+//  @Transactional
+//  public int saveTmdbMovies(ContentCategory category) {
+//    List<TmdbMovieDto> movies = tmdbService.getTmdbMovies(category);
+//    if (movies == null || movies.isEmpty()) {
+//      tmdbBatchMetrics.recordItemCount(category, 0);
+//      return 0;
+//    }
+//
+//    LocalDateTime now = LocalDateTime.now();
+//    List<Content> contents = movies.stream()
+//        .map(dto -> tmdbContentMapper.toEntity(dto, category, now))
+//        .toList();
+//
+//    contentRepository.saveAll(contents);
+//
+//    contents.forEach(c -> liveWatchService.createRoom(c.getId(), c.getTitle()));
+//
+//    int saved = contents.size();
+//    tmdbBatchMetrics.recordItemCount(category, saved);
+//    return saved;
+//  }
+//
+//  @Override
+//  @Transactional
+//  public int saveTmdbTvs(ContentCategory category) {
+//    List<TmdbTvDto> tvs = tmdbService.getTmdbTvs(category);
+//    if (tvs == null || tvs.isEmpty()) {
+//      tmdbBatchMetrics.recordItemCount(category, 0);
+//      return 0;
+//    }
+//
+//    LocalDateTime now = LocalDateTime.now();
+//    List<Content> contents = tvs.stream()
+//        .map(dto -> tmdbContentMapper.toEntity(dto, category, now))
+//        .toList();
+//
+//    contentRepository.saveAll(contents);
+//
+//    contents.forEach(c -> liveWatchService.createRoom(c.getId(), c.getTitle()));
+//
+//    int saved = contents.size();
+//    tmdbBatchMetrics.recordItemCount(category, saved);
+//    return saved;
+//  }
 }

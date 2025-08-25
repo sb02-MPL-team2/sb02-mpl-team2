@@ -1,0 +1,41 @@
+# ======================== Filebeat inputs =========================
+filebeat.inputs:
+  - type: container
+    stream: all
+    paths:
+      - /var/lib/docker/containers/*/*.log
+    multiline:
+      pattern: '^\d{4}-\d{2}-\d{2}'
+      negate: true
+      match: after
+
+# ======================= Processors ===============================
+processors:
+  - decode_json_fields:
+      fields: ["message"]
+      target: ""
+      overwrite_keys: true
+  - add_docker_metadata: ~
+
+# ======================= AWS CloudWatch Output =====================
+output.cloudwatch:
+  # AWS CloudWatch Logs 활성화
+  enabled: false #현재 AWS 연결하지 않아서 주석처리함
+  region: "ap-northeast-2"
+  # 로그를 보낼 CloudWatch Logs 그룹 이름
+  log_group_name: "sb02-mpl-team2"
+  # 로그 그룹 내의 로그 스트림 이름
+  # {beat.name}-{event.agent.id} 와 같은 변수를 사용해 동적으로 생성 가능함
+  log_stream_name: "filebeat-stream"
+
+# ======================= Console Output for Test =====================
+output.console: # TODO 테스트를 위해서 콘솔에 올림
+  pretty: true
+  enabled: true
+
+# ======================= Elasticsearch Output =========================
+output.elasticsearch:
+  enabled: false
+  hosts: [ "elasticsearch:9200" ]
+  username: "test"
+  password: "test_password"

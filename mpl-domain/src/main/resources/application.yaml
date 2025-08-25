@@ -3,21 +3,6 @@ spring:
     name: sb02-mpl-team2
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
-#  jpa:
-#    hibernate:
-#      ddl-auto: none # ?? ????? ?? none ?? validate? ?????.
-#    properties:
-#      hibernate:
-#        format_sql: true
-#        # ?? Dialect? PostgreSQL? ?????.
-#        dialect: org.hibernate.dialect.PostgreSQLDialect
-#    show-sql: false
-#    open-in-view: false
-#    defer-datasource-initialization: true
-#  sql:
-#    init:
-#      mode: always
-#      continue-on-error: false
   batch:
     job:
       enabled: false
@@ -25,7 +10,13 @@ spring:
       initialize-schema: always
   config:
     import: optional:file:.env[.properties]
-
+  cache:
+    type: caffeine
+    cache-names:
+      - users
+      - alarms
+      - directMessages
+      - playlists
 logging:
   level:
     # ??????? ?? ?? ?? ??? INFO? ??
@@ -55,6 +46,11 @@ mpl:
     inactive-timeout-minutes: ${SSE_INACTIVE_TIMEOUT_MINUTES:10}
     default-timeout: ${SSE_DEFAULT_TIMEOUT:30}
     max-connections: ${SSE_MAX_CONNECTIONS:100}
+  livewatch:
+    redis:
+      streams:
+        stream-key: ${LIVEWATCH_STREAM_KEY:livewatch:broadcast}
+        consumer-id: ${LIVEWATCH_REDIS_STREAMS_CONSUMER_ID:}
   scheduler:
     # 테스트 모드 활성화 플래그 (true로 바꾸면 테스트용 cron이 적용됩니다)
     test-mode: true

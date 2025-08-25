@@ -54,11 +54,27 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    container_name: mpl_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - mpl-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
 volumes:
   db_mpl_data:
+  redis-data:
   gradle_cache: # Gradle 캐시 볼륨 정의
   binary-content-storage:
-  redis-data:
 
 networks:
   mpl-network:

@@ -36,9 +36,12 @@ out/
 ### VS Code ###
 .vscode/
 /mpl-domain/src/main/generated/
+/
 
 ### env ###
-mpl-domain/.env
+*.env
 
 ### http ###
 .http
+
+### QClass ###

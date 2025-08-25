@@ -26,13 +26,14 @@ public class TmdbService {
     this.apiKey = apiKey;
   }
 
-  public List<TmdbMovieDto> getTmdbMovies(ContentCategory category) {
+  public List<TmdbMovieDto> getTmdbMovies(ContentCategory category, int page) {
     try {
       return webClient.get()
           .uri(uriBuilder -> uriBuilder
               .path(category.getPath())
               .queryParam("api_key", apiKey)
               .queryParam("language", "ko-KR")
+              .queryParam("page", page)
               .build())
           .retrieve()
           .bodyToMono(TmdbMovieApiResponseDto.class)
@@ -47,13 +48,14 @@ public class TmdbService {
     }
   }
 
-  public List<TmdbTvDto> getTmdbTvs(ContentCategory category) {
+  public List<TmdbTvDto> getTmdbTvs(ContentCategory category, int page) {
     try {
       return webClient.get()
           .uri(uriBuilder -> uriBuilder
               .path(category.getPath())
               .queryParam("api_key", apiKey)
               .queryParam("language", "ko-KR")
+              .queryParam("page", page)
               .build())
           .retrieve()
           .bodyToMono(TmdbTvApiResponseDto.class)

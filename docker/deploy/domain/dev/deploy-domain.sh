@@ -30,29 +30,29 @@ docker-compose -p ${APP_NAME}-${START_CONTAINER} -f docker-compose.${START_CONTA
 #-------현재 헬스체크 API를 안 열어서 주석처리함 --------
 
 #헬스 체크 시작
-#for RETRY_CNT in {1..10}
-#do
-#  echo "Health Check Start...(${RETRY_CNT})"
-#
-#  HEALTH_CHECK_RESPONSE=$(curl -s http://127.0.0.1:${START_PORT}/ping | grep 'MashUp')
-#  if [ -z "${HEALTH_CHECK_RESPONSE}" ] # 실행되었다면 break
-#  then
-#        echo "health check fail..${HEALTH_CHECK_RESPONSE}"
-#  else
-#        echo "health check success!"
-#        break
-#  fi
-#
-## 헬스 체크 실패
-#  if [ ${RETRY_CNT} -eq 10 ]
-#  then
-#          echo "deployment failed."
-#          exit 1
-#  fi
-#
-#  echo "wait 5 seconds..."
-#  sleep 5
-#done
+for RETRY_CNT in {1..10}
+do
+  echo "Health Check Start...(${RETRY_CNT})"
+
+  HEALTH_CHECK_RESPONSE=$(curl -s http://127.0.0.1:${START_PORT}/ping | grep 'MPL!')
+  if [ -z "${HEALTH_CHECK_RESPONSE}" ] # 실행되었다면 break
+  then
+        echo "health check fail..${HEALTH_CHECK_RESPONSE}"
+  else
+        echo "health check success!"
+        break
+  fi
+
+# 헬스 체크 실패
+  if [ ${RETRY_CNT} -eq 10 ]
+  then
+          echo "deployment failed."
+          exit 1
+  fi
+
+  echo "wait 5 seconds..."
+  sleep 5
+done
 
 
 echo "deploy ${APP_NAME}-${START_CONTAINER} success!"
