@@ -43,6 +43,10 @@ public enum ErrorCode {
   NO_ACCESS_RIGHT(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
   EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "만료된 토큰입니다."),
 
+  // OAuth
+  UNKNOWN_PROVIDER(HttpStatus.NOT_FOUND, "알 수 없는 OAuth 제공자입니다."),
+  MISSING_REQUIRED_OAUTH_INFO(HttpStatus.BAD_REQUEST, "필수 OAuth 사용자 정보를 찾을 수 없습니다."),
+
   // Email
   EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "이메일 발송에 실패했습니다."),
 

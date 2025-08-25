@@ -1,5 +1,6 @@
 package com.codeit.sb02mplteam2.config;
 
+import java.util.concurrent.Executor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
@@ -19,6 +20,19 @@ public class AsyncConfig {
     executor.setMaxPoolSize(10);
     executor.setQueueCapacity(100);
     executor.setThreadNamePrefix("binary-content-");
+    executor.setTaskDecorator(new ContextPropagatingTaskDecorator());
+    executor.initialize();
+    //Security Config 설정 자동 전파
+    return new DelegatingSecurityContextAsyncTaskExecutor(executor);
+  }
+
+  @Bean(name = "mailExecutor")
+  public Executor mailExecutor() {
+    ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+    executor.setCorePoolSize(5);
+    executor.setMaxPoolSize(10);
+    executor.setQueueCapacity(100);
+    executor.setThreadNamePrefix("MailExecutor-");
     executor.setTaskDecorator(new ContextPropagatingTaskDecorator());
     executor.initialize();
     //Security Config 설정 자동 전파

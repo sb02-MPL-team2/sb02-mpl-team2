@@ -2,6 +2,7 @@ package com.codeit.sb02mplteam2.domain.auth.service;
 
 import com.codeit.sb02mplteam2.domain.auth.entity.PasswordResetToken;
 import com.codeit.sb02mplteam2.domain.auth.repository.PasswordResetTokenRepository;
+import com.codeit.sb02mplteam2.domain.mail.PasswordResetEvent;
 import com.codeit.sb02mplteam2.domain.mail.service.EmailService;
 import com.codeit.sb02mplteam2.domain.setting.entity.AlarmSetting;
 import com.codeit.sb02mplteam2.domain.setting.repository.AlarmSettingRepository;
@@ -12,10 +13,12 @@ import com.codeit.sb02mplteam2.domain.user.mapper.UserMapper;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
 import com.codeit.sb02mplteam2.exception.ErrorCode;
 import com.codeit.sb02mplteam2.exception.MplException;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +44,7 @@ public class BasicAuthService implements AuthService {
   private final AlarmSettingRepository alarmSettingRepository;
   private final PasswordResetTokenRepository passwordResetTokenRepository;
   private final EmailService emailService;
+  private final ApplicationEventPublisher eventPublisher;
 
   // 서버가 실행되면 initAdmin() 실행 -> admin이 없는 경우 admin 등록
   @Transactional
@@ -84,8 +88,12 @@ public class BasicAuthService implements AuthService {
     passwordResetTokenRepository.save(myToken);
 
     String resetLink = resetPasswordUrl + token;
-    emailService.sendEmail(user.getEmail(), "[모두의 플리] 비밀번호 재설정 링크",
-        "아래 링크를 클릭하여 비밀번호를 재설정하세요: " + resetLink);
+    log.info("이메일 발송 시작 시간: {}", LocalDateTime.now());
+
+    eventPublisher.publishEvent(new PasswordResetEvent(userEmail, resetLink));
+//    emailService.sendEmail(user.getEmail(), "[모두의 플리] 비밀번호 재설정 링크",
+//        "아래 링크를 클릭하여 비밀번호를 재설정하세요: " + resetLink);
+    log.info("이메일 발송 완료 시간: {}", LocalDateTime.now());
   }
 
   @Override

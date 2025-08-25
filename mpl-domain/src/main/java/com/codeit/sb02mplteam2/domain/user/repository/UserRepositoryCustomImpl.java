@@ -38,6 +38,7 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom{
         ))
         .from(user)
         .where(
+            user.id.ne(currentUserId), // 모든 쿼리에 자기 자신 제외 조건 기본으로 추가
             cursorIdLessThan(cursorId),
             usernameContains(keyword),
             filterByFollowStatus(currentUserId, filter)
@@ -64,12 +65,11 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom{
           .exists();
     }
     if (filter == UserSearchFilter.NOT_FOLLOWING) {
-      // 내가 팔로우 하지 않은 사람들만 피렅링
+      // 내가 팔로우 하지 않은 사람들만 필터링
       return JPAExpressions.selectFrom(follow)
           .where(follow.fromUser.id.eq(currentUserId)
               .and(follow.toUser.id.eq(user.id)))
-          .notExists()
-          .and(user.id.ne(currentUserId)); // 자기 자신은 검색 결과에서 제외
+          .notExists();
     }
 
     // filter == ALL 이거나 null 이면 아무 조건도 적용하지 않음
