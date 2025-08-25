@@ -10,7 +10,6 @@ import com.codeit.sb02mplteam2.domain.user.entity.Role;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import com.codeit.sb02mplteam2.domain.user.mapper.UserMapper;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
-import com.codeit.sb02mplteam2.security.MplUserDetailsService;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

@@ -44,7 +44,7 @@ public class WebSocketJwtChannelInterceptor implements ChannelInterceptor {
       JwtObject jwtObject = jwtService.parseTokenToJwtObject(token);
       UserDto userDto = jwtObject.userDto();
 
-      MplUserDetails userDetails = new MplUserDetails(userDto, null);
+      MplUserDetails userDetails = MplUserDetails.forLocalUser(userDto, null);
       UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
           userDetails, null, userDetails.getAuthorities());
 
