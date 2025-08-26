@@ -29,4 +29,10 @@ public interface DirectMessageChannelRepository extends JpaRepository<DirectMess
       @Param("cursor") Long cursor,
       Pageable pageable
   );
+
+  @Query("select c from DirectMessageChannel c " +
+      "where (c.fromUser.id = :user1 and c.toUser.id = :user2) " +
+      "   or (c.fromUser.id = :user2 and c.toUser.id = :user1)")
+  Optional<DirectMessageChannel> findChannel(@Param("user1") Long user1,
+      @Param("user2") Long user2);
 }

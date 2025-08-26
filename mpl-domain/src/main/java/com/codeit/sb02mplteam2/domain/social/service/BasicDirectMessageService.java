@@ -3,6 +3,7 @@ package com.codeit.sb02mplteam2.domain.social.service;
 import com.codeit.sb02mplteam2.domain.social.dto.CursorPageResponseDirectMessageDto;
 import com.codeit.sb02mplteam2.domain.social.dto.DirectMessageCreateRequest;
 import com.codeit.sb02mplteam2.domain.social.dto.DirectMessageResponse;
+import com.codeit.sb02mplteam2.domain.social.dto.DirectMessageWsResponse;
 import com.codeit.sb02mplteam2.domain.social.entity.DirectMessage;
 import com.codeit.sb02mplteam2.domain.social.entity.DirectMessageChannel;
 import com.codeit.sb02mplteam2.domain.social.repository.DirectMessageChannelRepository;
@@ -16,10 +17,13 @@ import com.codeit.sb02mplteam2.exception.user.UserException;
 import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BasicDirectMessageService implements DirectMessageService {
@@ -27,6 +31,7 @@ public class BasicDirectMessageService implements DirectMessageService {
   private final DirectMessageRepository directMessageRepository;
   private final UserRepository userRepository;
   private final DirectMessageChannelRepository directMessageChannelRepository;
+  private final SimpMessagingTemplate messagingTemplate;
 
   @Transactional
   @Override
@@ -49,8 +54,32 @@ public class BasicDirectMessageService implements DirectMessageService {
     DirectMessage directMessage = DirectMessage.of(request.content(), sender, channel);
     directMessage = directMessageRepository.save(directMessage);
 
-    return new DirectMessageResponse(new UserSlimDto(sender.getId(), null, sender.getUsername()), //TODO:유저프로필
-        directMessage.getId(), channel.getId(), request.content(), directMessage.getCreatedAt());
+    DirectMessageResponse response = new DirectMessageResponse(
+        new UserSlimDto(sender.getId(), null, sender.getUsername()), //TODO:유저프로필
+        directMessage.getId(),
+        channel.getId(),
+        request.content(),
+        directMessage.getCreatedAt()
+    );
+
+    DirectMessageWsResponse wsMessage = new DirectMessageWsResponse(response, receiver.getId());
+
+    messagingTemplate.convertAndSendToUser(
+        receiver.getEmail(),
+        "/queue/dm/messages",
+        wsMessage
+    );
+
+    messagingTemplate.convertAndSendToUser(
+        sender.getEmail(),
+        "/queue/dm/messages",
+        wsMessage
+    );
+
+    log.info("[WebSocket DM] sender: {}, receiver: {}, content: {}",
+        sender.getId(), receiver.getId(), response.content());
+
+    return response;
   }
 
   @Transactional(readOnly = true)
@@ -99,6 +128,7 @@ public class BasicDirectMessageService implements DirectMessageService {
     );
   }
 
+  @Override
   public Long findReceiverId(Long channelId, Long senderId) {
     DirectMessageChannel channel = directMessageChannelRepository.findById(channelId)
         .orElseThrow(() -> new DirectMessageChannelException(ErrorCode.DIRECT_MESSAGE_CHANNEL_NOT_FOUND));

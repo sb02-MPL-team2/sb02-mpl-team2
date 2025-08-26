@@ -34,10 +34,7 @@ public class BasicDirectMessageChannelService implements DirectMessageChannelSer
         .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
     DirectMessageChannel channel = directMessageChannelRepository
-        .findByFromUserIdAndToUserIdOrFromUserIdAndToUserId(
-            senderId, receiverId,   // 1 -> 2
-            receiverId, senderId    // 2 -> 1
-        )
+        .findChannel(senderId, receiverId)
         .orElseGet(() -> {
           DirectMessageChannel newChannel = DirectMessageChannel.of(sender, receiver);
           return directMessageChannelRepository.save(newChannel);
