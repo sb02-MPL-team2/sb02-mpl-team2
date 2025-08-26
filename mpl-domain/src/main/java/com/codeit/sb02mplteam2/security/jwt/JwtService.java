@@ -129,10 +129,6 @@ public class JwtService {
         verified = !jwtObject.isExpired(); // 만료되었다면 true 가 나오고 ! 를 만나서 false로 바뀜, 다음 로직 X
       }
 
-      if(verified) {
-        verified = !jwtBlacklist.contains(token);
-      }
-
     } catch (JOSEException | ParseException e) {
       log.error(e.getMessage());
       verified = false;
