@@ -1,5 +1,7 @@
 package com.codeit.sb02mplteam2.domain.social.service;
 
+import com.codeit.sb02mplteam2.domain.notification.entity.NotificationType;
+import com.codeit.sb02mplteam2.domain.notification.event.NotificationEvent;
 import com.codeit.sb02mplteam2.domain.social.dto.CursorPageResponseDirectMessageDto;
 import com.codeit.sb02mplteam2.domain.social.dto.DirectMessageCreateRequest;
 import com.codeit.sb02mplteam2.domain.social.dto.DirectMessageResponse;
@@ -18,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -32,6 +35,7 @@ public class BasicDirectMessageService implements DirectMessageService {
   private final UserRepository userRepository;
   private final DirectMessageChannelRepository directMessageChannelRepository;
   private final SimpMessagingTemplate messagingTemplate;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Transactional
   @Override
@@ -78,6 +82,15 @@ public class BasicDirectMessageService implements DirectMessageService {
 
     log.info("[WebSocket DM] sender: {}, receiver: {}, content: {}",
         sender.getId(), receiver.getId(), response.content());
+
+    log.info("{}에게 {}가 메세지 전송 ", receiver.getUsername(), sender.getUsername());
+    eventPublisher.publishEvent(new NotificationEvent(
+        this,
+        receiver.getId(),
+        NotificationType.NEW_MESSAGE,
+        directMessage.getId(),
+        sender.getId()
+    ));
 
     return response;
   }

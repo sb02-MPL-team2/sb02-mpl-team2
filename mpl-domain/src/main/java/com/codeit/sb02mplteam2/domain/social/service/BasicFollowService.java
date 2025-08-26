@@ -1,5 +1,7 @@
 package com.codeit.sb02mplteam2.domain.social.service;
 
+import com.codeit.sb02mplteam2.domain.notification.entity.NotificationType;
+import com.codeit.sb02mplteam2.domain.notification.event.NotificationEvent;
 import com.codeit.sb02mplteam2.domain.social.dto.CursorPageResponseFollowDto;
 import com.codeit.sb02mplteam2.domain.social.dto.FollowResponse;
 import com.codeit.sb02mplteam2.domain.social.dto.FollowStatusResponse;
@@ -15,6 +17,7 @@ import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +29,7 @@ public class BasicFollowService implements FollowService {
 
   private final UserRepository userRepository;
   private final FollowRepository followRepository;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Transactional
   @Override
@@ -47,6 +51,15 @@ public class BasicFollowService implements FollowService {
 
     followee.increaseFollowerCount();
     follower.increaseFollowingCount();
+
+    log.info("{}를 {}가 팔로우 ", followee.getUsername(), follower.getUsername());
+    eventPublisher.publishEvent(new NotificationEvent(
+        this,
+        followee.getId(),
+        NotificationType.NEW_FOLLOWER,
+        null,
+        follower.getId()
+    ));
 
     return new FollowResponse(followeeId, followerId);
   }
