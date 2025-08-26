@@ -7,7 +7,8 @@ import lombok.Getter;
 @Getter
 public enum Provider {
   LOCAL("local"),
-  GOOGLE("google");
+  GOOGLE("google"),
+  KAKAO("kakao");
 
   private final String registrationId;
 
