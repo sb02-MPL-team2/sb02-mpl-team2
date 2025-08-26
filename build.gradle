@@ -116,6 +116,8 @@ subprojects {
         // 통합 테스트용 Testcontainers
         testImplementation 'org.testcontainers:junit-jupiter:1.19.1'
         testImplementation 'org.testcontainers:testcontainers:1.19.1'
+        testCompileOnly 'org.projectlombok:lombok'
+        testAnnotationProcessor 'org.projectlombok:lombok'
 
         tasks.named('test') {
             useJUnitPlatform()

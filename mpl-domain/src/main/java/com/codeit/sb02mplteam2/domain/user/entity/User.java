@@ -2,6 +2,7 @@ package com.codeit.sb02mplteam2.domain.user.entity;
 
 import com.codeit.sb02mplteam2.domain.binaryContent.entity.BinaryContent;
 import com.codeit.sb02mplteam2.domain.playlist.entity.Playlist;
+import com.codeit.sb02mplteam2.security.Provider;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -67,6 +68,16 @@ public class User {
   @JoinColumn(name = "profile_id", columnDefinition = "BIGINT")
   private BinaryContent profile;
 
+  @Column(name = "picture_url")
+  private String pictureUrl;
+
+  @Column(name = "provider_id")
+  private String providerId;
+
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private Provider provider;
+
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private Role role;
@@ -84,9 +95,19 @@ public class User {
    this.email = email;
    this.password = password;
    this.profile = profile;
+   this.provider = Provider.LOCAL;
    this.role = Role.USER;
-   this.createdAt = LocalDateTime.now();
-   this.updatedAt = LocalDateTime.now();
+ }
+
+ public User(String username, String email, String password, String pictureUrl, String providerId,
+     Provider provider) {
+   this.username = username;
+   this.email = email;
+   this.password = password;
+   this.pictureUrl = pictureUrl;
+   this.providerId = providerId;
+   this.provider = provider;
+   this.role = Role.USER;
  }
 
  public void update(String newUsername, String newEmail, String newPassword, BinaryContent newProfile) {
@@ -114,6 +135,26 @@ public class User {
    if (newPassword != null) {
      this.password = newPassword;
    }
+  }
+
+  public void updateUsername(String newUsername) {
+   if (newUsername != null) {
+     this.username = newUsername;
+   }
+  }
+
+  public void updatePictureUrl(String newPictureUrl) {
+   if(newPictureUrl != null) {
+     this.pictureUrl = newPictureUrl;
+   }
+  }
+
+  public void linkSocialAccount(Provider provider, String providerId) {
+   // 이미 다른 소셜 계정과 연동된 경우를 방지하기 위해 LOCAL인 경우만 변경
+    if(this.provider == Provider.LOCAL) {
+      this.provider = provider;
+      this.providerId = providerId;
+    }
   }
 
   public void lock() {

@@ -11,12 +11,14 @@ import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSObject;
+import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.Payload;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import jakarta.annotation.PostConstruct;
 import java.text.ParseException;
 import java.time.Duration;
 import java.time.Instant;
@@ -48,7 +50,19 @@ public class JwtService {
   private final UserMapper userMapper;
   private final ObjectMapper objectMapper;
 
+  private JWSSigner signer;
   private JWSVerifier verifier;
+
+  @PostConstruct
+  public void init() {
+    try {
+      this.signer = new MACSigner(secret);
+      this.verifier = new MACVerifier(secret);
+    } catch (JOSEException e) {
+      log.error("JWT Signer 또는 Verifier 초기화에 실패했습니다.", e);
+      throw new MplException(ErrorCode.INVALID_TOKEN_SECRET, e);
+    }
+  }
 
   public JwtSession registerJwtSession(UserDto userDto) {
     JwtObject accessJwtObject = generateJwtObject(userDto, accessTokenValiditySeconds);
@@ -107,7 +121,6 @@ public class JwtService {
     boolean verified;
 
     try {
-      JWSVerifier verifier = new MACVerifier(secret); // 검증기 - 서버 비밀 키 주입
       JWSObject jwsObject = JWSObject.parse(token);      // token을 JWSObject로 parse (header, payload, signature 로 분해)
       verified = jwsObject.verify(verifier);             // jwsObject가 서버 비밀 키로 만들었는지 확인
 
@@ -145,7 +158,7 @@ public class JwtService {
     SignedJWT signedJWT = new SignedJWT(header, claimsSet); // haeder + payload 서명 준비 완료
 
     try {
-      signedJWT.sign(new MACSigner(secret)); // 서명 준비 완료된 객체 + secretKey로 토큰 서명
+      signedJWT.sign(this.signer); // 서명 준비 완료된 객체 + secretKey로 토큰 서명
     } catch (JOSEException e) {
       log.error(e.getMessage());
       throw new MplException(ErrorCode.INVALID_TOKEN_SECRET, e);

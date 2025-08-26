@@ -49,7 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // validate 토큰 유효성 검사
         if(jwtService.validate(accessToken)) {
           UserDto userDto = jwtService.parseTokenToJwtObject(accessToken).userDto();
-          UserDetails userDetails = new MplUserDetails(userDto, "");
+          UserDetails userDetails = MplUserDetails.forLocalUser(userDto, "");
           setAuthentication(userDetails);
         } else {
           log.warn("Invalid JWT token provided: {}", accessToken);
