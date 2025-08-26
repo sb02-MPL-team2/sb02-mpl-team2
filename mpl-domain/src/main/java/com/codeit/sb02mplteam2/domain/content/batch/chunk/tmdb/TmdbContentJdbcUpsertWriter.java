@@ -26,10 +26,11 @@ public class TmdbContentJdbcUpsertWriter implements ItemWriter<ContentRow> {
     final long startNs = System.nanoTime();
 
     try {
-      log.debug("[tmdb] {}건 저장 시도", count);
       delegate.write(chunk);
       final long tookMs = (System.nanoTime() - startNs) / 1_000_000;
-      log.info("[tmdb] {}건 저장 완료 ({} ms)", count, tookMs);
+
+      log.info("[tmdb] {}건 수집 및 upsert 완료 ({} ms)", count, tookMs);
+
     } catch (Exception e) {
       log.error("[tmdb] {}건 저장 중 오류 발생", count, e);
       throw e;
