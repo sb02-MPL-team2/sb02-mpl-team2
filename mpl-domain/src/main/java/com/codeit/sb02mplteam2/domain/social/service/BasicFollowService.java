@@ -35,10 +35,10 @@ public class BasicFollowService implements FollowService {
   @Override
   public FollowResponse create(Long followeeId, Long followerId) {
     if(Objects.equals(followeeId, followerId)){
-      throw new IllegalArgumentException();
+      throw new FollowException(ErrorCode.SELF_FOLLOW_NOT_ALLOWED);
     }
     if (followRepository.existsByToUserIdAndFromUserId(followeeId, followerId)) {
-      throw new IllegalArgumentException(); //예외처리 수정 필요
+      throw new FollowException(ErrorCode.FOLLOW_ALREADY_EXISTS);
     }
 
     User followee = userRepository.findById(followeeId)
@@ -67,9 +67,6 @@ public class BasicFollowService implements FollowService {
   @Transactional
   @Override
   public FollowResponse delete(Long followeeId, Long followerId){
-    if(Objects.equals(followeeId, followerId)){
-      throw new IllegalArgumentException();
-    }
 
     User followee = userRepository.findById(followeeId)
         .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
@@ -143,14 +140,10 @@ public class BasicFollowService implements FollowService {
 
   @Override
   public FollowStatusResponse isFollowing(Long followeeId, Long followerId){
-    if(Objects.equals(followeeId, followerId)){
-      throw new IllegalArgumentException();
-    }
     if (followRepository.existsByToUserIdAndFromUserId(followeeId, followerId)) {
       return new FollowStatusResponse(true, followeeId, followerId);
     }
     return new FollowStatusResponse(false, followeeId, followerId);
   }
-
 
 }

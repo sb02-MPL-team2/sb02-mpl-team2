@@ -49,7 +49,9 @@ public enum ErrorCode {
   REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND,"리뷰를 찾을 수 없습니다."),
 
   //Follow
+  SELF_FOLLOW_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "사용자는 자신을 팔로우할 수 없습니다."),
   FOLLOW_NOT_FOUND(HttpStatus.NOT_FOUND, "팔로우 관계를 찾을 수 없습니다."),
+  FOLLOW_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 팔로우하고 있습니다."),
 
   //DirectMessage
 
