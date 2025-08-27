@@ -1,7 +1,5 @@
 package com.codeit.sb02mplteam2.config;
 
-import static org.springframework.boot.autoconfigure.security.servlet.PathRequest.toH2Console;
-
 import com.codeit.sb02mplteam2.domain.user.entity.Role;
 import com.codeit.sb02mplteam2.security.CustomLoginFailureHandler;
 import com.codeit.sb02mplteam2.security.JsonUsernamePasswordAuthenticationFilter;
@@ -82,7 +80,7 @@ public class SecurityConfig {
         .map(PathPatternRequestMatcher.withDefaults()::matcher)
         .collect(Collectors.toList());
 
-    publicMatchers.add(toH2Console());
+//    publicMatchers.add(toH2Console());
 
     return new OrRequestMatcher(publicMatchers);
   }
@@ -121,7 +119,7 @@ public class SecurityConfig {
 
         // URL 별 접근 권한 설정
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers(toH2Console()).permitAll() // H2 콘솔은 누구나 접근 가능
+//            .requestMatchers(toH2Console()).permitAll() // H2 콘솔은 누구나 접근 가능
             .requestMatchers(PERMIT_ALL_PATTERNS).permitAll()
             .requestMatchers("/api/admin/**").hasRole(Role.ADMIN.name())
             .requestMatchers("/api/**").authenticated() // /api/** 요청은 모두 인증 필요

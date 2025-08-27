@@ -22,7 +22,6 @@ public class DeliveryService {
     Long userId = notificationDto.receiverId();
     ConnectionInfo connectionInfo = connectionManager.getConnection(userId);
     if (connectionInfo == null) {
-      log.warn("연결 정보가 없습니다. userId : {}", userId);
       return;
     }
     deliverToClient(connectionInfo, notificationDto);

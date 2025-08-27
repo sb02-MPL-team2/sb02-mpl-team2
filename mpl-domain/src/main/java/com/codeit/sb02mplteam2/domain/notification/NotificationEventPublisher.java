@@ -1,6 +1,7 @@
 package com.codeit.sb02mplteam2.domain.notification;
 
 import com.codeit.sb02mplteam2.domain.notification.dto.NotificationDto;
+import com.codeit.sb02mplteam2.domain.notification.entity.Notification;
 import com.codeit.sb02mplteam2.domain.notification.entity.NotificationType;
 import com.codeit.sb02mplteam2.domain.notification.service.DeliveryService;
 import com.codeit.sb02mplteam2.domain.notification.service.NotificationService;
@@ -8,20 +9,17 @@ import com.codeit.sb02mplteam2.domain.task.service.NotificationTaskService;
 import com.codeit.sb02mplteam2.domain.user.dto.UserDto;
 import com.codeit.sb02mplteam2.event.BulkNotificationEvent;
 import com.codeit.sb02mplteam2.event.NotificationEvent;
-import com.codeit.sb02mplteam2.util.RabbitConst;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class TaskProducer {
+public class NotificationEventPublisher {
 
-  private final RabbitTemplate rabbitTemplate;
   private final NotificationTaskService notificationTaskService;
   private final DeliveryService deliveryService;
   private final NotificationService notificationService;
@@ -31,13 +29,11 @@ public class TaskProducer {
    */
   public void delegateToTaskService(NotificationEvent originalEvent) {
     // DB 조회가 필요한 작업을 처리하는 별도의 큐로 메시지를 보냅니다.
-    log.info("[Slow Path] Event를 notification.task.queue로 전달합니다: {}", originalEvent);
+    log.info("[Slow Path] Event를 Task Service로 위임합니다. Event: {}", originalEvent);
 
-    rabbitTemplate.convertAndSend(RabbitConst.taskExchange,
-        RabbitConst.taskNotificationCreateRoutingKey, originalEvent);
-//    Notification notification = notificationTaskService.create(originalEvent);
-//    NotificationDto notificationDto = NotificationDto.of(notification);
-//    deliveryService.deliverToClient(notificationDto);
+    Notification notification = notificationTaskService.create(originalEvent);
+    NotificationDto notificationDto = NotificationDto.of(notification);
+    deliveryService.deliverToClient(notificationDto);
   }
 
   /**
@@ -45,12 +41,11 @@ public class TaskProducer {
    */
   public void delegateBulkTaskToService(BulkNotificationEvent bulkEvent) {
     // DB 조회가 필요한 작업을 처리하는 별도의 벌크 작업 큐로 메시지를 보냅니다.
-    log.info("Bulk Event를 notification.bulk-task.queue로 전달합니다: {}명의 수신자", bulkEvent.getReceiverIds().size());
-    rabbitTemplate.convertAndSend(RabbitConst.taskExchange,
-        RabbitConst.taskNotificationBulkCreateRoutingKey, bulkEvent);
-//    List<Notification> notificationList = notificationTaskService.create(bulkEvent);
-//    notificationList.forEach(
-//        notification -> deliveryService.deliverToClient(NotificationDto.of(notification)));
+    log.info("[Slow Path] Event를 Task Service로 위임합니다. Event: {}, 수신자: {}", bulkEvent, bulkEvent.getReceiverIds().size());
+
+    List<Notification> notificationList = notificationTaskService.create(bulkEvent);
+    notificationList.forEach(
+        notification -> deliveryService.deliverToClient(NotificationDto.of(notification)));
   }
 
   /**
