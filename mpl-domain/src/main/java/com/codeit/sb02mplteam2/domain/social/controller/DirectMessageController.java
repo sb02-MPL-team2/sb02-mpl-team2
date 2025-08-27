@@ -4,16 +4,18 @@ import com.codeit.sb02mplteam2.domain.social.dto.CursorPageResponseDirectMessage
 import com.codeit.sb02mplteam2.domain.social.dto.DirectMessageCreateRequest;
 import com.codeit.sb02mplteam2.domain.social.dto.DirectMessageResponse;
 import com.codeit.sb02mplteam2.domain.social.service.DirectMessageService;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @RestController
@@ -25,9 +27,10 @@ public class DirectMessageController {
 
   @PostMapping("/{userId}")
   public ResponseEntity<DirectMessageResponse> create(
-      @RequestBody DirectMessageCreateRequest request
+      @RequestPart("directMessageCreateRequest") DirectMessageCreateRequest request,
+      @RequestPart(required = false) MultipartFile file
   ){
-    DirectMessageResponse response = directMessageService.create(request);
+    DirectMessageResponse response = directMessageService.create(request, Optional.ofNullable(file));
     return ResponseEntity.ok(response);
   }
 

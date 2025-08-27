@@ -13,7 +13,6 @@ import com.codeit.sb02mplteam2.domain.social.entity.DirectMessageChannel;
 import com.codeit.sb02mplteam2.domain.social.repository.DirectMessageChannelRepository;
 import com.codeit.sb02mplteam2.domain.social.repository.DirectMessageRepository;
 import com.codeit.sb02mplteam2.domain.social.service.BasicDirectMessageService;
-import com.codeit.sb02mplteam2.domain.social.service.DirectMessageService;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
 import com.codeit.sb02mplteam2.exception.directmessage.DirectMessageChannelException;
@@ -45,18 +44,17 @@ public class BasicDirectMessageServiceTest {
   private SimpMessagingTemplate messagingTemplate;
 
   private User sender;
-  private User receiver;
   private DirectMessageChannel channel;
 
-  private Long senderId = 1L;
-  private Long receiverId = 2L;
-  private Long channelId = 10L;
+  private final Long senderId = 1L;
+  private final Long channelId = 10L;
 
   @BeforeEach
   void setUp() {
     sender = new User("sender", "sender@test.com", "pw", null);
-    receiver = new User("receiver", "receiver@test.com", "pw", null);
+    User receiver = new User("receiver", "receiver@test.com", "pw", null);
     ReflectionTestUtils.setField(sender, "id", senderId);
+    Long receiverId = 2L;
     ReflectionTestUtils.setField(receiver, "id", receiverId);
 
     channel = DirectMessageChannel.of(sender, receiver);
@@ -68,7 +66,7 @@ public class BasicDirectMessageServiceTest {
   void create_Success() {
     // given
     DirectMessageCreateRequest request = new DirectMessageCreateRequest(senderId, channelId, "안녕?");
-    DirectMessage savedMessage = DirectMessage.of("안녕?", sender, channel);
+    DirectMessage savedMessage = DirectMessage.of("안녕?", null, sender, channel);
     ReflectionTestUtils.setField(savedMessage, "id", 100L);
 
     when(userRepository.findById(senderId)).thenReturn(Optional.of(sender));
@@ -76,11 +74,11 @@ public class BasicDirectMessageServiceTest {
     when(directMessageRepository.save(any(DirectMessage.class))).thenReturn(savedMessage);
 
     // when
-    DirectMessageResponse response = directMessageService.create(request);
+    DirectMessageResponse response = directMessageService.create(request , Optional.empty());
 
     // then
     assertThat(response).isNotNull();
-    assertThat(response.senderDto().id()).isEqualTo(senderId);
+    assertThat(response.senderId()).isEqualTo(senderId);
     assertThat(response.content()).isEqualTo("안녕?");
     assertThat(response.channelId()).isEqualTo(channelId);
 
@@ -97,7 +95,7 @@ public class BasicDirectMessageServiceTest {
     when(userRepository.findById(senderId)).thenReturn(Optional.empty());
 
     // when & then
-    assertThrows(UserException.class, () -> directMessageService.create(request));
+    assertThrows(UserException.class, () -> directMessageService.create(request, Optional.empty()));
 
     verify(userRepository).findById(senderId);
     verify(directMessageRepository, never()).save(any());
@@ -112,7 +110,8 @@ public class BasicDirectMessageServiceTest {
     when(directMessageChannelRepository.findById(channelId)).thenReturn(Optional.empty());
 
     // when & then
-    assertThrows(DirectMessageChannelException.class, () -> directMessageService.create(request));
+    assertThrows(DirectMessageChannelException.class, () -> directMessageService.create(request,
+        Optional.empty()));
 
     verify(userRepository).findById(senderId);
     verify(directMessageChannelRepository).findById(channelId);
@@ -131,7 +130,8 @@ public class BasicDirectMessageServiceTest {
     when(directMessageChannelRepository.findById(channelId)).thenReturn(Optional.of(channel));
 
     // when & then
-    assertThrows(IllegalArgumentException.class, () -> directMessageService.create(request));
+    assertThrows(IllegalArgumentException.class, () -> directMessageService.create(request,
+        Optional.empty()));
 
     verify(directMessageRepository, never()).save(any());
     verify(messagingTemplate, never()).convertAndSendToUser(any(), any(), any());

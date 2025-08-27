@@ -1,5 +1,7 @@
 package com.codeit.sb02mplteam2.domain.social.service;
 
+import com.codeit.sb02mplteam2.domain.binaryContent.entity.BinaryContent;
+import com.codeit.sb02mplteam2.domain.binaryContent.service.BinaryContentService;
 import com.codeit.sb02mplteam2.domain.notification.entity.NotificationType;
 import com.codeit.sb02mplteam2.domain.notification.event.NotificationEvent;
 import com.codeit.sb02mplteam2.domain.social.dto.CursorPageResponseDirectMessageDto;
@@ -14,10 +16,13 @@ import com.codeit.sb02mplteam2.domain.user.dto.UserSlimDto;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
 import com.codeit.sb02mplteam2.exception.ErrorCode;
+import com.codeit.sb02mplteam2.exception.MplException;
 import com.codeit.sb02mplteam2.exception.directmessage.DirectMessageChannelException;
 import com.codeit.sb02mplteam2.exception.user.UserException;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -25,12 +30,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class BasicDirectMessageService implements DirectMessageService {
 
+  private final BinaryContentService binaryContentService;
   private final DirectMessageRepository directMessageRepository;
   private final UserRepository userRepository;
   private final DirectMessageChannelRepository directMessageChannelRepository;
@@ -39,7 +46,8 @@ public class BasicDirectMessageService implements DirectMessageService {
 
   @Transactional
   @Override
-  public DirectMessageResponse create(DirectMessageCreateRequest request) {
+  public DirectMessageResponse create(DirectMessageCreateRequest request,
+      Optional<MultipartFile> optionalFile) {
     // 디엠 보낼 때 이미 채널이 미리 만들어져 있고 디엠쪽에서는 채널이 있는지만 검사(dto에서도 채널아이디 받아옴)
     User sender = userRepository.findById(request.senderId())
         .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
@@ -55,14 +63,29 @@ public class BasicDirectMessageService implements DirectMessageService {
         ? channel.getFromUser()
         : channel.getToUser();
 
-    DirectMessage directMessage = DirectMessage.of(request.content(), sender, channel);
+    BinaryContent imageContent = optionalFile
+        .filter(file -> !file.isEmpty())
+        .map(file ->{
+          try {
+            return binaryContentService.upload(file);
+          } catch (IOException e){
+            log.error("File upload failed during user creation for file name: {}", file.getOriginalFilename());
+            throw new MplException(ErrorCode.FILE_UPLOAD_FAILED, e);
+          }
+        })
+        .orElse(null);
+
+    DirectMessage directMessage = DirectMessage.of(request.content(), imageContent, sender, channel);
     directMessage = directMessageRepository.save(directMessage);
 
+    String imgUrl = imageContent != null ? imageContent.getUrl() : null;
+
     DirectMessageResponse response = new DirectMessageResponse(
-        new UserSlimDto(sender.getId(), null, sender.getUsername()), //TODO:유저프로필
+        sender.getId(),
         directMessage.getId(),
         channel.getId(),
         request.content(),
+        imgUrl,
         directMessage.getCreatedAt()
     );
 
@@ -121,16 +144,17 @@ public class BasicDirectMessageService implements DirectMessageService {
 
     List<DirectMessageResponse> items = messages.stream()
         .map(m -> new DirectMessageResponse(
-            new UserSlimDto(m.getUser().getId(), null, m.getUser().getUsername()),
+            m.getUser().getId(),
             m.getId(),
             m.getDirectMessageChannel().getId(),
             m.getContent(),
+            m.getImageContent() != null ? m.getImageContent().getUrl() : null,
             m.getCreatedAt()
         ))
         .toList();
 
-    String startCursor = items.isEmpty() ? null : String.valueOf(items.get(0).directMessageId());
-    String endCursor = items.isEmpty() ? null : String.valueOf(items.get(items.size() - 1).directMessageId());
+    String startCursor = items.isEmpty() ? null : String.valueOf(items.getFirst().directMessageId());
+    String endCursor = items.isEmpty() ? null : String.valueOf(items.getLast().directMessageId());
 
     return new CursorPageResponseDirectMessageDto(
         items,

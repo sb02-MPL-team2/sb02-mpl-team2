@@ -4,10 +4,11 @@ import com.codeit.sb02mplteam2.domain.user.dto.UserSlimDto;
 import java.time.LocalDateTime;
 
 public record DirectMessageResponse(
-    UserSlimDto senderDto,
+    Long senderId,
     Long directMessageId,
     Long channelId,
     String content,
+    String imageUrl,
     LocalDateTime createdAt
 ) {
 

@@ -40,8 +40,10 @@ public class BasicDirectMessageChannelService implements DirectMessageChannelSer
           return directMessageChannelRepository.save(newChannel);
         });
 
+    String profileUrl = receiver.getProfile() != null ? receiver.getProfile().getUrl() : null;
+
     return new DirectMessageChannelResponse(
-        new UserSlimDto(receiverId, null, receiver.getUsername()), // TODO: 프로필 null 수정
+        new UserSlimDto(receiverId, profileUrl, receiver.getUsername()),
         channel.getId(),
         senderId
     );
@@ -64,9 +66,19 @@ public class BasicDirectMessageChannelService implements DirectMessageChannelSer
       throw new DirectMessageChannelException(ErrorCode.DIRECT_MESSAGE_CHANNEL_NOT_FOUND);
     }
 
+    if(otherUser.isDeleted()|| otherUser.isLocked()){
+      return new DirectMessageChannelResponse(
+          new UserSlimDto(otherUser.getId(), null, "알 수 없음"),
+          channelId,
+          userId
+      );
+    }
+
+    String profileUrl = otherUser.getProfile() != null ? otherUser.getProfile().getUrl() : null;
+
     return new DirectMessageChannelResponse(
-        new UserSlimDto(otherUser.getId(), null, otherUser.getUsername()),
-        channelId, //TODO: 유저 프로필
+        new UserSlimDto(otherUser.getId(), profileUrl, otherUser.getUsername()),
+        channelId,
         userId
     );
   }
@@ -82,7 +94,7 @@ public class BasicDirectMessageChannelService implements DirectMessageChannelSer
       channels = channels.subList(0, size);
     }
 
-    Long nextCursor = hasNext ? channels.get(channels.size() - 1).getId() : null;
+    Long nextCursor = hasNext ? channels.getLast().getId() : null;
 
     List<DirectMessageChannelResponse> items = channels.stream()
         .map(ch -> {
@@ -91,7 +103,7 @@ public class BasicDirectMessageChannelService implements DirectMessageChannelSer
 
           UserSlimDto userDto = new UserSlimDto(
               otherUser.getId(),
-              null, //TODO:유저프로필
+              otherUser.getProfile() != null ? otherUser.getProfile().getUrl() : null,
               otherUser.getUsername()
           );
 

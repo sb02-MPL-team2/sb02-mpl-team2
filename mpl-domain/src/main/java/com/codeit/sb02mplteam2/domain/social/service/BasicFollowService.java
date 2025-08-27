@@ -95,13 +95,13 @@ public class BasicFollowService implements FollowService {
     }
 
     Long nextCursor = hasNext
-        ? follows.get(follows.size() - 1).getId()
+        ? follows.getLast().getId()
         : null;
 
     List<UserFollowDto> userList = follows.stream()
         .map(f -> new UserFollowDto(
             f.getFromUser().getId(),
-            null, //TODO:유저 프로필
+            f.getFromUser().getProfile() != null ? f.getFromUser().getProfile().getUrl() : null,
             f.getFromUser().getUsername(),
             f.getFromUser().getFollowerCount(),
             f.getFromUser().getFollowingCount(),
@@ -122,12 +122,12 @@ public class BasicFollowService implements FollowService {
       follows = follows.subList(0, size);
     }
 
-    Long nextCursor = hasNext ? follows.get(follows.size() - 1).getId() : null;
+    Long nextCursor = hasNext ? follows.getLast().getId() : null;
 
     List<UserFollowDto> userList = follows.stream()
         .map(f -> new UserFollowDto(
             f.getToUser().getId(),
-            null,
+            f.getToUser().getProfile() != null ? f.getToUser().getProfile().getUrl() : null,
             f.getToUser().getUsername(),
             f.getToUser().getFollowerCount(),
             f.getToUser().getFollowingCount(),
