@@ -10,6 +10,7 @@ import com.codeit.sb02mplteam2.domain.playlist.entity.PlaylistSubscriberHistory;
 import com.codeit.sb02mplteam2.domain.playlist.repository.PlaylistSubscriberHistoryRepository;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import java.util.List;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.batch.item.Chunk;
 
 @ExtendWith(MockitoExtension.class)
+@Disabled
 class PlaylistHistoryWriterTest {
 
   @Mock

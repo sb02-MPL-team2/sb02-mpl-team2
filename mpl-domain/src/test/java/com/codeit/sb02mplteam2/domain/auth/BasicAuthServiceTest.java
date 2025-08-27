@@ -57,7 +57,7 @@ public class BasicAuthServiceTest {
   @BeforeEach
   void setUp() {
     testUser = new User(1L, "testUser", "test@example.com", "password", false, false,
-        0, 0, null, null, Role.USER, null, null);
+        0, 0, null, null, null, null, null, Role.USER, null, null);
 
 //    @Value 로 주입되는 필드 값을 테스트 환경에서 수동 설정
     ReflectionTestUtils.setField(authService, "resetPasswordUrl",

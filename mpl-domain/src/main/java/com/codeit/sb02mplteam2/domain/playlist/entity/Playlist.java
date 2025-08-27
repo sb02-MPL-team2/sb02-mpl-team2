@@ -1,5 +1,6 @@
 package com.codeit.sb02mplteam2.domain.playlist.entity;
 
+import com.codeit.sb02mplteam2.domain.subscribe.entity.Subscribe;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

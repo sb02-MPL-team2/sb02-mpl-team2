@@ -2,7 +2,7 @@ package com.codeit.sb02mplteam2.domain.playlist.dto;
 
 import com.codeit.sb02mplteam2.domain.content.dto.content.ContentResponseDto;
 import com.codeit.sb02mplteam2.domain.playlist.entity.Playlist;
-import com.codeit.sb02mplteam2.domain.playlist.entity.Subscribe;
+import com.codeit.sb02mplteam2.domain.subscribe.entity.Subscribe;
 import com.codeit.sb02mplteam2.domain.user.dto.UserSlimDto;
 import java.time.LocalDateTime;
 import java.util.List;

@@ -33,6 +33,12 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'io.spring.dependency-management'
 
+    dependencyManagement {
+        imports {
+            mavenBom "software.amazon.awssdk:bom:2.25.48"
+        }
+    }
+
     dependencies {
         //캐시
         implementation 'org.springframework.boot:spring-boot-starter-cache'
@@ -42,9 +48,13 @@ subprojects {
         implementation 'org.springframework.kafka:spring-kafka'
         //레디스
         implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-
+        //RabbitMQ
+        implementation 'org.springframework.boot:spring-boot-starter-amqp'
         //파일 인풋 아웃풋 유틸 라이브러리
         implementation 'commons-io:commons-io:2.16.1'
+
+        //직렬화, 역직렬화
+        implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
         //Swagger UI
         //3.5.x 버전은 2.7.0 이상부터 됨
@@ -62,7 +72,10 @@ subprojects {
         implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
         //AWS SDK 설치
-        implementation 'software.amazon.awssdk:s3:2.31.7'
+        implementation 'software.amazon.awssdk:s3'
+
+        //아마존 Ses 이메일 시스템
+        implementation 'software.amazon.awssdk:ses'
 
         //비동기 작업을 위한 micrometer 설치
         implementation 'org.springframework.retry:spring-retry'
@@ -100,6 +113,11 @@ subprojects {
         testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
         // 비동기 테스트 용
         testImplementation 'org.awaitility:awaitility:4.3.0'
+        // 통합 테스트용 Testcontainers
+        testImplementation 'org.testcontainers:junit-jupiter:1.19.1'
+        testImplementation 'org.testcontainers:testcontainers:1.19.1'
+        testCompileOnly 'org.projectlombok:lombok'
+        testAnnotationProcessor 'org.projectlombok:lombok'
 
         tasks.named('test') {
             useJUnitPlatform()

@@ -29,7 +29,7 @@ public interface NotificationRepository extends JpaRepository<Notification,Long>
 
   @Modifying
   @Query("DELETE FROM Notification n WHERE n.receiverId = :receiverId")
-  void deleteAllByReceiverId(Long userId);
+  void deleteAllByReceiverId(@Param("receiverId") Long userId);
 
   Optional<Notification> findByTypeAndTargetIdAndCreatedAtAfter(NotificationType type, Long targetId, LocalDateTime createdAtAfter);
 }

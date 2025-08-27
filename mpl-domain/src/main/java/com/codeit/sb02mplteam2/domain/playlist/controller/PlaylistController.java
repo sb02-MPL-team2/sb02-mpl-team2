@@ -10,6 +10,7 @@ import com.codeit.sb02mplteam2.domain.playlist.dto.request.SubscribeRequest;
 import com.codeit.sb02mplteam2.domain.playlist.service.PlaylistItemService;
 import com.codeit.sb02mplteam2.domain.playlist.service.PlaylistSearchService;
 import com.codeit.sb02mplteam2.domain.playlist.service.PlaylistService;
+import com.codeit.sb02mplteam2.domain.subscribe.service.SubscribeService;
 import com.codeit.sb02mplteam2.security.MplUserDetails;
 import com.codeit.sb02mplteam2.swagger.PlayListApi;
 import java.time.LocalDateTime;
@@ -36,6 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class PlaylistController implements PlayListApi {
 
   private final PlaylistService playlistService;
+  private final SubscribeService subscribeService;
   private final PlaylistItemService playlistItemService;
   private final PlaylistSearchService playlistSearchService;
 
@@ -52,7 +54,7 @@ public class PlaylistController implements PlayListApi {
   @PostMapping("/subscribe")
   public ResponseEntity<PlaylistDto> subscribe(@AuthenticationPrincipal MplUserDetails userDetails,
       SubscribeRequest request) {
-    PlaylistDto playlistDto = playlistService.subscribe(userDetails.getUserDto().id(), request);
+    PlaylistDto playlistDto = subscribeService.subscribe(userDetails.getUserDto().id(), request);
     return ResponseEntity.ok(playlistDto);
   }
 
@@ -60,7 +62,7 @@ public class PlaylistController implements PlayListApi {
   @DeleteMapping("/unsubscribe")
   public ResponseEntity<PlaylistDto> unSubscribe(
       @AuthenticationPrincipal MplUserDetails userDetails, SubscribeRequest request) {
-    PlaylistDto playlistDto = playlistService.unSubscribe(userDetails.getUserDto().id(), request);
+    PlaylistDto playlistDto = subscribeService.unSubscribe(userDetails.getUserDto().id(), request);
 
     return ResponseEntity.ok(playlistDto);
   }

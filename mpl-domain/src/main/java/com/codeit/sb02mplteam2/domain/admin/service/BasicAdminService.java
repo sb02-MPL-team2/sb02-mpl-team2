@@ -1,12 +1,12 @@
 package com.codeit.sb02mplteam2.domain.admin.service;
 
 import com.codeit.sb02mplteam2.domain.notification.entity.NotificationType;
-import com.codeit.sb02mplteam2.domain.notification.event.NotificationEvent;
 import com.codeit.sb02mplteam2.domain.user.dto.RoleUpdateRequest;
 import com.codeit.sb02mplteam2.domain.user.dto.UserDto;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import com.codeit.sb02mplteam2.domain.user.mapper.UserMapper;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
+import com.codeit.sb02mplteam2.event.NotificationEvent;
 import com.codeit.sb02mplteam2.exception.ErrorCode;
 import com.codeit.sb02mplteam2.exception.MplException;
 import com.codeit.sb02mplteam2.exception.user.UserNotFoundException;
@@ -43,7 +43,6 @@ public class BasicAdminService implements AdminService {
     Long adminId = adminPrincipal.getId();
 
     eventPublisher.publishEvent(new NotificationEvent(
-        this,
         userId, // 받는 사람, 권한 변경 된 유저
         NotificationType.ROLE_CHANGED,
         null,

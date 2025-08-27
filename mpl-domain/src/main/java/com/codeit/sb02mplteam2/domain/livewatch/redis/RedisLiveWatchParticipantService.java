@@ -1,0 +1,182 @@
+package com.codeit.sb02mplteam2.domain.livewatch.redis;
+
+import com.codeit.sb02mplteam2.domain.livewatch.dto.response.ParticipantResponseDto;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class RedisLiveWatchParticipantService {
+
+  private final StringRedisTemplate stringRedisTemplate;
+
+  private enum ParticipantFields {
+    USER_ID("userId"),
+    USER_NAME("userName"),
+    PROFILE_URL("profileUrl"),
+    PARTICIPATED_AT("participatedAt");
+
+    private final String fieldName;
+
+    ParticipantFields(String fieldName) {
+      this.fieldName = fieldName;
+    }
+
+    public String getFieldName() {
+      return fieldName;
+    }
+
+    public String getFullFieldKey(String userPrefix) {
+      return userPrefix + ":" + fieldName;
+    }
+  }
+
+  public void joinRoom(Long roomId, Long userId, String username, String profileUrl) {
+    leaveFromCurrentRoom(userId);
+
+    String participantsKey = RedisKeyPatterns.roomParticipants(roomId);
+    String userPrefix = RedisKeyPatterns.userField(userId);
+
+    Map<String, String> userFields = Map.of(
+        ParticipantFields.USER_ID.getFullFieldKey(userPrefix), userId.toString(),
+        ParticipantFields.USER_NAME.getFullFieldKey(userPrefix), username,
+        ParticipantFields.PROFILE_URL.getFullFieldKey(userPrefix),
+        profileUrl != null ? profileUrl : "",
+        ParticipantFields.PARTICIPATED_AT.getFullFieldKey(userPrefix),
+        LocalDateTime.now().toString()
+    );
+
+    stringRedisTemplate.opsForHash().putAll(participantsKey, userFields);
+
+    stringRedisTemplate.expire(participantsKey, RedisTTLStrategy.PARTICIPANT_SESSION.getDuration());
+
+    setCurrentRoom(userId, roomId);
+
+    log.info("사용자 {}가 채팅방 {}에 입장", userId, roomId);
+  }
+
+  public void leaveRoom(Long roomId, Long userId) {
+    String participantsKey = RedisKeyPatterns.roomParticipants(roomId);
+    String userPrefix = RedisKeyPatterns.userField(userId);
+
+    stringRedisTemplate.opsForHash().delete(
+        participantsKey,
+        ParticipantFields.USER_ID.getFullFieldKey(userPrefix),
+        ParticipantFields.USER_NAME.getFullFieldKey(userPrefix),
+        ParticipantFields.PROFILE_URL.getFullFieldKey(userPrefix),
+        ParticipantFields.PARTICIPATED_AT.getFullFieldKey(userPrefix)
+    );
+
+    clearCurrentRoom(userId);
+
+    log.info("Redis: 사용자 {}가 채팅방 {}에서 퇴장", userId, roomId);
+  }
+
+
+  public List<ParticipantResponseDto> getParticipants(Long roomId) {
+    String participantsKey = RedisKeyPatterns.roomParticipants(roomId);
+
+    Map<Object, Object> allFields = stringRedisTemplate.opsForHash().entries(participantsKey);
+
+    if (allFields.isEmpty()) {
+      return List.of();
+    }
+
+    Map<String, Map<String, String>> userGroups = groupFieldsByUser(allFields);
+
+    return userGroups.values().stream()
+        .map(this::buildParticipantDto)
+        .filter(Objects::nonNull)
+        .collect(Collectors.toList());
+  }
+
+  public Integer getParticipantCount(Long roomId) {
+    String participantsKey = RedisKeyPatterns.roomParticipants(roomId);
+
+    Long fieldCount = stringRedisTemplate.opsForHash().size(participantsKey);
+    if (fieldCount == null || fieldCount == 0) {
+      return 0;
+    }
+    return (fieldCount.intValue() / ParticipantFields.values().length);
+  }
+
+  public boolean isAlreadyParticipating(Long roomId, Long userId) {
+    String participantsKey = RedisKeyPatterns.roomParticipants(roomId);
+    String userPrefix = RedisKeyPatterns.userField(userId);
+
+    return stringRedisTemplate.opsForHash()
+        .hasKey(participantsKey, ParticipantFields.USER_ID.getFullFieldKey(userPrefix));
+  }
+
+  public Long getCurrentRoom(Long userId) {
+    String currentRoomKey = RedisKeyPatterns.userCurrentRoom(userId);
+
+    String roomIdStr = stringRedisTemplate.opsForValue().get(currentRoomKey);
+    return roomIdStr != null ? Long.parseLong(roomIdStr) : null;
+  }
+
+  private void setCurrentRoom(Long userId, Long roomId) {
+    String currentRoomKey = RedisKeyPatterns.userCurrentRoom(userId);
+
+    stringRedisTemplate.opsForValue().set(currentRoomKey, roomId.toString());
+
+    stringRedisTemplate.expire(currentRoomKey, RedisTTLStrategy.PARTICIPANT_SESSION.getDuration());
+  }
+
+  private void clearCurrentRoom(Long userId) {
+    String currentRoomKey = RedisKeyPatterns.userCurrentRoom(userId);
+
+    stringRedisTemplate.delete(currentRoomKey);
+  }
+
+  private void leaveFromCurrentRoom(Long userId) {
+    Long currentRoomId = getCurrentRoom(userId);
+    if (currentRoomId != null) {
+      leaveRoom(currentRoomId, userId);
+      log.info("Redis: 사용자 {}를 이전 채팅방 {}에서 제거", userId, currentRoomId);
+    }
+  }
+
+  private Map<String, Map<String, String>> groupFieldsByUser(Map<Object, Object> allFields) {
+    Map<String, Map<String, String>> userGroups = new HashMap<>();
+
+    allFields.forEach((field, value) -> {
+      String fieldStr = field.toString();
+      String[] parts = fieldStr.split(":");
+
+      if (parts.length >= 3) {
+        String userKey = parts[0] + ":" + parts[1]; // "userId:123"
+        String fieldName = parts[2]; // ParticipantFields enum 값들
+
+        userGroups.computeIfAbsent(userKey, k -> new HashMap<>())
+            .put(fieldName, value.toString());
+      }
+    });
+
+    return userGroups;
+  }
+
+  private ParticipantResponseDto buildParticipantDto(Map<String, String> userFields) {
+    try {
+      return new ParticipantResponseDto(
+          Long.parseLong(userFields.get(ParticipantFields.USER_ID.getFieldName())),
+          userFields.get(ParticipantFields.USER_NAME.getFieldName()),
+          userFields.get(ParticipantFields.PROFILE_URL.getFieldName()),
+          LocalDateTime.parse(userFields.get(ParticipantFields.PARTICIPATED_AT.getFieldName()))
+      );
+    } catch (Exception e) {
+      log.error("참가자 정보 구성 실패: {}", userFields, e);
+      return null;
+    }
+  }
+}

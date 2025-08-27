@@ -8,9 +8,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.codeit.sb02mplteam2.domain.admin.service.BasicAdminService;
 import com.codeit.sb02mplteam2.domain.auth.dto.LoginRequest;
+import com.codeit.sb02mplteam2.domain.setting.repository.AlarmSettingRepository;
 import com.codeit.sb02mplteam2.domain.user.entity.Role;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
-import com.codeit.sb02mplteam2.domain.user.repository.AlarmSettingRepository;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
 import com.codeit.sb02mplteam2.security.jwt.JwtBlacklist;
 import com.codeit.sb02mplteam2.security.jwt.JwtService;
@@ -30,8 +30,6 @@ import org.springframework.test.web.servlet.MvcResult;
 @SpringBootTest
 @AutoConfigureMockMvc
 @DisplayName("Security 통합 테스트")
-//TODO 잠시 테스트 끔
-@Disabled
 public class SecurityIntegrationTest {
 
   @Autowired

@@ -9,13 +9,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.codeit.sb02mplteam2.domain.binaryContent.service.BinaryContentService;
+import com.codeit.sb02mplteam2.domain.setting.repository.AlarmSettingRepository;
 import com.codeit.sb02mplteam2.domain.user.dto.UserCreateRequest;
 import com.codeit.sb02mplteam2.domain.user.dto.UserDto;
 import com.codeit.sb02mplteam2.domain.user.dto.UserUpdateRequest;
 import com.codeit.sb02mplteam2.domain.user.entity.Role;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import com.codeit.sb02mplteam2.domain.user.mapper.UserMapper;
-import com.codeit.sb02mplteam2.domain.user.repository.AlarmSettingRepository;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
 import com.codeit.sb02mplteam2.exception.ErrorCode;
 import com.codeit.sb02mplteam2.exception.user.UserException;
