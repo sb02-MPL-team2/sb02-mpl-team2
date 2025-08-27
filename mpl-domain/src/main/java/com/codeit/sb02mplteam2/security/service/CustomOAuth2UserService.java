@@ -58,8 +58,8 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
   private User processOAuth2User(OAuth2User oauth2User, Provider provider) {
     // 사용자 정보 추출
     UserInfo userInfo = extractUserInfo(oauth2User, provider);
-    log.info("OAuth 2.0 사용자 정보: email={}, name={}, provider={}", userInfo.email(), userInfo.name(),
-        provider);
+    log.info("OAuth 2.0 사용자 정보: email={}, name={}, provider={}, pictureUrl={}", userInfo.email(), userInfo.name(),
+        provider, userInfo.pictureUrl);
 
     // 이메일로 사용자를 먼저 찾아본다.
     return userRepository.findByProviderIdAndProvider(userInfo.providerId, provider)
