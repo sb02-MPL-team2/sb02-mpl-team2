@@ -1,14 +1,19 @@
 package com.codeit.sb02mplteam2.domain.content.service;
 
 import com.codeit.sb02mplteam2.domain.content.dto.content.ContentResponseDto;
+import com.codeit.sb02mplteam2.domain.content.dto.content.ScrollResponseDto;
 import com.codeit.sb02mplteam2.domain.content.entity.ContentCategory;
 import com.codeit.sb02mplteam2.domain.content.repository.ContentRepository;
+import com.codeit.sb02mplteam2.domain.livewatch.redis.RedisLiveWatchParticipantService;
 import com.codeit.sb02mplteam2.exception.ErrorCode;
 import com.codeit.sb02mplteam2.exception.MplException;
+import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,34 +23,29 @@ import org.springframework.transaction.annotation.Transactional;
 public class BasicContentService implements ContentService{
 
   private final ContentRepository contentRepository;
-//  private final TmdbService tmdbService;
-//  private final TmdbContentMapper tmdbContentMapper;
-//  private final TmdbBatchMetrics tmdbBatchMetrics;
-//  private final LiveWatchService liveWatchService;
+  private final RedisLiveWatchParticipantService redisService;
 
   @Override
   @Transactional(readOnly = true)
   public ContentResponseDto findById(Long id) {
-    // TODO: watchCount는 현재 0으로 반환됨. 실제 참가자 수는 RedisLiveWatchParticipantService에서 조회 필요
     return contentRepository.findByIdWithRoom(id)
+        .map(this::replaceWatchCount)
         .orElseThrow(() -> new MplException(ErrorCode.CONTENT_NOT_FOUND));
   }
 
   @Override
   @Transactional(readOnly = true)
   public List<ContentResponseDto> findAll(Pageable pageable) {
-    // TODO: watchCount는 현재 0으로 반환됨. 실제 참가자 수는 RedisLiveWatchParticipantService에서 조회 필요
     Page<ContentResponseDto> page = contentRepository.findAllWithRoom(pageable);
-    return page.getContent();
+    return page.map(this::replaceWatchCount).getContent();
   }
 
   @Override
   @Transactional(readOnly = true)
   public List<ContentResponseDto> findByCategory(ContentCategory category, Pageable pageable) {
-    // TODO: watchCount는 현재 0으로 반환됨. 실제 참가자 수는 RedisLiveWatchParticipantService에서 조회 필요
     Page<ContentResponseDto> page =
         contentRepository.findByCategoryWithRoom(category, pageable);
-    return page.getContent();
+    return page.map(this::replaceWatchCount).getContent();
   }
 
   @Override
@@ -58,49 +58,68 @@ public class BasicContentService implements ContentService{
     contentRepository.deleteById(id);
   }
 
-//  @Override
-//  @Transactional
-//  public int saveTmdbMovies(ContentCategory category) {
-//    List<TmdbMovieDto> movies = tmdbService.getTmdbMovies(category);
-//    if (movies == null || movies.isEmpty()) {
-//      tmdbBatchMetrics.recordItemCount(category, 0);
-//      return 0;
-//    }
-//
-//    LocalDateTime now = LocalDateTime.now();
-//    List<Content> contents = movies.stream()
-//        .map(dto -> tmdbContentMapper.toEntity(dto, category, now))
-//        .toList();
-//
-//    contentRepository.saveAll(contents);
-//
-//    contents.forEach(c -> liveWatchService.createRoom(c.getId(), c.getTitle()));
-//
-//    int saved = contents.size();
-//    tmdbBatchMetrics.recordItemCount(category, saved);
-//    return saved;
-//  }
-//
-//  @Override
-//  @Transactional
-//  public int saveTmdbTvs(ContentCategory category) {
-//    List<TmdbTvDto> tvs = tmdbService.getTmdbTvs(category);
-//    if (tvs == null || tvs.isEmpty()) {
-//      tmdbBatchMetrics.recordItemCount(category, 0);
-//      return 0;
-//    }
-//
-//    LocalDateTime now = LocalDateTime.now();
-//    List<Content> contents = tvs.stream()
-//        .map(dto -> tmdbContentMapper.toEntity(dto, category, now))
-//        .toList();
-//
-//    contentRepository.saveAll(contents);
-//
-//    contents.forEach(c -> liveWatchService.createRoom(c.getId(), c.getTitle()));
-//
-//    int saved = contents.size();
-//    tmdbBatchMetrics.recordItemCount(category, saved);
-//    return saved;
-//  }
+  @Override
+  @Transactional(readOnly = true)
+  public ScrollResponseDto<ContentResponseDto> scroll(
+      ContentCategory category,
+      LocalDate cursorDate,
+      int size
+  ) {
+    Pageable pageable = PageRequest.of(
+        0,
+        size + 1,
+        Sort.by(Sort.Direction.DESC, "releaseDate").and(Sort.by(Sort.Direction.DESC, "id"))
+    );
+
+    List<ContentResponseDto> rows;
+    if (cursorDate == null) {
+      rows = contentRepository.scrollContentsWithoutCursor(category, pageable);
+    } else {
+      rows = contentRepository.scrollContents(category, cursorDate, Long.MAX_VALUE, pageable);
+    }
+
+    var replaced = rows.stream()
+        .map(this::replaceWatchCount)
+        .toList();
+
+    boolean hasNext = replaced.size() > size;
+
+    List<ContentResponseDto> items;
+    if (hasNext) {
+      items = replaced.subList(0, size);
+    } else {
+      items = replaced;
+    }
+
+    LocalDate nextCursorDate = null;
+    Long nextCursorId = null;
+
+    if (!items.isEmpty()) {
+      var last = items.get(items.size() - 1);
+      nextCursorDate = last.releaseDate();
+      nextCursorId = last.id();
+    }
+
+    return new ScrollResponseDto<>(items, hasNext, nextCursorDate, nextCursorId);
+  }
+
+  private ContentResponseDto replaceWatchCount(ContentResponseDto dto) {
+    Long watchCount = 0L;
+    if (dto.roomId() != null) {
+      watchCount = redisService.getParticipantCount(dto.roomId()).longValue();
+    }
+    return new ContentResponseDto(
+        dto.id(),
+        dto.title(),
+        dto.description(),
+        dto.category(),
+        dto.imageUrl(),
+        dto.totalRating(),
+        dto.reviewCount(),
+        watchCount,
+        dto.runtime(),
+        dto.roomId(),
+        dto.releaseDate()
+    );
+  }
 }

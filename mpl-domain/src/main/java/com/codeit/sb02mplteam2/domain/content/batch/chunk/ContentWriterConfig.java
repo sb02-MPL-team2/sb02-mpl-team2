@@ -16,15 +16,18 @@ public class ContentWriterConfig {
     w.setDataSource(ds);
     w.setSql("""
             INSERT INTO contents
-              (provider, external_id, title, description, category, image_url, runtime)
+              (provider, external_id, title, description, category, image_url, runtime, release_date, created_at, updated_at)
             VALUES
-              (:provider, :externalId, :title, :description, :category, :imageUrl, :runtime)
+              (:provider, :externalId, :title, :description, :category, :imageUrl, :runtime, :releaseDate, :createdAt, :updatedAt)
             ON CONFLICT (provider, external_id) DO UPDATE
             SET title       = EXCLUDED.title,
                 description = EXCLUDED.description,
                 category    = EXCLUDED.category,
-                image_url   = EXCLUDED.imageUrl,
-                runtime     = EXCLUDED.runtime
+                image_url   = COALESCE(EXCLUDED.image_url, contents.image_url),
+                runtime     = EXCLUDED.runtime,
+                release_date= EXCLUDED.release_date,
+                created_at  = contents.created_at,
+                updated_at  = EXCLUDED.updated_at
             """);
     w.setItemSqlParameterSourceProvider(
         new BeanPropertyItemSqlParameterSourceProvider<>());

@@ -11,6 +11,7 @@ import com.codeit.sb02mplteam2.security.jwt.JwtAuthenticationFilter;
 import com.codeit.sb02mplteam2.security.jwt.JwtLoginSuccessHandler;
 import com.codeit.sb02mplteam2.security.jwt.JwtLogoutHandler;
 import com.codeit.sb02mplteam2.security.jwt.JwtService;
+import com.codeit.sb02mplteam2.security.service.CustomOAuth2UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;
@@ -57,6 +58,9 @@ public class SecurityConfig {
   private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
   private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
   private final ApplicationEventPublisher applicationEventPublisher;
+  private final JwtLoginSuccessHandler jwtLoginSuccessHandler;
+  private final CustomOAuth2UserService customOAuth2UserService;
+  private final CustomLoginFailureHandler customLoginFailureHandler;
 
   public static final String[] PERMIT_ALL_PATTERNS = {
       // --- Static Resources ---
@@ -67,6 +71,9 @@ public class SecurityConfig {
       "/api/auth/**", "/login",
       // --- files/images ---
       "/files/**",
+      // OAuth2
+      "/oauth2/**",
+      "/login/oauth2/**"
   };
 
   @Bean
@@ -121,6 +128,14 @@ public class SecurityConfig {
             .anyRequest().permitAll() // 나머지 요청은 모두 인증 없이 접근 가능
         )
 
+        .oauth2Login(oauth2 -> oauth2
+            .userInfoEndpoint(userInfo -> userInfo
+                .userService(customOAuth2UserService)
+            )
+            .successHandler(jwtLoginSuccessHandler)
+            .failureHandler(customLoginFailureHandler)
+        )
+
         .logout(logout -> logout
             .logoutUrl(LOGOUT_URL)
             .addLogoutHandler(jwtLogoutHandler)
@@ -154,8 +169,8 @@ public class SecurityConfig {
       String loginUrl) {
     JsonUsernamePasswordAuthenticationFilter filter = new JsonUsernamePasswordAuthenticationFilter(objectMapper);
     filter.setAuthenticationManager(authenticationManager);
-    filter.setAuthenticationSuccessHandler(new JwtLoginSuccessHandler(objectMapper, jwtService));
-    filter.setAuthenticationFailureHandler(new CustomLoginFailureHandler(objectMapper));
+    filter.setAuthenticationSuccessHandler(jwtLoginSuccessHandler);
+    filter.setAuthenticationFailureHandler(customLoginFailureHandler);
     filter.setRequiresAuthenticationRequestMatcher(PathPatternRequestMatcher.withDefaults()
         .matcher(HttpMethod.POST, loginUrl));
     return filter;

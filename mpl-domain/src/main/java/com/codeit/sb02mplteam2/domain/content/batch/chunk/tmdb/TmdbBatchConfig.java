@@ -33,7 +33,7 @@ public class TmdbBatchConfig {
     txAttr.setTimeout(30);
 
     return new StepBuilder("importTmdbMoviesStep", jobRepository)
-        .<TmdbMovieDto, ContentRow>chunk(200, transactionManager)
+        .<TmdbMovieDto, ContentRow>chunk(50, transactionManager)
         .transactionAttribute(txAttr)
         .reader(movieReader)
         .processor(movieProcessor)
@@ -53,7 +53,7 @@ public class TmdbBatchConfig {
     txAttr.setTimeout(30);
 
     return new StepBuilder("importTmdbTvStep", jobRepository)
-        .<TmdbTvDto, ContentRow>chunk(200, transactionManager)
+        .<TmdbTvDto, ContentRow>chunk(50, transactionManager)
         .transactionAttribute(txAttr)
         .reader(tvReader)
         .processor(tvProcessor)

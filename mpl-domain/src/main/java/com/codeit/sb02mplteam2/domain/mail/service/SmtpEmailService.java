@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -14,6 +15,8 @@ import org.springframework.stereotype.Service;
 public class SmtpEmailService implements EmailService{
 
   private final JavaMailSender javaMailSender;
+
+  // TODO: 1. eventPublish -> RabbitMQ publish 수정, 2. 성공, 실패 DB 저장, 3. 실패하면 MQ로 다시 보내기
 
   @Override
   public void sendEmail(String to, String subject, String text) {

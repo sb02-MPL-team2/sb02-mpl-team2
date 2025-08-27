@@ -1,8 +1,9 @@
-package com.codeit.sb02mplteam2.security;
+package com.codeit.sb02mplteam2.security.service;
 
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import com.codeit.sb02mplteam2.domain.user.mapper.UserMapper;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
+import com.codeit.sb02mplteam2.security.MplUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -27,6 +28,6 @@ public class MplUserDetailsService implements UserDetailsService {
 
     // Spring Security가 이해할 수 있는 userDetails 객체로 변환하여 반환
     // return 한 MplUserDetail의 메서드를 차례로 호출해서 lock 상태인지 등을 검사한다.
-    return new MplUserDetails(userMapper.toDto(user), user.getPassword());
+    return MplUserDetails.forLocalUser(userMapper.toDto(user), user.getPassword());
   }
 }

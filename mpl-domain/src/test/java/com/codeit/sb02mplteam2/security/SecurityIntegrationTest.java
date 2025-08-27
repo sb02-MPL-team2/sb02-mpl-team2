@@ -30,8 +30,6 @@ import org.springframework.test.web.servlet.MvcResult;
 @SpringBootTest
 @AutoConfigureMockMvc
 @DisplayName("Security 통합 테스트")
-//TODO 잠시 테스트 끔
-@Disabled
 public class SecurityIntegrationTest {
 
   @Autowired
