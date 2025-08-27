@@ -51,17 +51,26 @@ public class BasicDirectMessageService implements DirectMessageService {
     // 디엠 보낼 때 이미 채널이 미리 만들어져 있고 디엠쪽에서는 채널이 있는지만 검사(dto에서도 채널아이디 받아옴)
     User sender = userRepository.findById(request.senderId())
         .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
+
+    if(sender.isDeleted()||sender.isLocked()){
+      throw new UserException(ErrorCode.USER_NOT_FOUND);
+    }
+
     DirectMessageChannel channel = directMessageChannelRepository.findById(request.channelId())
         .orElseThrow(
             () -> new DirectMessageChannelException(ErrorCode.DIRECT_MESSAGE_CHANNEL_NOT_FOUND));
 
     if (!channel.getFromUser().equals(sender) && !channel.getToUser().equals(sender)) {
-      throw new IllegalArgumentException();
+      throw new DirectMessageChannelException(ErrorCode.DIRECT_MESSAGE_CHANNEL_NOT_FOUND);
     }
 
     User receiver = channel.getToUser().equals(sender)
         ? channel.getFromUser()
         : channel.getToUser();
+
+    if(receiver.isDeleted()||receiver.isLocked()){
+      throw new UserException(ErrorCode.USER_NOT_FOUND);
+    }
 
     BinaryContent imageContent = optionalFile
         .filter(file -> !file.isEmpty())
