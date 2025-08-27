@@ -16,8 +16,6 @@ import org.springframework.stereotype.Component;
 public class PlaylistEventPublisher {
   private final FollowRepository followRepository;
   private final ApplicationEventPublisher eventPublisher;
-  private final RabbitTemplate rabbitTemplate;
-
   public void sendEvent(Long userId, Long playlistId) {
     //이벤트 발행
     Set<Long> followersId = followRepository.findAllFollowersIdByToUserId(userId);
