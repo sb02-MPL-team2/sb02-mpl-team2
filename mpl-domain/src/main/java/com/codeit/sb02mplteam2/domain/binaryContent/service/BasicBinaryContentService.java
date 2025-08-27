@@ -33,6 +33,15 @@ public class BasicBinaryContentService implements BinaryContentService {
   @Value("${mpl.storage.local.base-url}")
   private String baseUrl;
 
+  @Value("${mpl.storage.type}")
+  private String storageType;
+
+  @Value("${mpl.aws.s3.bucket}")
+  private String s3BucketName;
+
+  @Value("${cloud.aws.region.static}")
+  private String awsRegion;
+
   @Override
   @Transactional
   public BinaryContent upload(MultipartFile file) {
@@ -62,7 +71,14 @@ public class BasicBinaryContentService implements BinaryContentService {
             .thenAccept(uploadedKey -> {
               // 비동기 작업 성공 시, URL과 상태를 업데이트 이 작업은 별도의 트랜잭션에서 실행
               binaryContentRepository.findById(savedContent.getId()).ifPresent(content -> {
-                String finalUrl = Paths.get(baseUrl, uploadedKey).toString().replace("\\", "/");
+
+                String finalUrl;
+                if("s3".equalsIgnoreCase(storageType)) {
+                  finalUrl = String.format("https://%s.s3.%s.amazonaws.com/%s", s3BucketName, awsRegion, uploadedKey);
+                } else {
+                  finalUrl = Paths.get(baseUrl, uploadedKey).toString().replace("\\", "/");
+                }
+
                 content.completeUpload(finalUrl);
                 binaryContentRepository.save(content);
                 log.info("File upload competed and URL updated Id: {}", content.getId());
@@ -142,6 +158,6 @@ public class BasicBinaryContentService implements BinaryContentService {
     return String.format("images/%s-%s",
         now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
         id + "." + dto.extension());
-    // ex) /files/images/2025/08/12/2.jpg
+    // ex) /files/images/2025-08-12-2.jpg
   }
 }
