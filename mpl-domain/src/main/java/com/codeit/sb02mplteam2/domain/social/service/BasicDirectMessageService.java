@@ -140,8 +140,8 @@ public class BasicDirectMessageService implements DirectMessageService {
         ))
         .toList();
 
-    String startCursor = items.isEmpty() ? null : String.valueOf(items.getFirst().directMessageId());
-    String endCursor = items.isEmpty() ? null : String.valueOf(items.getLast().directMessageId());
+    String startCursor = items.isEmpty() ? null : String.valueOf(items.get(0).directMessageId());
+    String endCursor = items.isEmpty() ? null : String.valueOf(items.get(items.size() - 1).directMessageId());
 
     return new CursorPageResponseDirectMessageDto(
         items,
