@@ -19,6 +19,7 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -41,7 +42,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     */
     OAuth2User oauth2User = delegate.loadUser(userRequest);
 
-    // registrationId = google
+    // registrationId = google / kakao
     String registrationId = userRequest.getClientRegistration().getRegistrationId();
     Provider provider = Provider.fromRegistrationId(registrationId);
 
@@ -84,6 +85,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
     return switch (provider) {
       case GOOGLE -> extractGoogleUserInfo(attributes);
+      case KAKAO -> extractKakaoUserInfo(attributes);
       default -> throw new MplException(ErrorCode.UNKNOWN_PROVIDER);
     };
   }
@@ -95,6 +97,47 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
     String pictureUrl = (String) attributes.get("picture");
 
     if(providerId == null || email == null || name == null) {
+      throw new MplException(ErrorCode.MISSING_REQUIRED_OAUTH_INFO);
+    }
+
+    return new UserInfo(providerId, email, name, pictureUrl);
+  }
+
+  private UserInfo extractKakaoUserInfo(Map<String, Object> attributes) {
+    /**
+     * 카카오 응답은 중첩된 JSON 구조
+     * id는 최상위, 그 외 정보는 kakao_account와 properties 객체 안에 있음
+    */
+    String providerId = String.valueOf(attributes.get("id"));
+    Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
+    Map<String, Object> properties = (Map<String, Object>) attributes.get("properties");
+
+    if(kakaoAccount == null || properties == null) {
+      log.error("Kakao OAuth2.0 응답에 kakao_account 또는 properties 필드가 없습니다. attributes: {}", attributes);
+      throw new MplException(ErrorCode.MISSING_REQUIRED_OAUTH_INFO);
+    }
+
+//    이메일이 없는 경우 임의의 이메일 주소 설정
+    String email = (String) kakaoAccount.get("email");
+    if(email == null || email.isBlank()) {
+      log.warn("카카오 사용자로부터 이메일을 받지 못했습니다ㅣ. providerId를 기반으로 가상 이메일을 생성합니다."
+          + "providerId: {}", providerId);
+      email = "kakao_" + providerId + "@kakao.social";
+    }
+
+//    닉네임이 없는 경우 예외 대신 기본값을 설정
+    String name = (String) properties.get("nickname");
+    if(!StringUtils.hasText(name)) {
+      log.warn("카카오 사용자로부터 닉네임을 받지 못했습니다. providerId를 기반으로 가상 닉네임을 생성합니다."
+          + "providerId: {}", providerId);
+      name = "Kakao_User_" + providerId;
+    }
+
+    String pictureUrl = (String) properties.get("profile_image");
+
+//    필수 정보 검증을 providerId에 대해서만 수행
+    if(!StringUtils.hasText(providerId)) {
+      log.error("Kakao OAuth2.0 응답에서 필수 정보(providerId, email, name)가 누락되었습니다. attributes: {}", attributes);
       throw new MplException(ErrorCode.MISSING_REQUIRED_OAUTH_INFO);
     }
 
