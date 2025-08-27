@@ -11,9 +11,12 @@ import com.codeit.sb02mplteam2.exception.ErrorCode;
 import com.codeit.sb02mplteam2.exception.directmessage.DirectMessageChannelException;
 import com.codeit.sb02mplteam2.exception.user.UserException;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +26,7 @@ public class BasicDirectMessageChannelService implements DirectMessageChannelSer
 
   private final DirectMessageChannelRepository directMessageChannelRepository;
   private final UserRepository userRepository;
+  private final SimpMessagingTemplate messagingTemplate;
 
   @Transactional
   @Override
@@ -47,6 +51,46 @@ public class BasicDirectMessageChannelService implements DirectMessageChannelSer
         channel.getId(),
         senderId
     );
+  }
+
+  @Transactional
+  @Override
+  public void leaveChannel(Long channelId, Long userId) {
+    DirectMessageChannel channel = directMessageChannelRepository.findById(channelId)
+        .orElseThrow(() -> new DirectMessageChannelException(ErrorCode.DIRECT_MESSAGE_CHANNEL_NOT_FOUND));
+
+    User leavingUser = Stream.of(channel.getFromUser(), channel.getToUser())
+        .filter(u -> Objects.equals(u.getId(), userId))
+        .findFirst()
+        .orElseThrow(() -> new DirectMessageChannelException(ErrorCode.DIRECT_MESSAGE_CHANNEL_NOT_FOUND));
+
+    User otherUser = Stream.of(channel.getFromUser(), channel.getToUser())
+        .filter(u -> !Objects.equals(u.getId(), userId))
+        .findFirst()
+        .orElse(null);
+
+    if (Objects.equals(channel.getFromUser().getId(), userId)) {
+      channel.setFromUser(null);
+    } else {
+      channel.setToUser(null);
+    }
+
+    // 남은 사용자가 없으면 채널 삭제
+    if (otherUser == null) {
+      directMessageChannelRepository.delete(channel);
+    } else {
+      directMessageChannelRepository.save(channel);
+
+      messagingTemplate.convertAndSendToUser(
+          otherUser.getEmail(),
+          "/queue/dm/messages",
+          Map.of(
+              "type", "USER_LEFT",
+              "channelId", channel.getId(),
+              "leavingUserId", leavingUser.getId()
+          )
+      );
+    }
   }
 
   @Transactional(readOnly = true)

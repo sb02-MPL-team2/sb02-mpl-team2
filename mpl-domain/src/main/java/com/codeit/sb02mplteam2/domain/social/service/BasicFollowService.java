@@ -1,7 +1,7 @@
 package com.codeit.sb02mplteam2.domain.social.service;
 
 import com.codeit.sb02mplteam2.domain.notification.entity.NotificationType;
-import com.codeit.sb02mplteam2.domain.notification.event.NotificationEvent;
+import com.codeit.sb02mplteam2.event.NotificationEvent;
 import com.codeit.sb02mplteam2.domain.social.dto.CursorPageResponseFollowDto;
 import com.codeit.sb02mplteam2.domain.social.dto.FollowResponse;
 import com.codeit.sb02mplteam2.domain.social.dto.FollowStatusResponse;
@@ -54,7 +54,6 @@ public class BasicFollowService implements FollowService {
 
     log.info("{}를 {}가 팔로우 ", followee.getUsername(), follower.getUsername());
     eventPublisher.publishEvent(new NotificationEvent(
-        this,
         followee.getId(),
         NotificationType.NEW_FOLLOWER,
         null,

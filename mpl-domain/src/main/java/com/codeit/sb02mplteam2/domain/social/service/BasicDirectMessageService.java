@@ -3,7 +3,7 @@ package com.codeit.sb02mplteam2.domain.social.service;
 import com.codeit.sb02mplteam2.domain.binaryContent.entity.BinaryContent;
 import com.codeit.sb02mplteam2.domain.binaryContent.service.BinaryContentService;
 import com.codeit.sb02mplteam2.domain.notification.entity.NotificationType;
-import com.codeit.sb02mplteam2.domain.notification.event.NotificationEvent;
+import com.codeit.sb02mplteam2.event.NotificationEvent;
 import com.codeit.sb02mplteam2.domain.social.dto.CursorPageResponseDirectMessageDto;
 import com.codeit.sb02mplteam2.domain.social.dto.DirectMessageCreateRequest;
 import com.codeit.sb02mplteam2.domain.social.dto.DirectMessageResponse;
@@ -108,7 +108,6 @@ public class BasicDirectMessageService implements DirectMessageService {
 
     log.info("{}에게 {}가 메세지 전송 ", receiver.getUsername(), sender.getUsername());
     eventPublisher.publishEvent(new NotificationEvent(
-        this,
         receiver.getId(),
         NotificationType.NEW_MESSAGE,
         directMessage.getId(),
