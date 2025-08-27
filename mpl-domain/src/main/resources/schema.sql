@@ -114,6 +114,17 @@ CREATE TABLE IF NOT EXISTS password_reset_token
     user_id     BIGINT       NOT NULL UNIQUE
 );
 
+CREATE TABLE IF NOT EXISTS jwt_sessions
+(
+    id              BIGSERIAL PRIMARY KEY,
+    user_id         BIGINT                   NOT NULL,
+    access_token    VARCHAR(1024)            NOT NULL UNIQUE,
+    refresh_token   VARCHAR(1024)            NOT NULL UNIQUE,
+    expiration_time TIMESTAMP WITH TIME ZONE NOT NULL,
+    created_at      TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at      TIMESTAMP WITH TIME ZONE
+);
+
 CREATE TABLE IF NOT EXISTS contents
 (
     id          BIGSERIAL PRIMARY KEY,
