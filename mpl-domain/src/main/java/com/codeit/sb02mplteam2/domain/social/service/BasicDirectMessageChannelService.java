@@ -138,7 +138,7 @@ public class BasicDirectMessageChannelService implements DirectMessageChannelSer
       channels = channels.subList(0, size);
     }
 
-    Long nextCursor = hasNext ? channels.getLast().getId() : null;
+    Long nextCursor = hasNext ? channels.get(channels.size() - 1).getId() : null;
 
     List<DirectMessageChannelResponse> items = channels.stream()
         .map(ch -> {
