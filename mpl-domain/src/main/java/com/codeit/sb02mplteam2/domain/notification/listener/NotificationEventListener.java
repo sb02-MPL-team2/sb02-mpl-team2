@@ -5,9 +5,8 @@ import static com.codeit.sb02mplteam2.util.CommonUtil.retrieveAllFromCache;
 import static com.codeit.sb02mplteam2.util.CommonUtil.retrieveCache;
 import static com.codeit.sb02mplteam2.util.NotificationUtil.typeFiltering;
 
-import com.codeit.sb02mplteam2.domain.notification.TaskProducer;
+import com.codeit.sb02mplteam2.domain.notification.NotificationEventPublisher;
 import com.codeit.sb02mplteam2.domain.notification.dto.NotificationDto;
-import com.codeit.sb02mplteam2.domain.notification.entity.Notification;
 import com.codeit.sb02mplteam2.domain.notification.entity.NotificationType;
 import com.codeit.sb02mplteam2.domain.notification.service.DeliveryService;
 import com.codeit.sb02mplteam2.domain.notification.service.NotificationService;
@@ -21,6 +20,7 @@ import com.codeit.sb02mplteam2.event.BulkNotificationEvent;
 import com.codeit.sb02mplteam2.event.BulkNotificationSendEvent;
 import com.codeit.sb02mplteam2.event.LostNotificationEvent;
 import com.codeit.sb02mplteam2.event.NotificationEvent;
+import com.codeit.sb02mplteam2.event.NotificationSendEvent;
 import com.codeit.sb02mplteam2.util.RabbitConst;
 import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
@@ -45,7 +45,7 @@ public class NotificationEventListener implements NotificationListener {
   private final NotificationService notificationService;
   private final DeliveryService deliveryService;
   private final CacheManager cacheManager;
-  private final TaskProducer taskProducer;
+  private final NotificationEventPublisher notificationEventPublisher;
 
   private Cache alarmCache;
   private Cache userCache;
@@ -113,7 +113,7 @@ public class NotificationEventListener implements NotificationListener {
         PlaylistDto playlistDto = retrieveCache(playlistCache, targetId, PlaylistDto.class);
         if (!isCacheMiss && playlistDto != null) {
           log.info("플레이리스트가 캐시에 존재합니다. 실시간 알림을 처리합니다.");
-          taskProducer.processNotificationWithCachedData(receiver, publisher, playlistDto, type);
+          notificationEventPublisher.processNotificationWithCachedData(receiver, publisher, playlistDto, type);
           return;
         }
         break;
@@ -121,22 +121,22 @@ public class NotificationEventListener implements NotificationListener {
         DirectMessageDto directMessageDto = retrieveCache(messageCache, targetId, DirectMessageDto.class);
         if (!isCacheMiss && directMessageDto != null) {
           log.info("DM 메시지가 캐시에 존재합니다. 실시간 알림을 처리합니다.");
-          taskProducer.processNotificationWithCachedData(receiver, publisher, directMessageDto, type);
+          notificationEventPublisher.processNotificationWithCachedData(receiver, publisher, directMessageDto, type);
           return;
         }
         break;
       default:
         break;
     }
+
     // Target 엔티티가 필요한 타입인데 캐시에 없는 경우 Cache Miss로 처리
-    log.info("캐시 확인 완료 {}", isCacheMiss);
     if (isCacheMiss) {
       // 하나라도 캐시에 없으면 Task Service에 작업을 위임하여 DB에서 조회 및 처리
       log.warn("캐시 미스 발생. Notification 생성을 Task Service로 위임합니다. Event: {}", event);
-      taskProducer.delegateToTaskService(event); // Task Service로 이벤트를 다시 보내는 로직
+      notificationEventPublisher.delegateToTaskService(event); // Task Service로 이벤트를 다시 보내는 로직
     } else {
       log.info("Receiver, Publisher 의 캐시가 존재합니다. 실시간 알림을 처리합니다.");
-      taskProducer.processNotificationWithCachedData(receiver, publisher, null, type);
+      notificationEventPublisher.processNotificationWithCachedData(receiver, publisher, null, type);
     }
   }
 
@@ -161,8 +161,8 @@ public class NotificationEventListener implements NotificationListener {
 
     // 공통 데이터 중 하나라도 캐시에 없으면, 전체 이벤트를 Task Service로 위임
     if (publisher == null || (isTargetRequired(type) && targetEntity == null)) {
-      log.warn("공통 데이터(Publisher 또는 Target) 캐시 미스. 전체 Bulk 이벤트를 Task Service로 위임합니다.");
-      taskProducer.delegateBulkTaskToService(event); // 전체 이벤트를 그대로 위임
+      log.info("공통 데이터(Publisher 또는 Target) 캐시 미스. 전체 Bulk 이벤트를 Task Service로 위임합니다.");
+      notificationEventPublisher.delegateBulkTaskToService(event); // 전체 이벤트를 그대로 위임
       return;
     }
 
@@ -180,32 +180,31 @@ public class NotificationEventListener implements NotificationListener {
     for (Long receiverId : receiverIds) {
       UserDto receiver = cachedUsers.get(receiverId);
       AlarmSetting setting = cachedAlarmSettings.get(receiverId);
-
-      // User와 AlarmSetting이 모두 캐시에 존재하는 경우
-      if (receiver != null && setting != null) {
-        if (typeFiltering(type, setting)) {
+      if (setting == null) {
+        setting = alarmSettingService.findByUserId(receiverId);
+      }
+      if (typeFiltering(type, setting)) {
+        if (receiver != null) {
           fastPathReceivers.add(receiver); // 알림 설정 ON -> Fast Path
+        } else {
+          slowPathReceiverIds.add(receiverId); // -> Slow Path
         }
-        // 알림 설정 OFF -> 아무것도 안 함
-      } else {
-        // User 또는 AlarmSetting 둘 중 하나라도 캐시에 없는 경우
-        slowPathReceiverIds.add(receiverId); // -> Slow Path
       }
     }
 
     // 즉시 처리 가능한 대상이 있다면 알림 전송
     if (!fastPathReceivers.isEmpty()) {
       log.info("[Fast Path] {}명의 사용자에게 즉시 알림을 보냅니다.", fastPathReceivers.size());
-      taskProducer.processBulkNotificationsWithCachedData(fastPathReceivers, publisher, targetEntity, type);
+      notificationEventPublisher.processBulkNotificationsWithCachedData(fastPathReceivers, publisher, targetEntity, type);
     }
 
     // DB 조회가 필요한 대상이 있다면 Task Service로 위임
     if (!slowPathReceiverIds.isEmpty()) {
       log.warn("[Slow Path] {}명의 사용자에 대한 처리를 Task Service로 위임합니다.", slowPathReceiverIds.size());
-      BulkNotificationEvent bulkEvent = new BulkNotificationEvent(slowPathReceiverIds,
+      BulkNotificationEvent bulkEvent = new BulkNotificationEvent(this, slowPathReceiverIds,
           event.getNotificationType(), event.getTargetId(), event.getPublisherId()
       );
-      taskProducer.delegateBulkTaskToService(bulkEvent);
+      notificationEventPublisher.delegateBulkTaskToService(bulkEvent);
     }
   }
 
@@ -228,13 +227,13 @@ public class NotificationEventListener implements NotificationListener {
     }
   }
 
-  @RabbitListener(queues = RabbitConst.notificationReceiveQueue)
-  public void handleNotificationReceiveEvent(Notification notification) {
-    log.info("성공적으로 task 작업에서 수행한 알람을 수신 받았습니다. id: {}", notification.getId());
-    deliveryService.deliverToClient(NotificationDto.of(notification));
+  @EventListener
+  public void handleNotificationReceiveEvent(NotificationSendEvent event) {
+    log.info("성공적으로 task 작업에서 수행한 알람을 수신 받았습니다. id: {}", event.getNotificationDto().id());
+    deliveryService.deliverToClient(event.getNotificationDto());
   }
 
-  @RabbitListener(queues = RabbitConst.notificationReceiveBulkQueue)
+  @EventListener
   public void handleNotificationReceiveBulkEvent(BulkNotificationSendEvent event) {
     log.info("성공적으로 task 작업에서 수행한 대량 알람 수신을 받았습니다. size: {}", event.notifications().size());
     event.notifications()
