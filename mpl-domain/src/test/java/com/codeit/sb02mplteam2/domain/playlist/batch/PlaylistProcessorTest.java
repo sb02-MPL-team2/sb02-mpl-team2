@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.codeit.sb02mplteam2.domain.playlist.entity.Playlist;
 import com.codeit.sb02mplteam2.domain.playlist.entity.PlaylistSubscriberHistory;
-import com.codeit.sb02mplteam2.domain.playlist.entity.Subscribe;
+import com.codeit.sb02mplteam2.domain.subscribe.entity.Subscribe;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

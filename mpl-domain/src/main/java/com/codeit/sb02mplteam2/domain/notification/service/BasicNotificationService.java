@@ -82,8 +82,8 @@ public class BasicNotificationService implements NotificationService {
   public <T> NotificationDto save(UserDto receiver, UserDto publisher, NotificationType type,
       T target) {
     Notification notification = createNotification(receiver, publisher, type, target);
-    notificationRepository.save(notification);
-    return NotificationDto.of(notification);
+    Notification saved = notificationRepository.saveAndFlush(notification);
+    return NotificationDto.of(saved);
   }
 
   @Override
@@ -95,7 +95,8 @@ public class BasicNotificationService implements NotificationService {
       Notification notification = createNotification(receiver, publisher, type, target);
       notificationList.add(notification);
     }
-    return notificationList.stream().map(NotificationDto::of).toList();
+    List<Notification> saved = notificationRepository.saveAllAndFlush(notificationList);
+    return saved.stream().map(NotificationDto::of).toList();
   }
 
   private <T> Notification createNotification(UserDto receiver, UserDto publisher, NotificationType type,

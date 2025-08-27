@@ -1,7 +1,7 @@
-package com.codeit.sb02mplteam2.domain.playlist.repository;
+package com.codeit.sb02mplteam2.domain.subscribe.repository;
 
 import com.codeit.sb02mplteam2.domain.playlist.entity.Playlist;
-import com.codeit.sb02mplteam2.domain.playlist.entity.Subscribe;
+import com.codeit.sb02mplteam2.domain.subscribe.entity.Subscribe;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
