@@ -34,23 +34,19 @@ public class BasicNotificationTaskService implements NotificationTaskService {
   @Override
   public Notification create(Long receiverId, Long publisherId, NotificationType type,
       Long targetId) {
-    log.info("알람을 레포지토리에서 검색해서 생성합니다.");
-    UserDto receiver = userQueryService.refreshAndFindByUserId(receiverId);
-    UserDto publisher = userQueryService.refreshAndFindByUserId(publisherId);
+    UserDto receiver = userQueryService.findByUserId(receiverId);
+    UserDto publisher = userQueryService.findByUserId(publisherId);
     Notification notification = of(receiver, publisher, type, targetId);
     notificationRepository.save(notification);
-    log.info("알람 생성 성공");
     return notification;
   }
 
   @Override
   public Notification create(NotificationEvent originalEvent) {
-    log.info("알람을 레포지토리에서 검색해서 생성합니다.");
     Long receiverId = originalEvent.getReceiverId();
     Long publisherId = originalEvent.getPublisherId();
     NotificationType type = originalEvent.getNotificationType();
     Long targetId = originalEvent.getTargetId();
-    log.info("알람 생성 성공");
     return create(receiverId, publisherId, type, targetId);
   }
 
@@ -87,10 +83,10 @@ public class BasicNotificationTaskService implements NotificationTaskService {
     if (type == NotificationType.NEW_PLAYLIST_BY_FOLLOWING
         || type == NotificationType.PLAYLIST_SUBSCRIBED
         || type == NotificationType.BROADCAST_TODAY_PLAYLIST) {
-      PlaylistDto playlistDto = playlistService.refreshAndFindById(targetId);
+      PlaylistDto playlistDto = playlistService.findById(targetId);
       return builder.content(createContent(playlistDto, type)).build();
     } else if (type == NotificationType.NEW_MESSAGE) {
-      DirectMessageDto directMessageDto = directMessageQueryService.refreshAndFindByDirectMessageId(
+      DirectMessageDto directMessageDto = directMessageQueryService.findByDirectMessageId(
           targetId);
       return builder.content(createContent(directMessageDto, type)).build();
     } else {

@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -78,7 +79,7 @@ public class BasicNotificationService implements NotificationService {
    * 모든 값이 캐시에 존재할 경우
    */
   @Override
-  @Transactional
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   public <T> NotificationDto save(UserDto receiver, UserDto publisher, NotificationType type,
       T target) {
     Notification notification = createNotification(receiver, publisher, type, target);
@@ -87,7 +88,7 @@ public class BasicNotificationService implements NotificationService {
   }
 
   @Override
-  @Transactional
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   public <T> List<NotificationDto> saveAll(Set<UserDto> receivers, UserDto publisher,
       NotificationType type, T target) {
     List<Notification> notificationList = new ArrayList<>();
@@ -104,13 +105,11 @@ public class BasicNotificationService implements NotificationService {
     String title = NotificationType.toTitle(publisher.username(), type.getMessageTemplate());
     String content = createContent(target, type);
     Long targetId = null;
-    log.info("저장중");
     if (target instanceof PlaylistDto playlistDto) {
       targetId = playlistDto.id();
     } else if (target instanceof DirectMessageDto directMessageDto) {
       targetId = directMessageDto.id();
     }
-    log.info("targetId {}", targetId);
     return Notification.of(receiver.id(), publisher.id(), targetId,
         title, content, type);
   }

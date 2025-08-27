@@ -11,7 +11,6 @@ import com.codeit.sb02mplteam2.domain.notification.entity.NotificationType;
 import com.codeit.sb02mplteam2.domain.notification.service.DeliveryService;
 import com.codeit.sb02mplteam2.domain.notification.service.NotificationService;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistDto;
-import com.codeit.sb02mplteam2.domain.playlist.entity.Playlist;
 import com.codeit.sb02mplteam2.domain.setting.entity.AlarmSetting;
 import com.codeit.sb02mplteam2.domain.setting.service.AlarmSettingService;
 import com.codeit.sb02mplteam2.domain.social.dto.DirectMessageDto;
@@ -21,7 +20,6 @@ import com.codeit.sb02mplteam2.event.BulkNotificationSendEvent;
 import com.codeit.sb02mplteam2.event.LostNotificationEvent;
 import com.codeit.sb02mplteam2.event.NotificationEvent;
 import com.codeit.sb02mplteam2.event.NotificationSendEvent;
-import com.codeit.sb02mplteam2.util.RabbitConst;
 import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -30,11 +28,12 @@ import java.util.Map;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 @Slf4j
 @Component
@@ -81,7 +80,7 @@ public class NotificationEventListener implements NotificationListener {
 
   // All or Nothing
   @Override
-  @RabbitListener(queues = RabbitConst.notificationQueue)
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void handleNotificationEvent(NotificationEvent event) {
     Long receiverId = event.getReceiverId();
     Long publisherId = event.getPublisherId();
@@ -113,15 +112,18 @@ public class NotificationEventListener implements NotificationListener {
         PlaylistDto playlistDto = retrieveCache(playlistCache, targetId, PlaylistDto.class);
         if (!isCacheMiss && playlistDto != null) {
           log.info("플레이리스트가 캐시에 존재합니다. 실시간 알림을 처리합니다.");
-          notificationEventPublisher.processNotificationWithCachedData(receiver, publisher, playlistDto, type);
+          notificationEventPublisher.processNotificationWithCachedData(receiver, publisher,
+              playlistDto, type);
           return;
         }
         break;
       case NEW_MESSAGE:
-        DirectMessageDto directMessageDto = retrieveCache(messageCache, targetId, DirectMessageDto.class);
+        DirectMessageDto directMessageDto = retrieveCache(messageCache, targetId,
+            DirectMessageDto.class);
         if (!isCacheMiss && directMessageDto != null) {
           log.info("DM 메시지가 캐시에 존재합니다. 실시간 알림을 처리합니다.");
-          notificationEventPublisher.processNotificationWithCachedData(receiver, publisher, directMessageDto, type);
+          notificationEventPublisher.processNotificationWithCachedData(receiver, publisher,
+              directMessageDto, type);
           return;
         }
         break;
@@ -144,7 +146,7 @@ public class NotificationEventListener implements NotificationListener {
    * 대규모 알림 이벤트를 벌크 조회와 작업 분리 전략으로 처리
    */
   @Override
-  @RabbitListener(queues = RabbitConst.notificationBulkQueue)
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void handleBulkNotificationEvent(BulkNotificationEvent event) {
     NotificationType type = event.getNotificationType();
     log.info("실시간 대규모 큐 메시지 수신. Type: {}", type);
@@ -152,16 +154,18 @@ public class NotificationEventListener implements NotificationListener {
     // 공통 데이터(Publisher, Target) 우선 조회
     UserDto publisher = retrieveCache(userCache, event.getPublisherId(), UserDto.class);
 
-    Object targetEntity = switch (type) {
+    PlaylistDto targetEntity = switch (type) {
       case NEW_PLAYLIST_BY_FOLLOWING, PLAYLIST_SUBSCRIBED, BROADCAST_TODAY_PLAYLIST:
-        yield retrieveCache(playlistCache, event.getTargetId(), Playlist.class);
+        yield retrieveCache(playlistCache, event.getTargetId(), PlaylistDto.class);
       default:
         yield null;
     };
 
     // 공통 데이터 중 하나라도 캐시에 없으면, 전체 이벤트를 Task Service로 위임
     if (publisher == null || (isTargetRequired(type) && targetEntity == null)) {
-      log.info("공통 데이터(Publisher 또는 Target) 캐시 미스. 전체 Bulk 이벤트를 Task Service로 위임합니다.");
+      log.info(
+          "공통 데이터(Publisher 또는 Target) 캐시 미스. 전체 Bulk 이벤트를 Task Service로 위임합니다. publisher : {}, targetEntity : {}",
+          publisher, targetEntity);
       notificationEventPublisher.delegateBulkTaskToService(event); // 전체 이벤트를 그대로 위임
       return;
     }
@@ -195,7 +199,8 @@ public class NotificationEventListener implements NotificationListener {
     // 즉시 처리 가능한 대상이 있다면 알림 전송
     if (!fastPathReceivers.isEmpty()) {
       log.info("[Fast Path] {}명의 사용자에게 즉시 알림을 보냅니다.", fastPathReceivers.size());
-      notificationEventPublisher.processBulkNotificationsWithCachedData(fastPathReceivers, publisher, targetEntity, type);
+      notificationEventPublisher.processBulkNotificationsWithCachedData(fastPathReceivers,
+          publisher, targetEntity, type);
     }
 
     // DB 조회가 필요한 대상이 있다면 Task Service로 위임
