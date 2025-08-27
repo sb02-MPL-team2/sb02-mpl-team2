@@ -6,7 +6,6 @@ import com.codeit.sb02mplteam2.event.BulkNotificationEvent;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +15,7 @@ import org.springframework.stereotype.Component;
 public class PlaylistEventPublisher {
   private final FollowRepository followRepository;
   private final ApplicationEventPublisher eventPublisher;
+
   public void sendEvent(Long userId, Long playlistId) {
     //이벤트 발행
     Set<Long> followersId = followRepository.findAllFollowersIdByToUserId(userId);

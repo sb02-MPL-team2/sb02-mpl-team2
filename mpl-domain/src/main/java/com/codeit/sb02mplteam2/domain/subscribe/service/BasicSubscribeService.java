@@ -5,26 +5,23 @@ import static com.codeit.sb02mplteam2.util.PlaylistUtil.toResponseDto;
 import static com.codeit.sb02mplteam2.util.PlaylistUtil.toUserSlimDto;
 
 import com.codeit.sb02mplteam2.domain.content.dto.content.ContentResponseDto;
-import com.codeit.sb02mplteam2.domain.notification.entity.NotificationType;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistDto;
 import com.codeit.sb02mplteam2.domain.playlist.dto.PlaylistItemDto;
 import com.codeit.sb02mplteam2.domain.playlist.dto.request.SubscribeRequest;
 import com.codeit.sb02mplteam2.domain.playlist.entity.Playlist;
 import com.codeit.sb02mplteam2.domain.playlist.repository.PlaylistRepository;
+import com.codeit.sb02mplteam2.domain.subscribe.SubscribeEventPublisher;
 import com.codeit.sb02mplteam2.domain.subscribe.entity.Subscribe;
 import com.codeit.sb02mplteam2.domain.subscribe.repository.SubscribeRepository;
 import com.codeit.sb02mplteam2.domain.user.dto.UserSlimDto;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
-import com.codeit.sb02mplteam2.event.NotificationEvent;
 import com.codeit.sb02mplteam2.exception.ErrorCode;
 import com.codeit.sb02mplteam2.exception.playlist.PlaylistException;
 import com.codeit.sb02mplteam2.exception.user.UserException;
-import com.codeit.sb02mplteam2.util.RabbitConst;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,8 +34,7 @@ public class BasicSubscribeService implements SubscribeService{
   private final UserRepository userRepository;
   private final SubscribeRepository subscribeRepository;
   private final PlaylistRepository playlistRepository;
-  private final RabbitTemplate rabbitTemplate;
-
+  private final SubscribeEventPublisher subscribeEventPublisher;
 
   @Override
   @Transactional
@@ -68,12 +64,7 @@ public class BasicSubscribeService implements SubscribeService{
       if (success) {
         log.info("구독 성공 user id = {}, name = {}, playlist id = {}, playlist Title = {}", userId,
             user.getUsername(), playlistId, playlist.getTitle());
-        //이벤트 발행
-        NotificationEvent event = new NotificationEvent(playlist.getUser().getId(),
-            NotificationType.PLAYLIST_SUBSCRIBED,
-            playlist.getId(), userId);
-//      eventPublisher.publishEvent(event);
-        rabbitTemplate.convertAndSend(RabbitConst.notificationExchange,RabbitConst.Playlist_Send_Notification_RoutingKey,event);
+        subscribeEventPublisher.sendEvent(userId, playlist.getUser().getId(), playlistId);
       } else {
         log.warn("구독 실패 user id = {}, name = {}, playlist id = {}, playlist Title = {}", userId,
             user.getUsername(), playlistId, playlist.getTitle());
