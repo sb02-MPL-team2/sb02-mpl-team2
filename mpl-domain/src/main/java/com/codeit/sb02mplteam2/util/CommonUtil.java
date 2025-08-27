@@ -1,46 +1,28 @@
 package com.codeit.sb02mplteam2.util;
 
 import com.codeit.sb02mplteam2.domain.notification.entity.NotificationType;
-import java.util.HashMap;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.springframework.cache.Cache;
-import org.springframework.data.redis.cache.RedisCache;
 
 @SuppressWarnings("unchecked")
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CommonUtil {
   public static <T> T retrieveCache(Cache cache, Long id, Class<T> tClass) {
-    Object nativeCache = cache.getNativeCache();
-
-    if (nativeCache instanceof com.github.benmanes.caffeine.cache.Cache) {
-      com.github.benmanes.caffeine.cache.Cache<Long, T> caffeineCache
-          = (com.github.benmanes.caffeine.cache.Cache<Long, T>) nativeCache;
-      return caffeineCache.getIfPresent(id);
-    } else if (nativeCache instanceof RedisCache redisCache) {
-      return redisCache.get(id, tClass);
-    }
-
-    return null;
+    return cache.get(id, tClass);
   }
 
   public static <T> Map<Long, T> retrieveAllFromCache(Cache cache, Set<Long> ids, Class<T> tClass) {
-    Object nativeCache = cache.getNativeCache();
-
-    if (nativeCache instanceof com.github.benmanes.caffeine.cache.Cache) {
-      @SuppressWarnings("unchecked")
-      com.github.benmanes.caffeine.cache.Cache<Long, T> caffeineCache
-          = (com.github.benmanes.caffeine.cache.Cache<Long, T>) nativeCache;
-
-      return caffeineCache.getAllPresent(ids);
-    } else if (nativeCache instanceof RedisCache redisCache) {
-      Map<Long, T> result = new HashMap<>();
-      ids.forEach(id -> result.put(id, redisCache.get(id, tClass)));
-      return result;
-    }
-    return null;
+    return ids.parallelStream().map(id -> {
+          T value = cache.get(id, tClass);
+          return new SimpleEntry<>(id, value);
+        }).filter(entry -> Objects.nonNull(entry.getValue()))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   public static boolean isTargetRequired(NotificationType type) {
