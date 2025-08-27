@@ -74,7 +74,7 @@ public class BasicDirectMessageServiceTest {
     when(directMessageRepository.save(any(DirectMessage.class))).thenReturn(savedMessage);
 
     // when
-    DirectMessageResponse response = directMessageService.create(request , Optional.empty());
+    DirectMessageResponse response = directMessageService.create(request);
 
     // then
     assertThat(response).isNotNull();
@@ -95,7 +95,7 @@ public class BasicDirectMessageServiceTest {
     when(userRepository.findById(senderId)).thenReturn(Optional.empty());
 
     // when & then
-    assertThrows(UserException.class, () -> directMessageService.create(request, Optional.empty()));
+    assertThrows(UserException.class, () -> directMessageService.create(request));
 
     verify(userRepository).findById(senderId);
     verify(directMessageRepository, never()).save(any());
@@ -110,8 +110,7 @@ public class BasicDirectMessageServiceTest {
     when(directMessageChannelRepository.findById(channelId)).thenReturn(Optional.empty());
 
     // when & then
-    assertThrows(DirectMessageChannelException.class, () -> directMessageService.create(request,
-        Optional.empty()));
+    assertThrows(DirectMessageChannelException.class, () -> directMessageService.create(request));
 
     verify(userRepository).findById(senderId);
     verify(directMessageChannelRepository).findById(channelId);
@@ -130,8 +129,7 @@ public class BasicDirectMessageServiceTest {
     when(directMessageChannelRepository.findById(channelId)).thenReturn(Optional.of(channel));
 
     // when & then
-    assertThrows(IllegalArgumentException.class, () -> directMessageService.create(request,
-        Optional.empty()));
+    assertThrows(IllegalArgumentException.class, () -> directMessageService.create(request));
 
     verify(directMessageRepository, never()).save(any());
     verify(messagingTemplate, never()).convertAndSendToUser(any(), any(), any());

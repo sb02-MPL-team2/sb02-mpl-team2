@@ -1,8 +1,6 @@
 package com.codeit.sb02mplteam2.domain.social.entity;
 
-import com.codeit.sb02mplteam2.domain.binaryContent.entity.BinaryContent;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -12,7 +10,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
@@ -36,9 +33,8 @@ public class DirectMessage {
   @Column(columnDefinition = "TEXT", nullable = false)
   private String content;
 
-  @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-  @JoinColumn(name="image_content_id", columnDefinition = "BIGINT")
-  private BinaryContent imageContent;
+  @Column(name="image_content_url")
+  private String imageContentUrl;
 
   @CreatedDate
   @Column(name="created_at", nullable = false, updatable = false)
@@ -52,10 +48,10 @@ public class DirectMessage {
   @JoinColumn(name="direct_message_channel_id", nullable = false)
   private DirectMessageChannel directMessageChannel;
 
-  public static DirectMessage of(String content, BinaryContent imageContent, User user, DirectMessageChannel channel) {
+  public static DirectMessage of(String content, String imageContentUrl, User user, DirectMessageChannel channel) {
     DirectMessage message = new DirectMessage();
     message.content = content;
-    message.imageContent = imageContent;
+    message.imageContentUrl = imageContentUrl;
     message.user = user;
     message.directMessageChannel = channel;
 

@@ -1,6 +1,5 @@
 package com.codeit.sb02mplteam2.domain.social.service;
 
-import com.codeit.sb02mplteam2.domain.binaryContent.entity.BinaryContent;
 import com.codeit.sb02mplteam2.domain.binaryContent.service.BinaryContentService;
 import com.codeit.sb02mplteam2.domain.notification.entity.NotificationType;
 import com.codeit.sb02mplteam2.event.NotificationEvent;
@@ -12,17 +11,13 @@ import com.codeit.sb02mplteam2.domain.social.entity.DirectMessage;
 import com.codeit.sb02mplteam2.domain.social.entity.DirectMessageChannel;
 import com.codeit.sb02mplteam2.domain.social.repository.DirectMessageChannelRepository;
 import com.codeit.sb02mplteam2.domain.social.repository.DirectMessageRepository;
-import com.codeit.sb02mplteam2.domain.user.dto.UserSlimDto;
 import com.codeit.sb02mplteam2.domain.user.entity.User;
 import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
 import com.codeit.sb02mplteam2.exception.ErrorCode;
-import com.codeit.sb02mplteam2.exception.MplException;
 import com.codeit.sb02mplteam2.exception.directmessage.DirectMessageChannelException;
 import com.codeit.sb02mplteam2.exception.user.UserException;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -30,7 +25,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
@@ -46,8 +40,7 @@ public class BasicDirectMessageService implements DirectMessageService {
 
   @Transactional
   @Override
-  public DirectMessageResponse create(DirectMessageCreateRequest request,
-      Optional<MultipartFile> optionalFile) {
+  public DirectMessageResponse create(DirectMessageCreateRequest request) {
     // 디엠 보낼 때 이미 채널이 미리 만들어져 있고 디엠쪽에서는 채널이 있는지만 검사(dto에서도 채널아이디 받아옴)
     User sender = userRepository.findById(request.senderId())
         .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
@@ -72,29 +65,15 @@ public class BasicDirectMessageService implements DirectMessageService {
       throw new UserException(ErrorCode.USER_NOT_FOUND);
     }
 
-    BinaryContent imageContent = optionalFile
-        .filter(file -> !file.isEmpty())
-        .map(file ->{
-          try {
-            return binaryContentService.upload(file);
-          } catch (IOException e){
-            log.error("File upload failed during user creation for file name: {}", file.getOriginalFilename());
-            throw new MplException(ErrorCode.FILE_UPLOAD_FAILED, e);
-          }
-        })
-        .orElse(null);
-
-    DirectMessage directMessage = DirectMessage.of(request.content(), imageContent, sender, channel);
+    DirectMessage directMessage = DirectMessage.of(request.content(), null, sender, channel);
     directMessage = directMessageRepository.save(directMessage);
-
-    String imgUrl = imageContent != null ? imageContent.getUrl() : null;
 
     DirectMessageResponse response = new DirectMessageResponse(
         sender.getId(),
         directMessage.getId(),
         channel.getId(),
         request.content(),
-        imgUrl,
+        null,
         directMessage.getCreatedAt()
     );
 
@@ -156,7 +135,7 @@ public class BasicDirectMessageService implements DirectMessageService {
             m.getId(),
             m.getDirectMessageChannel().getId(),
             m.getContent(),
-            m.getImageContent() != null ? m.getImageContent().getUrl() : null,
+            m.getImageContentUrl(),
             m.getCreatedAt()
         ))
         .toList();
