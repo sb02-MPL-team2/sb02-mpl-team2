@@ -35,7 +35,7 @@ subprojects {
 
     dependencyManagement {
         imports {
-            mavenBom "software.amazon.awssdk:bom:2.25.48"
+            mavenBom "io.awspring.cloud:spring-cloud-aws-dependencies:3.1.1"
         }
     }
 
@@ -97,6 +97,7 @@ subprojects {
         compileOnly 'org.projectlombok:lombok'
         // MapStruct for DTO mapping
         implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+        implementation 'io.awspring.cloud:spring-cloud-starter-aws:2.4.4'
 
         annotationProcessor 'org.projectlombok:lombok'
         annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
