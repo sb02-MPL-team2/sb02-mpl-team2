@@ -7,8 +7,8 @@ import com.codeit.sb02mplteam2.domain.notification.service.DeliveryService;
 import com.codeit.sb02mplteam2.domain.notification.service.NotificationService;
 import com.codeit.sb02mplteam2.domain.task.service.NotificationTaskService;
 import com.codeit.sb02mplteam2.domain.user.dto.UserDto;
-import com.codeit.sb02mplteam2.event.BulkNotificationEvent;
-import com.codeit.sb02mplteam2.event.NotificationEvent;
+import com.codeit.sb02mplteam2.event.BulkNotificationTaskEvent;
+import com.codeit.sb02mplteam2.event.NotificationTaskEvent;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -27,11 +27,11 @@ public class NotificationEventPublisher {
   /**
    * Task Service가 이벤트를 처리하도록 메시지를 전달
    */
-  public void delegateToTaskService(NotificationEvent originalEvent) {
+  public void delegateToTaskService(NotificationTaskEvent event) {
     // DB 조회가 필요한 작업을 처리하는 별도의 큐로 메시지를 보냅니다.
-    log.info("[Slow Path] Event를 Task Service로 위임합니다. Event: {}", originalEvent);
+    log.info("[Slow Path] Event를 Task Service로 위임합니다. Event: {}", event);
 
-    Notification notification = notificationTaskService.create(originalEvent);
+    Notification notification = notificationTaskService.create(event);
     NotificationDto notificationDto = NotificationDto.of(notification);
     deliveryService.deliverToClient(notificationDto);
   }
@@ -39,7 +39,7 @@ public class NotificationEventPublisher {
   /**
    * Task Service가 Bulk 이벤트를 처리하도록 메시지를 전달하는 메서드
    */
-  public void delegateBulkTaskToService(BulkNotificationEvent bulkEvent) {
+  public void delegateBulkTaskToService(BulkNotificationTaskEvent bulkEvent) {
     // DB 조회가 필요한 작업을 처리하는 별도의 벌크 작업 큐로 메시지를 보냅니다.
     log.info("[Slow Path] Event를 Task Service로 위임합니다. Event: {}, 수신자: {}", bulkEvent, bulkEvent.getReceiverIds().size());
 

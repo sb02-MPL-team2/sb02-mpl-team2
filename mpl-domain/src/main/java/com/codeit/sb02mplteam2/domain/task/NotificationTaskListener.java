@@ -2,13 +2,12 @@ package com.codeit.sb02mplteam2.domain.task;
 
 import com.codeit.sb02mplteam2.domain.notification.entity.Notification;
 import com.codeit.sb02mplteam2.domain.task.service.NotificationTaskService;
-import com.codeit.sb02mplteam2.event.BulkNotificationEvent;
-import com.codeit.sb02mplteam2.event.NotificationEvent;
-import com.codeit.sb02mplteam2.util.RabbitConst;
+import com.codeit.sb02mplteam2.event.BulkNotificationTaskEvent;
+import com.codeit.sb02mplteam2.event.NotificationTaskEvent;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -19,15 +18,15 @@ public class NotificationTaskListener {
   private final NotificationTaskService taskService;
   private final TaskEventPublisher taskEventPublisher;
 
-  @RabbitListener(queues = RabbitConst.taskQueue)
-  public void handlerNotificationTaskEvent(NotificationEvent event) {
+  @EventListener
+  public void handlerNotificationTaskEvent(NotificationTaskEvent event) {
     log.info("알람 생성 작업을 진행합니다.");
     Notification notification = taskService.create(event);
     taskEventPublisher.sendNotification(notification);
   }
 
-  @RabbitListener(queues = RabbitConst.taskBulkQueue)
-  public void handlerBulkNotificationTaskEvent(BulkNotificationEvent event) {
+  @EventListener
+  public void handlerBulkNotificationTaskEvent(BulkNotificationTaskEvent event) {
     log.info("알람 대량 생성 작업을 진행합니다.");
     List<Notification> notificationList = taskService.create(event);
     taskEventPublisher.sendBulkNotification(notificationList);
