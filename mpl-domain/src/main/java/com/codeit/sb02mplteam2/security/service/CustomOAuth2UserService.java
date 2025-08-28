@@ -145,8 +145,13 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
   }
 
   private User createNewUser(UserInfo userInfo, Provider provider) {
+    String Username = userInfo.name();
+    if(userRepository.existsByUsername(userInfo.name) || userInfo.name == null){
+      Username = provider.getRegistrationId() + userInfo.providerId;
+      log.info("중복되거나 이름이 없는 경우, 임의의 name을 생성합니다. name={}", Username);
+    }
     User newUser = new User(
-        userInfo.name,
+        Username,
         userInfo.email,
         UUID.randomUUID().toString(),
         userInfo.pictureUrl,

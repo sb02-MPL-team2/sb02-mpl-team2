@@ -65,7 +65,7 @@ spring:
             scope:
               - profile
               - email
-            redirect-uri: http://localhost:8080/login/oauth2/code/google
+            redirect-uri: ${GOOGLE_REDIRECT_URI}
           kakao:
             provider: kakao
             client-id: ${KAKAO_CLIENT_ID}
@@ -77,7 +77,7 @@ spring:
               - account_email
               - profile_nickname
               - profile_image
-            redirect-uri: http://localhost:8080/login/oauth2/code/kakao
+            redirect-uri: ${KAKAO_REDIRECT_URI}
 logging:
   level:
     root: INFO
@@ -106,7 +106,7 @@ mpl:
     email: ${ADMIN_EMAIL:admin@mpl.com}
     password: ${ADMIN_PASSWORD:admin123!}
   reset-password:
-    url: ${RESET_PASSWORD_URL:http://localhost:8080/reset-password?token=}
+    url: ${RESET_PASSWORD_URL}
   storage:
     type: ${STORAGE_TYPE:s3}  # local | s3 (???: local)
     local:
@@ -142,7 +142,7 @@ mpl:
     # 06시 00분에 스케쥴링 시작
     cron-prod-playlist: "0 0 6 * * *"
   oauth:
-    common-logout-redirect-uri: http://localhost:8080/login
+    common-logout-redirect-uri: ${COMMON_LOGOUT_REDIRECT_URI}
 
 
 jwt:
