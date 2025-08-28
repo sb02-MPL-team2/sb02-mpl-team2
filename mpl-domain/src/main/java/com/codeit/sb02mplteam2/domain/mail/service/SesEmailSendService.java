@@ -19,7 +19,7 @@ public class SesEmailSendService implements EmailService {
   @Value("${spring.mail.username}")
   private String fromEmail;
 
-  private SesClient sesClient;
+  private final SesClient sesClient;
 
   @Override
   public void sendEmail(String to, String subject, String text) {

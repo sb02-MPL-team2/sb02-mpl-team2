@@ -18,7 +18,7 @@ public interface UserMapper {
     }
 
     // 프로필 이미지가 없을 경우 null을 반환하도록 처리
-    String profileUrl = user.getProfile() != null ? user.getProfile().getUrl() : null;
+    String profileUrl = user.getProfile() != null ? user.getProfile().getUrl() : user.getPictureUrl();
 
     // UserDto record의 생성자를 사용하여 직접 객체를 생성하고 반환
     return new UserDto(

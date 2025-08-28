@@ -43,8 +43,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: mplteam2@gmail.com
-    password: unxp juru tusw yyhs #google app password
+    username: ${SPRING_MAIL_USERNAME}
+    password: ${SPRING_MAIL_PASSWORD}
     properties.mail.smtp:
       auth: true
       starttls:
@@ -83,6 +83,22 @@ logging:
     root: INFO
     org.springframework: WARN
     org.hibernate: WARN
+    software.amazon.awssdk: DEBUG
+    com.codeit.sb02mplteam2: DEBUG
+
+cloud:
+  aws:
+    region:
+      static: ${AWS_S3_REGION:ap-northeast-2}
+    credentials:
+      instance-profile: false
+      access-key: ${AWS_ACCESS_KEY_ID}
+      secret-key: ${AWS_SECRET_ACCESS_KEY}
+    s3:
+      enabled: true
+      signer-type: SigV4signer
+    stack:
+      auto: false
 
 mpl:
   admin:
@@ -92,14 +108,11 @@ mpl:
   reset-password:
     url: ${RESET_PASSWORD_URL:http://localhost:8080/reset-password?token=}
   storage:
-    type: ${STORAGE_TYPE:local}  # local | s3 (???: local)
+    type: ${STORAGE_TYPE:s3}  # local | s3 (???: local)
     local:
       root-path: ${STORAGE_LOCAL_ROOT_PATH:./storage}
       base-url: /files/
   aws:
-    accessKeyId: ${AWS_S3_ACCESS_KEY:your-access-key}
-    secretKey: ${AWS_S3_SECRET_KEY:your-secret-key}
-    region: ${AWS_S3_REGION:ap-northeast-2}
     s3:
       bucket: ${AWS_S3_BUCKET:your-bucket-name}
       base-url: ${AWS_S3_BASE_URL:https://your-bucket-name.s3.amazonaws.com}

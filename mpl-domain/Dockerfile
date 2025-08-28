@@ -40,4 +40,6 @@ COPY --from=builder /app/mpl-domain/build/libs/*.jar app.jar
 # EXPOSE 80
 
 # jar 파일 실행
-ENTRYPOINT ["sh", "-c", "java ${JVM_OPTS} -jar app.jar"]
+# ENTRYPOINT ["sh", "-c", "java ${JVM_OPTS} -jar app.jar"]
+
+ENTRYPOINT ["sh", "-c", "echo '--- Printing Environment Variables ---'; printenv; echo '--- Starting Application ---'; java ${JVM_OPTS} -jar app.jar"]

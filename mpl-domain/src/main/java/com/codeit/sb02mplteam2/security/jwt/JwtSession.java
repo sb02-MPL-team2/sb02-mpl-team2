@@ -30,10 +30,10 @@ public class JwtSession {
   @Column(columnDefinition = "BIGINT", updatable = false, nullable = false)
   private Long userId;
 
-  @Column(columnDefinition = "varchar(512)", nullable = false, unique = true)
+  @Column(columnDefinition = "varchar(1024)", nullable = false, unique = true)
   private String accessToken;
 
-  @Column(columnDefinition = "varchar(512)", nullable = false, unique = true)
+  @Column(columnDefinition = "varchar(1024)", nullable = false, unique = true)
   private String refreshToken;
 
   @Column(columnDefinition = "timestamp with time zone", nullable = false)

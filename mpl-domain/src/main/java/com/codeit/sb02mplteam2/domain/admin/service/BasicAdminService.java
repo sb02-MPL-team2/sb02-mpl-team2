@@ -43,6 +43,7 @@ public class BasicAdminService implements AdminService {
     Long adminId = adminPrincipal.getId();
 
     eventPublisher.publishEvent(new NotificationEvent(
+        this,
         userId, // 받는 사람, 권한 변경 된 유저
         NotificationType.ROLE_CHANGED,
         null,
