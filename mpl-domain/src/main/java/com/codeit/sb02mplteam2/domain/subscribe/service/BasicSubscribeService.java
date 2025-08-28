@@ -65,7 +65,7 @@ public class BasicSubscribeService implements SubscribeService{
       if (success) {
         log.info("구독 성공 user id = {}, name = {}, playlist id = {}, playlist Title = {}", userId,
             user.getUsername(), playlistId, playlist.getTitle());
-        subscribeEventPublisher.sendEvent(userId, playlist.getUser().getId(), playlistId);
+        subscribeEventPublisher.sendEvent(playlist.getUser().getId(), userId, playlistId);
       } else {
         log.warn("구독 실패 user id = {}, name = {}, playlist id = {}, playlist Title = {}", userId,
             user.getUsername(), playlistId, playlist.getTitle());

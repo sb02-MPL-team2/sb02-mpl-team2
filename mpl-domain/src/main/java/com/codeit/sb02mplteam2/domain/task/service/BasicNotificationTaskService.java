@@ -33,7 +33,6 @@ public class BasicNotificationTaskService implements NotificationTaskService {
   private final PlaylistService playlistService;
 
   @Override
-  @Transactional
   public Notification create(Long receiverId, Long publisherId, NotificationType type,
       Long targetId) {
     UserDto receiver = userQueryService.findByUserId(receiverId);
@@ -44,6 +43,7 @@ public class BasicNotificationTaskService implements NotificationTaskService {
   }
 
   @Override
+  @Transactional
   public Notification create(NotificationTaskEvent originalEvent) {
     Long receiverId = originalEvent.getReceiverId();
     Long publisherId = originalEvent.getPublisherId();
@@ -53,6 +53,7 @@ public class BasicNotificationTaskService implements NotificationTaskService {
   }
 
   @Override
+  @Transactional
   public List<Notification> create(BulkNotificationTaskEvent bulkEvent) {
     log.info("대량의 알람을 레포지토리에서 검색해서 생성합니다.");
     Set<Long> receiverIds = bulkEvent.getReceiverIds();
@@ -63,7 +64,6 @@ public class BasicNotificationTaskService implements NotificationTaskService {
   }
 
   @Override
-  @Transactional
   public List<Notification> createAll(Set<Long> receiverIds, Long publisherId,
       NotificationType type, Long target) {
     List<Notification> notifications = new ArrayList<>();
