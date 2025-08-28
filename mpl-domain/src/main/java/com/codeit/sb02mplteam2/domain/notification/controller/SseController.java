@@ -20,7 +20,7 @@ public class SseController {
 
   private final ConnectionManager connectionManager;
 
-  @GetMapping
+  @GetMapping(produces = "text/event-stream")
   public ResponseEntity<SseEmitter> sse(
       @AuthenticationPrincipal MplUserDetails userDetails
 //       last Event ID = "알람 생성 시간 + "_" + notification ID"

@@ -55,6 +55,7 @@ public class ConnectionManager {
     }
     long TIMEOUT = DEFAULT_TIME_UNIT * DEFAULT_TIMEOUT;
     log.info("연결 최대 시간 {}ms",TIMEOUT);
+    log.info("연결 대상 ID : {}, lastEventId : {}", userId, lastEventId);
     SseEmitter sseEmitter = new SseEmitter(TIMEOUT);
 
     try {
