@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,6 +23,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name="direct_messages")
 public class DirectMessage {
 
   @Id
@@ -30,6 +32,9 @@ public class DirectMessage {
 
   @Column(columnDefinition = "TEXT", nullable = false)
   private String content;
+
+  @Column(name="image_content_url")
+  private String imageContentUrl;
 
   @CreatedDate
   @Column(name="created_at", nullable = false, updatable = false)
@@ -43,9 +48,10 @@ public class DirectMessage {
   @JoinColumn(name="direct_message_channel_id", nullable = false)
   private DirectMessageChannel directMessageChannel;
 
-  public static DirectMessage of(String content, User user, DirectMessageChannel channel) {
+  public static DirectMessage of(String content, String imageContentUrl, User user, DirectMessageChannel channel) {
     DirectMessage message = new DirectMessage();
     message.content = content;
+    message.imageContentUrl = imageContentUrl;
     message.user = user;
     message.directMessageChannel = channel;
 

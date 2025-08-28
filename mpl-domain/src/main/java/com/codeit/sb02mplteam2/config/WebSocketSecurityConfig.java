@@ -19,8 +19,8 @@ public class WebSocketSecurityConfig extends AbstractSecurityWebSocketMessageBro
         .simpSubscribeDestMatchers("/topic/livewatch/**").authenticated()
         .simpSubscribeDestMatchers("/queue/livewatch/**").hasRole("USER")
 
-//        .simpDestMatchers("/app/dm/**").authenticated()
-//        .simpSubscribeDestMatchers("/user/queue/dm/**").authenticated()
+        .simpDestMatchers("/app/dm/**").authenticated()
+        .simpSubscribeDestMatchers("/user/queue/dm/**").authenticated()
 
         .anyMessage().authenticated();
   }
