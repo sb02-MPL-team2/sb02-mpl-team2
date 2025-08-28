@@ -1,5 +1,7 @@
 package com.codeit.sb02mplteam2.domain.social.service;
 
+import com.codeit.sb02mplteam2.domain.notification.entity.NotificationType;
+import com.codeit.sb02mplteam2.event.NotificationEvent;
 import com.codeit.sb02mplteam2.domain.social.dto.CursorPageResponseFollowDto;
 import com.codeit.sb02mplteam2.domain.social.dto.FollowResponse;
 import com.codeit.sb02mplteam2.domain.social.dto.FollowStatusResponse;
@@ -15,6 +17,7 @@ import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,15 +29,16 @@ public class BasicFollowService implements FollowService {
 
   private final UserRepository userRepository;
   private final FollowRepository followRepository;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Transactional
   @Override
   public FollowResponse create(Long followeeId, Long followerId) {
     if(Objects.equals(followeeId, followerId)){
-      throw new IllegalArgumentException();
+      throw new FollowException(ErrorCode.SELF_FOLLOW_NOT_ALLOWED);
     }
     if (followRepository.existsByToUserIdAndFromUserId(followeeId, followerId)) {
-      throw new IllegalArgumentException(); //예외처리 수정 필요
+      throw new FollowException(ErrorCode.FOLLOW_ALREADY_EXISTS);
     }
 
     User followee = userRepository.findById(followeeId)
@@ -48,15 +52,21 @@ public class BasicFollowService implements FollowService {
     followee.increaseFollowerCount();
     follower.increaseFollowingCount();
 
+    log.info("{}를 {}가 팔로우 ", followee.getUsername(), follower.getUsername());
+    eventPublisher.publishEvent(new NotificationEvent(
+        this,
+        followee.getId(),
+        NotificationType.NEW_FOLLOWER,
+        null,
+        follower.getId()
+    ));
+
     return new FollowResponse(followeeId, followerId);
   }
 
   @Transactional
   @Override
   public FollowResponse delete(Long followeeId, Long followerId){
-    if(Objects.equals(followeeId, followerId)){
-      throw new IllegalArgumentException();
-    }
 
     User followee = userRepository.findById(followeeId)
         .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
@@ -91,7 +101,7 @@ public class BasicFollowService implements FollowService {
     List<UserFollowDto> userList = follows.stream()
         .map(f -> new UserFollowDto(
             f.getFromUser().getId(),
-            null, //TODO:유저 프로필
+            f.getFromUser().getProfile() != null ? f.getFromUser().getProfile().getUrl() : null,
             f.getFromUser().getUsername(),
             f.getFromUser().getFollowerCount(),
             f.getFromUser().getFollowingCount(),
@@ -117,7 +127,7 @@ public class BasicFollowService implements FollowService {
     List<UserFollowDto> userList = follows.stream()
         .map(f -> new UserFollowDto(
             f.getToUser().getId(),
-            null,
+            f.getToUser().getProfile() != null ? f.getToUser().getProfile().getUrl() : null,
             f.getToUser().getUsername(),
             f.getToUser().getFollowerCount(),
             f.getToUser().getFollowingCount(),
@@ -130,14 +140,10 @@ public class BasicFollowService implements FollowService {
 
   @Override
   public FollowStatusResponse isFollowing(Long followeeId, Long followerId){
-    if(Objects.equals(followeeId, followerId)){
-      throw new IllegalArgumentException();
-    }
     if (followRepository.existsByToUserIdAndFromUserId(followeeId, followerId)) {
       return new FollowStatusResponse(true, followeeId, followerId);
     }
     return new FollowStatusResponse(false, followeeId, followerId);
   }
-
 
 }

@@ -11,9 +11,12 @@ import com.codeit.sb02mplteam2.exception.ErrorCode;
 import com.codeit.sb02mplteam2.exception.directmessage.DirectMessageChannelException;
 import com.codeit.sb02mplteam2.exception.user.UserException;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +26,7 @@ public class BasicDirectMessageChannelService implements DirectMessageChannelSer
 
   private final DirectMessageChannelRepository directMessageChannelRepository;
   private final UserRepository userRepository;
+  private final SimpMessagingTemplate messagingTemplate;
 
   @Transactional
   @Override
@@ -34,20 +38,59 @@ public class BasicDirectMessageChannelService implements DirectMessageChannelSer
         .orElseThrow(() -> new UserException(ErrorCode.USER_NOT_FOUND));
 
     DirectMessageChannel channel = directMessageChannelRepository
-        .findByFromUserIdAndToUserIdOrFromUserIdAndToUserId(
-            senderId, receiverId,   // 1 -> 2
-            receiverId, senderId    // 2 -> 1
-        )
+        .findChannel(senderId, receiverId)
         .orElseGet(() -> {
           DirectMessageChannel newChannel = DirectMessageChannel.of(sender, receiver);
           return directMessageChannelRepository.save(newChannel);
         });
 
+    String profileUrl = receiver.getProfile() != null ? receiver.getProfile().getUrl() : null;
+
     return new DirectMessageChannelResponse(
-        new UserSlimDto(receiverId, null, receiver.getUsername()), // TODO: 프로필 null 수정
+        new UserSlimDto(receiverId, profileUrl, receiver.getUsername()),
         channel.getId(),
         senderId
     );
+  }
+
+  @Transactional
+  @Override
+  public void leaveChannel(Long channelId, Long userId) {
+    DirectMessageChannel channel = directMessageChannelRepository.findById(channelId)
+        .orElseThrow(() -> new DirectMessageChannelException(ErrorCode.DIRECT_MESSAGE_CHANNEL_NOT_FOUND));
+
+    User leavingUser = Stream.of(channel.getFromUser(), channel.getToUser())
+        .filter(u -> Objects.equals(u.getId(), userId))
+        .findFirst()
+        .orElseThrow(() -> new DirectMessageChannelException(ErrorCode.DIRECT_MESSAGE_CHANNEL_NOT_FOUND));
+
+    User otherUser = Stream.of(channel.getFromUser(), channel.getToUser())
+        .filter(u -> !Objects.equals(u.getId(), userId))
+        .findFirst()
+        .orElse(null);
+
+    if (Objects.equals(channel.getFromUser().getId(), userId)) {
+      channel.setFromUser(null);
+    } else {
+      channel.setToUser(null);
+    }
+
+    // 남은 사용자가 없으면 채널 삭제
+    if (otherUser == null) {
+      directMessageChannelRepository.delete(channel);
+    } else {
+      directMessageChannelRepository.save(channel);
+
+      messagingTemplate.convertAndSendToUser(
+          otherUser.getEmail(),
+          "/queue/dm/messages",
+          Map.of(
+              "type", "USER_LEFT",
+              "channelId", channel.getId(),
+              "leavingUserId", leavingUser.getId()
+          )
+      );
+    }
   }
 
   @Transactional(readOnly = true)
@@ -67,9 +110,19 @@ public class BasicDirectMessageChannelService implements DirectMessageChannelSer
       throw new DirectMessageChannelException(ErrorCode.DIRECT_MESSAGE_CHANNEL_NOT_FOUND);
     }
 
+    if(otherUser.isDeleted()|| otherUser.isLocked()){
+      return new DirectMessageChannelResponse(
+          new UserSlimDto(otherUser.getId(), null, "알 수 없음"),
+          channelId,
+          userId
+      );
+    }
+
+    String profileUrl = otherUser.getProfile() != null ? otherUser.getProfile().getUrl() : null;
+
     return new DirectMessageChannelResponse(
-        new UserSlimDto(otherUser.getId(), null, otherUser.getUsername()),
-        channelId, //TODO: 유저 프로필
+        new UserSlimDto(otherUser.getId(), profileUrl, otherUser.getUsername()),
+        channelId,
         userId
     );
   }
@@ -94,7 +147,7 @@ public class BasicDirectMessageChannelService implements DirectMessageChannelSer
 
           UserSlimDto userDto = new UserSlimDto(
               otherUser.getId(),
-              null, //TODO:유저프로필
+              otherUser.getProfile() != null ? otherUser.getProfile().getUrl() : null,
               otherUser.getUsername()
           );
 

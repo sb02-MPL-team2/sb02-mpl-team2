@@ -3,9 +3,11 @@ package com.codeit.sb02mplteam2.domain.social.controller;
 import com.codeit.sb02mplteam2.domain.social.dto.CursorPageResponseDirectMessageChannelDto;
 import com.codeit.sb02mplteam2.domain.social.dto.DirectMessageChannelResponse;
 import com.codeit.sb02mplteam2.domain.social.service.DirectMessageChannelService;
+import com.codeit.sb02mplteam2.security.MplUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,6 +31,15 @@ public class DirectMessageChannelController {
     DirectMessageChannelResponse response = directMessageChannelService.create(senderId,
         receiverId);
     return ResponseEntity.ok(response);
+  }
+
+  @PostMapping("/{channelId}/leave")
+  public ResponseEntity<Void> leaveChannel(@PathVariable Long channelId,
+      @AuthenticationPrincipal MplUserDetails userDetails) {
+    Long userId = userDetails.getId();
+    directMessageChannelService.leaveChannel(channelId, userId);
+
+    return ResponseEntity.ok().build();
   }
 
   @GetMapping("/{channelId}/channel")

@@ -4,7 +4,6 @@ import com.codeit.sb02mplteam2.domain.social.dto.CursorPageResponseDirectMessage
 import com.codeit.sb02mplteam2.domain.social.dto.DirectMessageCreateRequest;
 import com.codeit.sb02mplteam2.domain.social.dto.DirectMessageResponse;
 
-
 public interface DirectMessageService {
 
   DirectMessageResponse create(DirectMessageCreateRequest request);

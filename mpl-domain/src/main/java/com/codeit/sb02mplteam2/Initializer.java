@@ -1,16 +1,12 @@
 package com.codeit.sb02mplteam2;
 
 
-import com.codeit.sb02mplteam2.domain.content.entity.Content;
-import com.codeit.sb02mplteam2.domain.content.entity.ContentCategory;
-import com.codeit.sb02mplteam2.domain.content.repository.ContentRepository;
-import com.codeit.sb02mplteam2.domain.playlist.dto.request.PlaylistCreateRequest;
-import com.codeit.sb02mplteam2.domain.playlist.repository.PlaylistItemRepository;
-import com.codeit.sb02mplteam2.domain.playlist.repository.PlaylistRepository;
-import com.codeit.sb02mplteam2.domain.playlist.service.PlaylistItemService;
-import com.codeit.sb02mplteam2.domain.playlist.service.PlaylistService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobParameters;
+import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.annotation.Order;
@@ -20,32 +16,26 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @Component
 @Order(2)
-//TODO application 설정을 걸어서 application Initalizer 설정 여부 선택할 수 있게 만들어야함
 public class Initializer implements ApplicationRunner {
-
-  private final ContentRepository contentRepository;
-  private final PlaylistRepository playlistRepository;
-  private final PlaylistItemRepository playlistItemRepository;
-
-  private final PlaylistService playlistService;
-  private final PlaylistItemService playlistItemService;
+  private final JobLauncher jobLauncher;
+  private final Job importTmdbJob;
 
   @Override
   public void run(ApplicationArguments args) throws Exception {
-    if (!contentRepository.existsById(1L)) {
-      Content content = new Content("인터스텔라", ContentCategory.MOVIE);
-      contentRepository.save(content);
-      log.info("테스트용 인터스텔라 영화 자동 생성");
-    }
+    log.info("애플리케이션 시작 시 TMDB 배치 잡을 자동으로 실행");
 
-    if (!playlistRepository.existsById(1L)) {
-      playlistService.create(1L, new PlaylistCreateRequest( "테스트 플리", "테스트 제목"));
-      log.info("테스트용 플리 자동 생성");
-    }
+    // JobParameters 설정 (컨트롤러의 파라미터와 동일하게 설정 가능)
+    JobParameters params = new JobParametersBuilder()
+        .addLong("runId", System.currentTimeMillis()) // Job은 동일한 파라미터로 재실행되지 않으므로,毎回違う値を 주는 것이 중요합니다.
+        .addString("category", "ALL")
+        .addLong("maxPages", 10L)
+        .addLong("rateLimitMs", 300L)
+        .toJobParameters();
 
-    if (!playlistItemRepository.existsById(1L)) {
-      playlistItemService.addContent(1L, 1L, 1L);
-      log.info("테스트용 플리에 콘텐츠 삽입");
+    try {
+      jobLauncher.run(importTmdbJob, params);
+    } catch (Exception e) {
+      log.error("!!! 배치 잡 자동 실행 중 오류 발생: {}", e.getMessage());
     }
   }
 }
