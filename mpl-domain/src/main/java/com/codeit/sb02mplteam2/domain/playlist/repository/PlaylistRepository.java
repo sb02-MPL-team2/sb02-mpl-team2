@@ -1,7 +1,9 @@
 package com.codeit.sb02mplteam2.domain.playlist.repository;
 
 import com.codeit.sb02mplteam2.domain.playlist.entity.Playlist;
+import com.codeit.sb02mplteam2.domain.user.entity.User;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import lombok.NonNull;
 import org.springframework.data.domain.Pageable;
@@ -40,5 +42,15 @@ public interface PlaylistRepository extends JpaRepository<Playlist,Long> {
             left join fetch p.items i
                 left join fetch i.content
             WHERE (:#{#cursor} IS NULL OR p.createdAt < :cursor)""")
-  Slice<Playlist> findAllByCursor(LocalDateTime cursor, Pageable attr0);
+  Slice<Playlist> findAllByCursor(LocalDateTime cursor, Pageable pageable);
+
+  @Query("""
+        SELECT p FROM Playlist p
+            LEFT JOIN FETCH p.user u
+            left join fetch p.subscribes
+            left join fetch p.items i
+                left join fetch i.content
+        WHERE p NOT IN (SELECT s.playlist FROM Subscribe s WHERE s.user = :user)
+    """)
+  List<Playlist> findUnsubscribedPlaylistsByUser(@Param("user") User user);
 }

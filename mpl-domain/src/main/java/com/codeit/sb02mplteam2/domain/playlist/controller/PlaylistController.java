@@ -14,6 +14,7 @@ import com.codeit.sb02mplteam2.domain.subscribe.service.SubscribeService;
 import com.codeit.sb02mplteam2.security.MplUserDetails;
 import com.codeit.sb02mplteam2.swagger.PlayListApi;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
@@ -162,6 +163,27 @@ public class PlaylistController implements PlayListApi {
       )
       Pageable pageable) {
     CursorPageResponsePlayListDto response = playlistSearchService.findAll(cursor, pageable);
+    return ResponseEntity.ok(response);
+  }
+
+  @Override
+  @GetMapping("/subscribed")
+  public ResponseEntity<List<PlaylistDto>> findAllBySubscribed(@AuthenticationPrincipal MplUserDetails userDetails) {
+    List<PlaylistDto> response = subscribeService.findAllBySubscribed(userDetails.getUserDto().id());
+    return ResponseEntity.ok(response);
+  }
+
+  @Override
+  @GetMapping("/unsubscribed")
+  public ResponseEntity<List<PlaylistDto>> findAllByUnsubscribed(MplUserDetails userDetails) {
+    List<PlaylistDto> response = subscribeService.findAllByUnSubscribed(userDetails.getUserDto().id());
+    return ResponseEntity.ok(response);
+  }
+
+  @Override
+  @GetMapping("/subscribed/user/{userId}")
+  public ResponseEntity<List<PlaylistDto>> findAllBySubscribedFromId(@PathVariable Long userId) {
+    List<PlaylistDto> response = subscribeService.findAllBySubscribed(userId);
     return ResponseEntity.ok(response);
   }
 }
