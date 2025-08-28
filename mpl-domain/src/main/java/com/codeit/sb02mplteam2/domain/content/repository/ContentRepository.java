@@ -116,9 +116,9 @@ select new com.codeit.sb02mplteam2.domain.content.dto.content.ContentResponseDto
 from Content c
 left join LiveWatchRoom lwr on lwr.content.id = c.id
 left join Review r on r.content.id = c.id
-where (:category is null or c.category = :category)
+where (CAST(:category AS string) is null or c.category = :category)
   and (
-    :cursorDate is null 
+    CAST(:cursorDate AS string) is null 
     or c.releaseDate < CAST(:cursorDate AS date)
     or (c.releaseDate = CAST(:cursorDate AS date) and c.id < :cursorId)
   )
@@ -149,7 +149,7 @@ select new com.codeit.sb02mplteam2.domain.content.dto.content.ContentResponseDto
 from Content c
 left join LiveWatchRoom lwr on lwr.content.id = c.id
 left join Review r on r.content.id = c.id
-where (:category is null or c.category = :category)
+where (CAST(:category AS string) is null or c.category = :category)
 group by c.id, c.title, c.description, c.category, c.imageUrl, lwr.id, c.runtime, c.releaseDate
 order by c.releaseDate desc, c.id desc
 """)

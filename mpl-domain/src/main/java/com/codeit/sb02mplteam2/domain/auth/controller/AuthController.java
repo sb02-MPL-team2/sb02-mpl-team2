@@ -54,7 +54,10 @@ public class AuthController implements AuthApi{
       HttpServletResponse response
   ) {
     if (refreshToken == null || refreshToken.isBlank()) {
-      throw new MplException(ErrorCode.INVALID_TOKEN, Map.of("refreshToken", refreshToken));
+      // Map.of()는 null 값을 허용하지 않으므로 안전한 방식으로 처리
+      Map<String, Object> errorDetails = new java.util.HashMap<>();
+      errorDetails.put("refreshToken", refreshToken != null ? refreshToken : "null");
+      throw new MplException(ErrorCode.INVALID_TOKEN, errorDetails);
     }
     log.debug("리프레시 토큰 확인: {}", refreshToken);
 
