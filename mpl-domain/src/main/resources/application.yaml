@@ -143,6 +143,12 @@ mpl:
     cron-prod-playlist: "0 0 6 * * *"
   oauth:
     common-logout-redirect-uri: ${COMMON_LOGOUT_REDIRECT_URI}
+    # 프론트엔드 기본 URL (환경별로 다름)
+    frontend-base-url: ${FRONTEND_BASE_URL:http://localhost:8080}
+    # OAuth2 콜백 성공 페이지 경로
+    callback-success-path: ${OAUTH_CALLBACK_SUCCESS_PATH:/oauth2/callback/success}
+    # 쿠키 도메인 설정 (Docker 환경 대응)
+    cookie-domain: ${COOKIE_DOMAIN:localhost}
 
 
 jwt:
