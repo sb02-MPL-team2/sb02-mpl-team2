@@ -5,6 +5,7 @@ public record TmdbMovieDto (
     String title,
     String overview,
     String release_date,
-    String backdrop_path
+    String backdrop_path,
+    Double popularity
 ) {
 }

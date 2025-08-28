@@ -81,6 +81,9 @@ public class Content {
   @Column(name = "release_date")
   private LocalDate releaseDate;
 
+  @Column(nullable = false)
+  private Double popularity;
+
   @OneToMany(mappedBy = "content")
   private List<Review> reviews = new ArrayList<>();
 
@@ -98,4 +101,25 @@ public class Content {
     this.createdAt = createdAt;
   }
 
+  public Content(
+      String title,
+      String description,
+      ContentCategory category,
+      String imageUrl,
+      Integer runtime,
+      String provider,
+      String externalId,
+      LocalDate releaseDate,
+      Double popularity
+  ) {
+    this.title = title;
+    this.description = description;
+    this.category = category;
+    this.imageUrl = imageUrl;
+    this.runtime = runtime;
+    this.provider = provider;
+    this.externalId = externalId;
+    this.releaseDate = releaseDate;
+    this.popularity = popularity;
+  }
 }
