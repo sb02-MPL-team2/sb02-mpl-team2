@@ -19,6 +19,7 @@ import com.codeit.sb02mplteam2.domain.user.repository.UserRepository;
 import com.codeit.sb02mplteam2.exception.ErrorCode;
 import com.codeit.sb02mplteam2.exception.playlist.PlaylistException;
 import com.codeit.sb02mplteam2.exception.user.UserException;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -109,4 +110,39 @@ public class BasicSubscribeService implements SubscribeService{
     return PlaylistDto.of(playlist, userSlimDto, playlistItemDtoList, responseDto);
   }
 
+  @Override
+  @Transactional(readOnly = true)
+  public List<PlaylistDto> findAllBySubscribed() {
+    List<Playlist> playlistList = subscribeRepository.findPlaylistAll();
+    return of(playlistList);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public List<PlaylistDto> findAllBySubscribed(Long userId) {
+    User user = userRepository.findById(userId).orElseThrow(
+        () -> new UserException(ErrorCode.USER_NOT_FOUND));
+    List<Playlist> playlistList = subscribeRepository.findPlaylistByUser(user);
+    return of(playlistList);
+  }
+
+  @Override
+  public List<PlaylistDto> findAllByUnSubscribed(Long userId) {
+    User user = userRepository.findById(userId).orElseThrow(
+        () -> new UserException(ErrorCode.USER_NOT_FOUND));
+    List<Playlist> playlistList = playlistRepository.findUnsubscribedPlaylistsByUser(
+        user);
+    return of(playlistList);
+  }
+
+  private List<PlaylistDto> of(List<Playlist> playlistList) {
+    List<PlaylistDto> result = new ArrayList<>();
+    for (Playlist playlist : playlistList) {
+      List<ContentResponseDto> responseDto = toResponseDto(playlist.getItems());
+      UserSlimDto userSlimDto = toUserSlimDto(playlist);
+      List<PlaylistItemDto> playlistItemDtoList = toPlaylistItemDtoList(playlist);
+      result.add(PlaylistDto.of(playlist, userSlimDto, playlistItemDtoList, responseDto));
+    }
+    return result;
+  }
 }

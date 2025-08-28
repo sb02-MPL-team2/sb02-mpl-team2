@@ -25,10 +25,12 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.LocalDateTime;
+import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @Tag(name = "PlayList", description = "PlayList API")
@@ -179,4 +181,10 @@ public interface PlayListApi {
       @Parameter(description = "페이징 정보", example = "{\"size\": 20, \"sort\": \"createdAt,desc\"}")
       Pageable pageable
   );
+
+  ResponseEntity<List<PlaylistDto>> findAllBySubscribed(@AuthenticationPrincipal MplUserDetails userDetails);
+
+  ResponseEntity<List<PlaylistDto>> findAllByUnsubscribed(@AuthenticationPrincipal MplUserDetails userDetails);
+
+  ResponseEntity<List<PlaylistDto>> findAllBySubscribedFromId(@PathVariable Long userId);
 }
