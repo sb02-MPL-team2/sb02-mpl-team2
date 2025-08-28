@@ -17,9 +17,11 @@ import com.codeit.sb02mplteam2.domain.social.dto.DirectMessageDto;
 import com.codeit.sb02mplteam2.domain.user.dto.UserDto;
 import com.codeit.sb02mplteam2.event.BulkNotificationEvent;
 import com.codeit.sb02mplteam2.event.BulkNotificationSendEvent;
+import com.codeit.sb02mplteam2.event.BulkNotificationTaskEvent;
 import com.codeit.sb02mplteam2.event.LostNotificationEvent;
 import com.codeit.sb02mplteam2.event.NotificationEvent;
 import com.codeit.sb02mplteam2.event.NotificationSendEvent;
+import com.codeit.sb02mplteam2.event.NotificationTaskEvent;
 import jakarta.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -135,7 +137,8 @@ public class NotificationEventListener implements NotificationListener {
     if (isCacheMiss) {
       // 하나라도 캐시에 없으면 Task Service에 작업을 위임하여 DB에서 조회 및 처리
       log.warn("캐시 미스 발생. Notification 생성을 Task Service로 위임합니다. Event: {}", event);
-      notificationEventPublisher.delegateToTaskService(event); // Task Service로 이벤트를 다시 보내는 로직
+      notificationEventPublisher.delegateToTaskService(
+          new NotificationTaskEvent(this, event)); // Task Service로 이벤트를 다시 보내는 로직
     } else {
       log.info("Receiver, Publisher 의 캐시가 존재합니다. 실시간 알림을 처리합니다.");
       notificationEventPublisher.processNotificationWithCachedData(receiver, publisher, null, type);
@@ -166,7 +169,7 @@ public class NotificationEventListener implements NotificationListener {
       log.info(
           "공통 데이터(Publisher 또는 Target) 캐시 미스. 전체 Bulk 이벤트를 Task Service로 위임합니다. publisher : {}, targetEntity : {}",
           publisher, targetEntity);
-      notificationEventPublisher.delegateBulkTaskToService(event); // 전체 이벤트를 그대로 위임
+      notificationEventPublisher.delegateBulkTaskToService(new BulkNotificationTaskEvent(this,event)); // 전체 이벤트를 그대로 위임
       return;
     }
 
@@ -206,7 +209,7 @@ public class NotificationEventListener implements NotificationListener {
     // DB 조회가 필요한 대상이 있다면 Task Service로 위임
     if (!slowPathReceiverIds.isEmpty()) {
       log.warn("[Slow Path] {}명의 사용자에 대한 처리를 Task Service로 위임합니다.", slowPathReceiverIds.size());
-      BulkNotificationEvent bulkEvent = new BulkNotificationEvent(this, slowPathReceiverIds,
+      BulkNotificationTaskEvent bulkEvent = new BulkNotificationTaskEvent(this, slowPathReceiverIds,
           event.getNotificationType(), event.getTargetId(), event.getPublisherId()
       );
       notificationEventPublisher.delegateBulkTaskToService(bulkEvent);
@@ -232,13 +235,13 @@ public class NotificationEventListener implements NotificationListener {
     }
   }
 
-  @EventListener
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void handleNotificationReceiveEvent(NotificationSendEvent event) {
     log.info("성공적으로 task 작업에서 수행한 알람을 수신 받았습니다. id: {}", event.getNotificationDto().id());
     deliveryService.deliverToClient(event.getNotificationDto());
   }
 
-  @EventListener
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void handleNotificationReceiveBulkEvent(BulkNotificationSendEvent event) {
     log.info("성공적으로 task 작업에서 수행한 대량 알람 수신을 받았습니다. size: {}", event.notifications().size());
     event.notifications()

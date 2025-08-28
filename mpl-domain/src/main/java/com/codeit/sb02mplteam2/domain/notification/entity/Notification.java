@@ -12,7 +12,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "notifications")
@@ -26,7 +25,6 @@ public class Notification {
   @GeneratedValue
   private Long id;
 
-  @CreationTimestamp
   @Column(name = "created_at", nullable = false, updatable = false)
   private LocalDateTime createdAt;
 
@@ -49,18 +47,10 @@ public class Notification {
   @Column(nullable = false)
   private String content;
 
-  public static Notification broadcast(Long targetId,String title, String content, NotificationType type) {
-    return Notification.builder()
-        .targetId(targetId)
-        .title(title)
-        .content(content != null ? content : "") // content가 null일 경우를 대비해 기본값 처리
-        .type(type)
-        .build();
-  }
-
   public static Notification of(Long receiverId, Long publisherId, Long targetId,String title, String content, NotificationType type) {
     return Notification.builder()
         .receiverId(receiverId)
+        .createdAt(LocalDateTime.now())
         .publisherId(publisherId)
         .targetId(targetId)
         .title(title)
