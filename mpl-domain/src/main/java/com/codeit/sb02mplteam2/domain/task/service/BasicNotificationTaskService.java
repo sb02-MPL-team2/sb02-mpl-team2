@@ -69,7 +69,7 @@ public class BasicNotificationTaskService implements NotificationTaskService {
       notifications.add(notification);
     }
     notificationRepository.saveAll(notifications);
-    log.info("대량의 알람 샏성 성공");
+    log.info("대량의 알람 생성 성공");
     return notifications;
   }
 
