@@ -96,6 +96,7 @@ public class BasicDirectMessageService implements DirectMessageService {
 
     log.info("{}에게 {}가 메세지 전송 ", receiver.getUsername(), sender.getUsername());
     eventPublisher.publishEvent(new NotificationEvent(
+        this,
         receiver.getId(),
         NotificationType.NEW_MESSAGE,
         directMessage.getId(),
