@@ -54,6 +54,7 @@ public class BasicFollowService implements FollowService {
 
     log.info("{}를 {}가 팔로우 ", followee.getUsername(), follower.getUsername());
     eventPublisher.publishEvent(new NotificationEvent(
+        this,
         followee.getId(),
         NotificationType.NEW_FOLLOWER,
         null,
