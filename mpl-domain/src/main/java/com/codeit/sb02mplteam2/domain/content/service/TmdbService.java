@@ -85,4 +85,48 @@ public class TmdbService {
       return null;
     }
   }
+
+  public List<TmdbMovieDto> fetchPopularMovies(int page, int size) {
+    try {
+      return webClient.get()
+          .uri(uriBuilder -> uriBuilder
+              .path("/movie/popular")
+              .queryParam("api_key", apiKey)
+              .queryParam("language", "ko-KR")
+              .queryParam("page", page)
+              .build())
+          .retrieve()
+          .bodyToMono(TmdbMovieApiResponseDto.class)
+          .map(TmdbMovieApiResponseDto::results)
+          .block()
+          .stream()
+          .limit(size)
+          .toList();
+    } catch (WebClientResponseException e) {
+      log.error("TMDB 인기 영화 조회 오류: status={}, body={}", e.getStatusCode(), e.getResponseBodyAsString(), e);
+      return List.of();
+    }
+  }
+
+  public List<TmdbTvDto> fetchPopularTvs(int page, int size) {
+    try {
+      return webClient.get()
+          .uri(uriBuilder -> uriBuilder
+              .path("/tv/popular")
+              .queryParam("api_key", apiKey)
+              .queryParam("language", "ko-KR")
+              .queryParam("page", page)
+              .build())
+          .retrieve()
+          .bodyToMono(TmdbTvApiResponseDto.class)
+          .map(TmdbTvApiResponseDto::results)
+          .block()
+          .stream()
+          .limit(size)
+          .toList();
+    } catch (WebClientResponseException e) {
+      log.error("TMDB 인기 TV 조회 오류: status={}, body={}", e.getStatusCode(), e.getResponseBodyAsString(), e);
+      return List.of();
+    }
+  }
 }

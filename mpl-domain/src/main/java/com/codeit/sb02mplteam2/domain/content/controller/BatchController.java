@@ -31,7 +31,7 @@ public class BatchController {
   public ResponseEntity<BatchResponseDto> run(
       @RequestParam(defaultValue = "ALL") String category,
       @RequestParam(defaultValue = "10") int maxPages,
-      @RequestParam(defaultValue = "300") int rateLimitMs
+      @RequestParam(defaultValue = "250") int rateLimitMs
   ) {
     if (!jobExplorer.findRunningJobExecutions("importTmdbJob").isEmpty()) {
       return ResponseEntity.status(409)

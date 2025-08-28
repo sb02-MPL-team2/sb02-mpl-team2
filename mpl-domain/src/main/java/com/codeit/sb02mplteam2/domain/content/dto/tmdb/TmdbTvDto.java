@@ -5,6 +5,7 @@ public record TmdbTvDto(
     String name,
     String overview,
     String first_air_date,
-    String backdrop_path
+    String backdrop_path,
+    Double popularity
     ) {
 }
