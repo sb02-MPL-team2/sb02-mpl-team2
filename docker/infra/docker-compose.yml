@@ -27,9 +27,29 @@ services:
     networks:
       - infra-net
 
+  postgres-db:
+    image: postgres:17
+    container_name: mpl_db
+    environment:
+      POSTGRES_USER: mpl
+      POSTGRES_PASSWORD: mpl!
+      POSTGRES_DB: mpl_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_mpl_data:/var/lib/postgresql/data
+    networks:
+      - infra-net
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U mpl -d mpl_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   filebeat-data:
   redis-data:
+  db_mpl_data:
 
 networks:
   infra-net:
