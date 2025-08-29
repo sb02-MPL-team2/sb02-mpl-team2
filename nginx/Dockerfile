@@ -18,6 +18,10 @@ RUN rm -rf /etc/nginx/conf.d/default.conf
 # 커스텀 nginx 설정 파일 복사
 COPY nginx.conf /etc/nginx/nginx.conf
 
+# 에러 페이지 파일들 복사
+COPY 50x.html /var/www/html/50x.html
+COPY 404.html /var/www/html/404.html
+
 # 로그 디렉토리 생성 및 권한 설정
 RUN mkdir -p /var/log/nginx && \
     touch /var/log/nginx/access.log && \

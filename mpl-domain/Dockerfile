@@ -42,5 +42,25 @@ COPY --from=builder /app/mpl-domain/src/main/resources/static /app/static-source
 # Spring Boot 기본 포트 노출
 EXPOSE 8080
 
-# 시작 스크립트 생성 및 jar 파일 실행
-ENTRYPOINT ["sh", "-c", "mkdir -p /app/static && cp -r /app/static-source/* /app/static/ 2>/dev/null || echo 'No static files to copy' && java ${JVM_OPTS} -jar app.jar"]
+# 간단한 시작 스크립트를 RUN으로 생성
+RUN echo '#!/bin/sh' > /app/start.sh && \
+    echo 'echo "=== Static files copy process starting ==="' >> /app/start.sh && \
+    echo 'mkdir -p /app/static' >> /app/start.sh && \
+    echo 'if [ -d "/app/static-source" ] && [ "$(ls -A /app/static-source)" ]; then' >> /app/start.sh && \
+    echo '    echo "Copying static files from /app/static-source to /app/static"' >> /app/start.sh && \
+    echo '    cp -rv /app/static-source/* /app/static/' >> /app/start.sh && \
+    echo '    echo "Static files copied successfully. Contents of /app/static:"' >> /app/start.sh && \
+    echo '    ls -la /app/static/' >> /app/start.sh && \
+    echo '    chmod -R 755 /app/static' >> /app/start.sh && \
+    echo 'else' >> /app/start.sh && \
+    echo '    echo "Warning: No static files found in /app/static-source or directory is empty"' >> /app/start.sh && \
+    echo '    echo "Creating placeholder index.html"' >> /app/start.sh && \
+    echo '    echo "<!DOCTYPE html><html><head><title>Loading...</title></head><body><h1>Application Loading...</h1></body></html>" > /app/static/index.html' >> /app/start.sh && \
+    echo 'fi' >> /app/start.sh && \
+    echo 'echo "=== Static files copy process completed ==="' >> /app/start.sh && \
+    echo 'echo "Starting Spring Boot application..."' >> /app/start.sh && \
+    echo 'exec java ${JVM_OPTS} -jar app.jar' >> /app/start.sh && \
+    chmod +x /app/start.sh
+
+# 시작 스크립트 실행
+ENTRYPOINT ["/app/start.sh"]
