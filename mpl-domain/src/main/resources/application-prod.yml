@@ -1,0 +1,142 @@
+# AWS ECS 프로덕션 환경 설정
+# 이 설정은 SPRING_PROFILES_ACTIVE=prod 환경변수 설정 시 활성화됩니다.
+spring:
+  config:
+    activate:
+      on-profile: prod
+  
+  # 프로덕션 데이터베이스 설정 (AWS RDS PostgreSQL)
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}  # RDS 엔드포인트
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      # 프로덕션 환경 커넥션 풀 최적화
+      maximum-pool-size: 10        # 최대 커넥션 수 (ECS 메모리 제한 고려)
+      minimum-idle: 5              # 최소 유휴 커넥션
+      idle-timeout: 300000         # 5분 후 유휴 커넥션 제거
+      connection-timeout: 20000    # 20초 연결 타임아웃
+      leak-detection-threshold: 60000  # 커넥션 누수 감지 (1분)
+      validation-timeout: 5000     # 커넥션 유효성 검사 타임아웃
+  
+  # JPA/Hibernate 프로덕션 최적화 설정
+  jpa:
+    hibernate:
+      ddl-auto: validate           # 프로덕션: 스키마 검증만
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: false                # SQL 쿼리 로깅 비활성화
+    properties:
+      hibernate:
+        format_sql: false          # SQL 포매팅 비활성화
+        jdbc:
+          batch_size: 25           # 배치 처리 최적화
+        order_inserts: true        # 삽입 순서 최적화
+        order_updates: true        # 업데이트 순서 최적화
+        generate_statistics: false # 통계 수집 비활성화
+    open-in-view: false            # OSIV 비활성화 (성능 최적화)
+  
+  # SQL 초기화 설정
+  sql:
+    init:
+      mode: never                  # 프로덕션에서는 스키마 자동 초기화 비활성화
+      continue-on-error: false
+
+  # Redis 설정 (AWS ElastiCache)
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST}  # ElastiCache 엔드포인트
+      port: ${REDIS_PORT:6379}
+      timeout: 3000ms              # 3초 타임아웃
+      lettuce:
+        pool:
+          max-active: 8            # 최대 연결 수
+          max-idle: 8              # 최대 유휴 연결
+          min-idle: 2              # 최소 유휴 연결
+          max-wait: 3000ms         # 최대 대기 시간
+
+  # 정적 리소스 설정 (단일 컨테이너에서 프론트엔드 서빙용)
+  web:
+    resources:
+      # 프론트엔드 빌드 결과물 위치
+      static-locations: 
+        - classpath:/META-INF/resources/
+        - classpath:/resources/
+        - classpath:/static/
+        - classpath:/public/
+        - file:/app/static/       # Dockerfile에서 복사한 위치
+      cache:
+        cachecontrol:
+          max-age: 31536000        # 1년 캐싱 (정적 파일)
+          cache-public: true
+      chain:
+        strategy:
+          content:
+            enabled: true          # 콘텐츠 기반 버전 관리
+
+# Tomcat 서버 설정 (프로덕션 최적화)
+server:
+  # 포트 설정 (ECS 컨테이너 내부)
+  port: 8080
+  
+  # Tomcat 스레드 풀 최적화
+  tomcat:
+    threads:
+      max: 100                     # 최대 스레드 수 (ECS 메모리 제한 고려)
+      min-spare: 10                # 최소 스레드 수
+    accept-count: 200              # 연결 대기 큐 크기
+    max-connections: 8192          # 최대 동시 연결 수
+    
+  # 압축 설정 (네트워크 최적화)
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain,text/css,application/javascript
+    min-response-size: 1024        # 1KB 이상만 압축
+
+# 프로덕션 로깅 설정 (최적화)
+logging:
+  level:
+    root: INFO                     # 기본 로그 레벨
+    org.springframework: WARN      # Spring 프레임워크 경고만
+    org.hibernate: WARN            # Hibernate 경고만
+    com.codeit.sb02mplteam2: INFO  # 애플리케이션 로그
+    # AWS SDK 로깅 최소화
+    software.amazon.awssdk: WARN
+    # 커넥션 풀 모니터링용 (필요시 DEBUG로 변경)
+    com.zaxxer.hikari: WARN
+  
+  # 로그 출력 패턴 (CloudWatch Logs 최적화)
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    
+  # 로그 파일 설정 (ECS에서는 CloudWatch로 전송)
+  file:
+    name: /app/logs/application.log
+    max-size: 100MB
+    max-history: 7                 # 7일간 보관
+
+# CORS 설정 (CorsConfig에서 참조)
+mpl:
+  cors:
+    # 프로덕션 도메인 설정 (환경변수에서 주입)
+    allowed-origins: ${MLP_CORS_ALLOWED_ORIGINS:https://your-domain.com}
+
+# 프로덕션 보안 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        # 프로덕션에서는 필요한 endpoint만 노출
+        include: health,info,metrics
+  endpoint:
+    health:
+      # ALB 헬스체크를 위해 인증 없이 상세 정보 제공
+      show-details: always
+      # ECS 헬스체크를 위한 추가 설정
+      probes:
+        enabled: true
+  health:
+    mail:
+      enabled: false  # mail health check 완전 비활성화
+  server:
+    port: 8080

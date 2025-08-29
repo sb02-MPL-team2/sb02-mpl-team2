@@ -167,10 +167,15 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, metrics
+        include: health, info, metrics
   endpoint:
     health:
-      show-details: when-authorized
+      show-details: always
+      probes:
+        enabled: true
+  health:
+    mail:
+      enabled: false
 
 server:
   forward-headers-strategy: NATIVE

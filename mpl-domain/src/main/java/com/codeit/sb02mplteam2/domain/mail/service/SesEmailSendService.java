@@ -13,7 +13,7 @@ import software.amazon.awssdk.services.ses.model.SendEmailRequest;
 
 @Service
 @RequiredArgsConstructor
-@Profile("prod")
+@Profile("!prod")
 public class SesEmailSendService implements EmailService {
 
   @Value("${spring.mail.username}")

@@ -31,15 +31,16 @@ FROM amazoncorretto:17-alpine3.21
 # 작업 디렉토리 설정
 WORKDIR /app
 
-ENV JVM_OPTS=""
+ENV JVM_OPTS="-Xms512m -Xmx1200m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -Duser.timezone=Asia/Seoul"
 
-# 빌드 스테이지에서 jar 파일만 복사
-COPY --from=builder /app/mpl-domain/build/libs/*.jar app.jar
+# 빌드 스테이지에서 실행 가능한 jar 파일만 복사 (plain.jar 제외)
+COPY --from=builder /app/mpl-domain/build/libs/mpl-domain.jar app.jar
 
-# 80 포트 노출시킬거면 아래 주석 해제
-# EXPOSE 80
+# ECS 공유 볼륨을 위한 정적 파일 복사
+COPY --from=builder /app/mpl-domain/src/main/resources/static /app/static-source
 
-# jar 파일 실행
-# ENTRYPOINT ["sh", "-c", "java ${JVM_OPTS} -jar app.jar"]
+# Spring Boot 기본 포트 노출
+EXPOSE 8080
 
-ENTRYPOINT ["sh", "-c", "echo '--- Printing Environment Variables ---'; printenv; echo '--- Starting Application ---'; java ${JVM_OPTS} -jar app.jar"]
+# 시작 스크립트 생성 및 jar 파일 실행
+ENTRYPOINT ["sh", "-c", "mkdir -p /app/static && cp -r /app/static-source/* /app/static/ 2>/dev/null || echo 'No static files to copy' && java ${JVM_OPTS} -jar app.jar"]
